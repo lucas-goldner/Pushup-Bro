@@ -15,6 +15,7 @@ analyzer:
   exclude:
     - "lib/generated/**"
     - "**/**.g.dart"
+    - "test/**"
 
 dart_code_metrics:
   anti-patterns:
