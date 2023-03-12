@@ -15,9 +15,8 @@ class AirPodsTrackerCubit extends Cubit<AirPodsTrackerState> {
   StreamSubscription<DeviceMotionData>? subscription;
 
   void getAirPodsMotionData() {
-    subscription = _airPodsMotionProvider.airPodsMotionService
-        .getMotionData()
-        .listen((event) {
+    subscription =
+        _airPodsMotionProvider.listenForAirPodsMotionData().listen((event) {
       emit(AirPodsTrackerStateListening(event));
     });
   }
