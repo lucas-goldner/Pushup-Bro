@@ -72,7 +72,9 @@ void main() {
   });
 
   test('test getDisplayLanguage for false language', () async {
-    expect(() => languageLocal.getDisplayLanguage('falsyKey'),
-        throwsA(isA<Exception>()));
+    expect(
+      () => languageLocal.getDisplayLanguage('falsyKey'),
+      throwsA(isA<Exception>()),
+    );
   });
 }

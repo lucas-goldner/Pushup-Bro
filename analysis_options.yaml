@@ -15,11 +15,12 @@ analyzer:
   exclude:
     - "lib/generated/**"
     - "**/**.g.dart"
-    - "test/**"
 
 dart_code_metrics:
   anti-patterns:
-    - long-method
+    - long-method:
+        exclude:
+          - test/**
     - long-parameter-list
   metrics:
     cyclomatic-complexity: 20
@@ -39,8 +40,10 @@ dart_code_metrics:
     metrics-exclude:
       - "test/**"
       - "lib/generated/**"
+      - "test/**"
     rules-exclude:
       - "lib/generated/**"
+      - "test/**"
     rules:
       - avoid-collection-methods-with-unrelated-types
       - avoid-dynamic:
