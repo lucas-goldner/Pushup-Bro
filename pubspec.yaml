@@ -22,7 +22,7 @@ dependencies:
   firebase_crashlytics: ^3.0.13
   flutter:
     sdk: flutter
-  flutter_airpods: ^1.0.3
+  flutter_airpods: ^1.0.4
   flutter_bloc: ^8.1.2
   flutter_localizations:
     sdk: flutter

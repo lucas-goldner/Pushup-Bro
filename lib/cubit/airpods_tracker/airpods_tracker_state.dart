@@ -20,7 +20,7 @@ class AirPodsTrackerState extends Equatable {
       );
 
   @override
-  List<Object?> get props => [currentMotionData?.toJson(), isListening];
+  List<Object?> get props => [currentMotionData, isListening];
 }
 
 class AirPodsTrackerStateInitial extends AirPodsTrackerState {
