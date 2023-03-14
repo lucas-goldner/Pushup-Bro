@@ -11,7 +11,7 @@ import 'package:flutter_airpods/models/user_acceleration.dart';
 
 @visibleForTesting
 class DeviceMotionDataMocks {
-  DeviceMotionData mockDefaultDeviceMotionData = DeviceMotionData(
+  DeviceMotionData mockDefaultDeviceMotionData = const DeviceMotionData(
     Attitude(Quaternion(0, 1, 2, 3), 4, 5, 6),
     Gravity(0, 1, 2),
     RotationRate(0, 1, 2),
