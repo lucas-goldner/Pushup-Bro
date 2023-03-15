@@ -31,7 +31,7 @@ class PushupCubit extends Cubit<PushupState> {
 
         _audioPlayer
           ..setVolumeLevel(volume / 10.toDouble())
-          ..playSound(pushupSoundFilePath);
+          ..playSound(asset: pushupSoundFilePath);
 
         emit(
           state.copyWith(pushups: pushups, inPushup: false),

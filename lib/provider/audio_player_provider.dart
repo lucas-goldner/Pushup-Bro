@@ -6,9 +6,12 @@ class AudioPlayerProvider implements AudioPlayerInterface {
   final AudioPlayer player;
 
   @override
-  Future<void> playSound(String asset) async {
+  Future<void> playSound({
+    required String asset,
+    AssetSource? assetsource,
+  }) async {
     await player.stop();
-    await player.play(AssetSource(asset));
+    await player.play(assetsource ?? AssetSource(asset));
   }
 
   @override
