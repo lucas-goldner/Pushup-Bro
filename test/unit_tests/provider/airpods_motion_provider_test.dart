@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pushup_bro/provider/airpods_motion_provider.dart';
 
 import '../../mocks/mock_model/mock_device_motion_data.dart';
-import '../../mocks/mock_service/mock_air_pods_motion_service.dart';
+import '../../mocks/mock_provider/mock_airpods_motion_provider.dart';
 
 void main() {
   final airPodsMotionService = MockAirPodsMotionService();

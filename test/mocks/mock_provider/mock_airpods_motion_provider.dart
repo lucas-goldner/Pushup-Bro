@@ -6,14 +6,16 @@ import 'package:pushup_bro/provider/airpods_motion_provider.dart';
 
 import '../mock_model/mock_device_motion_data.dart';
 
+final deviceMotionDataStream =
+    DeviceMotionDataMocks().mockDeviceMotionDataStream;
+
 class MockAirpodsMotionProvider extends Mock implements AirPodsMotionProvider {
   @override
-  Stream<DeviceMotionData> listenForAirPodsMotionData() {
-    final deviceMotionData =
-        DeviceMotionDataMocks().mockDefaultDeviceMotionData;
-    final controller = StreamController<DeviceMotionData>(sync: true)
-      ..add(deviceMotionData);
+  Stream<DeviceMotionData> listenForAirPodsMotionData() =>
+      deviceMotionDataStream;
+}
 
-    return controller.stream;
-  }
+class MockAirPodsMotionService extends Mock implements AirPodsMotionService {
+  @override
+  Stream<DeviceMotionData> getMotionData() => deviceMotionDataStream;
 }

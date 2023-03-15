@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_airpods/models/attitude.dart';
 import 'package:flutter_airpods/models/calibrated_magnetic_field.dart';
@@ -22,6 +24,15 @@ class DeviceMotionDataMocks {
     ),
     0,
   );
+
+  Stream<DeviceMotionData> get mockDeviceMotionDataStream {
+    final deviceMotionData =
+        DeviceMotionDataMocks().mockDefaultDeviceMotionData;
+    final controller = StreamController<DeviceMotionData>(sync: true)
+      ..add(deviceMotionData);
+
+    return controller.stream;
+  }
 
   List<DeviceMotionData> get mockDeviceMotionData =>
       [mockDefaultDeviceMotionData];
