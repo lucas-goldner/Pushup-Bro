@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -25,27 +27,22 @@ import 'package:pushup_bro/utils/extensions/string_extensions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // TODO(Firebase): Enable firebase when implemented
-  // await Firebase.initializeApp();
-  // await FirebaseAppCheck.instance.activate(
-  //   webRecaptchaSiteKey: 'recaptcha-v3-site-key',
-  // );
   await initializeDateFormatting().then((_) => runApp(const Main()));
 }
 
 class Main extends StatelessWidget {
   const Main({super.key});
 
-  void setAudioContext() {
-    const audioContext = AudioContext(
+  Future<void> setAudioContext() async {
+    final audioContext = AudioContext(
       iOS: AudioContextIOS(
-        options: [
+        options: const {
           AVAudioSessionOptions.mixWithOthers,
-        ],
+        },
       ),
     );
-    AudioPlayer.global.setGlobalAudioContext(audioContext);
-    AudioPlayer.global.changeLogLevel(LogLevel.none);
+    await AudioPlayer.global.setAudioContext(audioContext);
+    AudioLogger.logLevel = AudioLogLevel.error;
   }
 
   Future<void> initializeSharedPreferences(
@@ -70,21 +67,25 @@ class Main extends StatelessWidget {
     SharedPreferencesCubit sharedPreferencesCubit,
     DBProvider dbProvider,
   ) {
-    SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp],
+    unawaited(
+      SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp],
+      ),
     );
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle.dark.copyWith(
         statusBarBrightness: Brightness.light,
       ),
     );
-    setAudioContext();
-    initializeSharedPreferences(
-      sharedPreferencesProvider,
-      sharedPreferencesCubit,
+    unawaited(setAudioContext());
+    unawaited(
+      initializeSharedPreferences(
+        sharedPreferencesProvider,
+        sharedPreferencesCubit,
+      ),
     );
-    sharedPreferencesCubit.getLanguage();
-    if (!dbProvider.initialized) dbProvider.loadDB();
+    unawaited(sharedPreferencesCubit.getLanguage());
+    if (!dbProvider.initialized) unawaited(dbProvider.loadDB());
   }
 
   @override
@@ -93,8 +94,8 @@ class Main extends StatelessWidget {
     final audioPlayer = AudioPlayer(playerId: Constants.audioPlayerId);
     final audioPlayerProvider = AudioPlayerProvider(audioPlayer);
     final airpodsMotionProvider = AirPodsMotionProvider();
-    final sharedPreferencesProvider = SharedPreferencesProvider()
-      ..loadSharedPrefs();
+    final sharedPreferencesProvider = SharedPreferencesProvider();
+    unawaited(sharedPreferencesProvider.loadSharedPrefs());
     final dbProvider = DBProvider();
 
     // Cubits

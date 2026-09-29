@@ -43,7 +43,7 @@ class OnboardingInitial extends StatelessWidget {
                 ),
               ),
             ),
-            const Spacer()
+            const Spacer(),
           ],
         ),
       ),

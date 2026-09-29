@@ -15,7 +15,7 @@ class PBAppBar extends StatefulWidget {
 }
 
 class _PBAppBarState extends State<PBAppBar> with TickerProviderStateMixin {
-  static const _menuTabInfo = [
+  static const List<MenuTabInfo> _menuTabInfo = [
     MenuTabInfo.home,
     MenuTabInfo.calendar,
     MenuTabInfo.settings,
@@ -28,7 +28,7 @@ class _PBAppBarState extends State<PBAppBar> with TickerProviderStateMixin {
   static const _staggerTime = Duration(milliseconds: 50);
   static const _buttonDelayTime = Duration(milliseconds: 150);
   static const _buttonTime = Duration(milliseconds: 500);
-  final _animationDuration = _initialDelayTime +
+  final Duration _animationDuration = _initialDelayTime +
       (_staggerTime * _menuTabInfo.length) +
       _buttonDelayTime +
       _buttonTime;

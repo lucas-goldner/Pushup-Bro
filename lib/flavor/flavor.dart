@@ -8,10 +8,8 @@ class Flavor {
     switch (env) {
       case Environment.dev:
         _config = _Configs.debugConstants;
-        break;
       case Environment.prod:
         _config = _Configs.prodConstants;
-        break;
     }
   }
 

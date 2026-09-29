@@ -28,7 +28,7 @@ class PBButton extends StatelessWidget {
                 style: PBTextStyles.buttonTextStyle,
               ),
             ),
-          )
+          ),
         ],
       ),
     );

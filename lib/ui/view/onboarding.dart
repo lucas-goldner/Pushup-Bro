@@ -26,18 +26,17 @@ class _OnboardingState extends State<Onboarding> {
     super.initState();
   }
 
-  void handlePageChange(int page) => page == 0
-      ? setState(
-          () => {currentPage = page, iconColor = CupertinoColors.black},
-        )
-      : setState(
-          () => {currentPage = page, iconColor = CupertinoColors.white},
-        );
+  void handlePageChange(int page) {
+    setState(() {
+      currentPage = page;
+      iconColor = page == 0 ? CupertinoColors.black : CupertinoColors.white;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () => Future(() => false),
+    return PopScope(
+      canPop: false,
       child: LiquidSwipe(
         slideIconWidget: Icon(
           CarbonIcons.arrow_right,
@@ -51,7 +50,7 @@ class _OnboardingState extends State<Onboarding> {
         pages: [
           OnboardingInitial(widget.pushupSet),
           const OnboardingFeatures(),
-          const OnboardingAccount()
+          const OnboardingAccount(),
         ],
       ),
     );

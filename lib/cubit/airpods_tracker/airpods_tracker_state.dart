@@ -3,16 +3,14 @@ import 'package:flutter_airpods/models/device_motion_data.dart';
 
 class AirPodsTrackerState extends Equatable {
   const AirPodsTrackerState({
-    this.currentMotionData,
-    required this.isListening,
+    required this.isListening, this.currentMotionData,
   });
 
   final DeviceMotionData? currentMotionData;
   final bool isListening;
 
   AirPodsTrackerState copyWith({
-    DeviceMotionData? currentMotionData,
-    required bool isListening,
+    required bool isListening, DeviceMotionData? currentMotionData,
   }) =>
       AirPodsTrackerState(
         currentMotionData: currentMotionData,

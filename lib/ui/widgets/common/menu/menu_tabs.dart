@@ -38,8 +38,8 @@ class _MenuState extends State<MenuTabs> with SingleTickerProviderStateMixin {
                   widget.drawerController,
                   widget.menuTabs[i],
                   widget.itemSlideIntervals[i],
-                )
-              ]
+                ),
+              ],
             ],
           ),
         ),

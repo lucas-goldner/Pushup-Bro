@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -12,6 +14,7 @@ import 'package:pushup_bro/ui/widgets/home/finished_set_bottom_sheet.dart';
 import 'package:pushup_bro/ui/widgets/home/monkey.dart';
 import 'package:pushup_bro/ui/widgets/home/pushup_counter.dart';
 import 'package:pushup_bro/ui/widgets/home/start_pushups_button.dart';
+import 'package:rive/rive.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -32,11 +35,17 @@ class _HomeState extends State<Home> {
     if (started && pushupCubit.getCurrentPushups() >= 1) {
       airpodsCubit.stopListening();
       final pushups = pushupCubit.resetAndReturnCurrentPushupSet();
-      setState(() => {finished = true, started = false});
-      openBottomSheet(pushups);
+      setState(() {
+        finished = true;
+        started = false;
+      });
+      unawaited(openBottomSheet(pushups));
     } else {
       airpodsCubit.getAirPodsMotionData();
-      setState(() => {finished = false, started = true});
+      setState(() {
+        finished = false;
+        started = true;
+      });
     }
   }
 
@@ -111,7 +120,15 @@ class _HomeState extends State<Home> {
             ),
             if (finished)
               IgnorePointer(
-                child: Assets.rive.confetti.rive(),
+                child: RiveWidgetBuilder(
+                  fileLoader: Assets.rive.confetti.riveFileLoader(),
+                  builder: (context, state) => switch (state) {
+                    RiveLoading() => const SizedBox.shrink(),
+                    RiveFailed() => const SizedBox.shrink(),
+                    RiveLoaded(:final controller) =>
+                      RiveWidget(controller: controller),
+                  },
+                ),
               ),
           ],
         ),

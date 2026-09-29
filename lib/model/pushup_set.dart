@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:pushup_bro/model/pushup.dart';
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -38,32 +40,34 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet> {
   }
 
   void closeModal() {
-    showCupertinoDialog<Widget>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: Text(S.of(context).closeWithoutSaving),
-        content: Text(S.of(context).closeExplanation),
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child: Text(
-              S.of(context).cancel,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          CupertinoDialogAction(
-            child: Text(
-              S.of(context).dontSave,
-              style: const TextStyle(
-                color: CupertinoColors.destructiveRed,
-                fontWeight: FontWeight.bold,
+    unawaited(
+      showCupertinoDialog<Widget>(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text(S.of(context).closeWithoutSaving),
+          content: Text(S.of(context).closeExplanation),
+          actions: <Widget>[
+            CupertinoDialogAction(
+              child: Text(
+                S.of(context).cancel,
               ),
+              onPressed: () => Navigator.of(context).pop(),
             ),
-            onPressed: () => {
-              Navigator.of(context).pop(),
-              Navigator.of(context).pop(),
-            },
-          ),
-        ],
+            CupertinoDialogAction(
+              child: Text(
+                S.of(context).dontSave,
+                style: const TextStyle(
+                  color: CupertinoColors.destructiveRed,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              onPressed: () => {
+                Navigator.of(context).pop(),
+                Navigator.of(context).pop(),
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -106,7 +110,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet> {
                 ),
                 const SizedBox(
                   width: 16,
-                )
+                ),
               ],
             ),
             Padding(
