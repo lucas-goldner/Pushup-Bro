@@ -12,10 +12,10 @@ import 'package:table_calendar/table_calendar.dart';
 
 class PBCalendar extends StatelessWidget {
   const PBCalendar({
-    this.language,
     required this.selectedDate,
     required this.updateSelectedDate,
     required this.getEventsPerDay,
+    this.language,
     super.key,
   });
   final String? language;

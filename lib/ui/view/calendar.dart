@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/cubit/db/db_cubit.dart';
@@ -19,7 +21,7 @@ class Calendar extends StatefulWidget {
 class _CalendarState extends State<Calendar> {
   DateTime _selectedDay = DateTime.now();
 
-  Future<String> _getLanguage(BuildContext context) async =>
+  Future<String> _getLanguage(BuildContext context) =>
       BlocProvider.of<SharedPreferencesCubit>(context).getLanguage();
 
   List<PushupSet> _getEventsForDay(
@@ -32,7 +34,7 @@ class _CalendarState extends State<Calendar> {
 
   @override
   void initState() {
-    BlocProvider.of<DBCubit>(context).getAllPushupSets();
+    unawaited(BlocProvider.of<DBCubit>(context).getAllPushupSets());
     super.initState();
   }
 
@@ -64,7 +66,7 @@ class _CalendarState extends State<Calendar> {
                       children: [
                         for (int i = 0; i <= eventsPerDay.length - 1; i++) ...{
                           CalendarEvent(eventsPerDay[i]),
-                        }
+                        },
                       ],
                     ),
                   ),

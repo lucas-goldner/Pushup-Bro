@@ -70,7 +70,7 @@ class OnboardingFeatures extends StatelessWidget {
             ),
             const SizedBox(
               height: 40,
-            )
+            ),
           ],
         ),
       ),

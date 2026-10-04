@@ -25,7 +25,7 @@ class OnboardingFeaturesItem extends StatelessWidget {
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
           ),
-        )
+        ),
       ],
     );
   }

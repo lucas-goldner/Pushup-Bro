@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,10 +15,11 @@ class OnboardingAccount extends StatefulWidget {
 }
 
 class _OnboardingAccountState extends State<OnboardingAccount> {
-  final CarouselController _carouselController = CarouselController();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
 
   void navigateToPage(int pageViewIndex) {
-    _carouselController.animateToPage(pageViewIndex);
+    unawaited(_carouselController.animateToPage(pageViewIndex));
   }
 
   void createAccount(String email, String username, String password) {}
@@ -59,7 +62,7 @@ class _OnboardingAccountState extends State<OnboardingAccount> {
               thickness: 2,
               color: CupertinoColors.white,
             ),
-          )
+          ),
         ],
       ),
     );

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/cubit/shared_preferences/shared_preferences_cubit.dart';
@@ -22,7 +24,7 @@ class _VolumeSettingState extends State<VolumeSetting> {
   @override
   void initState() {
     super.initState();
-    _getVolume();
+    unawaited(_getVolume());
   }
 
   Future<void> _getVolume() async {
@@ -94,7 +96,7 @@ class _VolumeSettingState extends State<VolumeSetting> {
                                     : _selectedVolume + 1,
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),

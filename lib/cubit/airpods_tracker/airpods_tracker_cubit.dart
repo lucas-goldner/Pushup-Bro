@@ -24,7 +24,7 @@ class AirPodsTrackerCubit extends Cubit<AirPodsTrackerState> {
 
   void stopListening() {
     if (state.isListening) {
-      subscription?.cancel();
+      unawaited(subscription?.cancel());
       emit(
         const AirPodsTrackerStateInitial(),
       );

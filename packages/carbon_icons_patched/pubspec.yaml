@@ -1,0 +1,20 @@
+name: carbon_icons
+description: >
+  Local fork of the discontinued carbon_icons package, patched to compile
+  against modern Flutter (which marks IconData as a final class).
+publish_to: "none"
+version: 0.0.2
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  fonts:
+    - family: CarbonFonts
+      fonts:
+        - asset: assets/CarbonFonts.ttf

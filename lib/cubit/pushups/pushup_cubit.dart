@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_airpods/models/device_motion_data.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/cubit/pushups/pushup_state.dart';
@@ -29,9 +31,8 @@ class PushupCubit extends Cubit<PushupState> {
         final pushupSoundFilePath =
             Assets.audio.pushupSound.replaceFirstMapped('assets/', (_) => '');
 
-        _audioPlayer
-          ..setVolumeLevel(volume / 10.toDouble())
-          ..playSound(pushupSoundFilePath);
+        unawaited(_audioPlayer.setVolumeLevel(volume / 10.toDouble()));
+        unawaited(_audioPlayer.playSound(pushupSoundFilePath));
 
         emit(
           state.copyWith(pushups: pushups, inPushup: false),

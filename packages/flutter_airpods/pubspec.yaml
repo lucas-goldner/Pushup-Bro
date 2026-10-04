@@ -1,0 +1,27 @@
+name: flutter_airpods
+description: >
+  Local fork of flutter_airpods with Swift Package Manager support so the
+  plugin no longer forces a CocoaPods fallback in the host app.
+publish_to: "none"
+version: 1.0.6
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  equatable: ^2.0.5
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      ios:
+        pluginClass: FlutterAirpodsPlugin
+        sharedDarwinSource: false

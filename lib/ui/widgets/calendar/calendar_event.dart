@@ -73,7 +73,7 @@ class CalendarEvent extends StatelessWidget {
                 CalendarStatItem(
                   '${pushupSet.pushups.length}/${pushupSet.timeSpent}',
                   CarbonIcons.chart_average,
-                )
+                ),
               ],
             ),
           ],

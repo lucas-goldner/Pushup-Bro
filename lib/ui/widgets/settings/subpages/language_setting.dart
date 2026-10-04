@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +27,7 @@ class _LanguageSettingState extends State<LanguageSetting> {
   @override
   void initState() {
     super.initState();
-    _getLanguage();
+    unawaited(_getLanguage());
   }
 
   Future<void> _getLanguage() async {
@@ -85,14 +87,14 @@ class _LanguageSettingState extends State<LanguageSetting> {
                                   const Icon(CarbonIcons.checkmark),
                                 const SizedBox(
                                   width: 16,
-                                )
+                                ),
                               ],
                             ),
                           ),
                           const Divider(
                             height: 2,
-                          )
-                        }
+                          ),
+                        },
                       ],
                     ),
                     const Spacer(),

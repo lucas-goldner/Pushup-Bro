@@ -4,9 +4,7 @@ import 'package:pushup_bro/ui/styles/pb_text_styles.dart';
 
 class FinishedSetStatsItem extends StatelessWidget {
   const FinishedSetStatsItem({
-    super.key,
-    required this.icon,
-    required this.text,
+    required this.icon, required this.text, super.key,
   });
   final IconData icon;
   final String text;
@@ -37,7 +35,7 @@ class FinishedSetStatsItem extends StatelessWidget {
               text,
               style: PBTextStyles.defaultTextStyle,
               textAlign: TextAlign.start,
-            )
+            ),
           ],
         ),
       ),

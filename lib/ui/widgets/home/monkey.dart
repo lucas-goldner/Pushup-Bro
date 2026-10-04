@@ -13,23 +13,29 @@ class Monkey extends StatefulWidget {
 }
 
 class _MonkeyState extends State<Monkey> {
-  SMIBool? _bump;
+  BooleanInput? _bump;
   double height = 250;
   double width = 250;
 
-  void _onInit(Artboard art) {
-    final ctrl = StateMachineController.fromArtboard(art, 'PushupState')
-      ?..isActive = true;
+  RiveWidgetController _createController(File file) {
+    final controller = RiveWidgetController(
+      file,
+      stateMachineSelector: const StateMachineNamed('PushupState'),
+    );
+    // Rive 0.14 marks state machine inputs deprecated in favor of data
+    // binding; migrating the artboards to view models is out of scope here.
+    // ignore: deprecated_member_use
+    _bump = controller.stateMachine.boolean('pushup');
 
-    if (ctrl != null) {
-      art.addController(ctrl);
-      final pushupTrigger = ctrl.findInput<bool>('pushup') as SMIBool?;
-      _bump = pushupTrigger;
-    }
+    return controller;
   }
 
-  // ignore: use_setters_to_change_properties
-  void _triggerPushupAnim(bool anim) => _bump?.value = anim;
+  void _triggerPushupAnim(bool anim) {
+    final bump = _bump;
+    if (bump != null) {
+      bump.value = anim;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +49,15 @@ class _MonkeyState extends State<Monkey> {
           child: SizedBox(
             height: height,
             width: width,
-            child: Assets.rive.monkeyPushup.rive(
-              fit: BoxFit.contain,
-              onInit: _onInit,
+            child: RiveWidgetBuilder(
+              fileLoader: Assets.rive.monkeyPushup.riveFileLoader(),
+              controller: _createController,
+              builder: (context, state) => switch (state) {
+                RiveLoading() => const SizedBox.shrink(),
+                RiveFailed() => const SizedBox.shrink(),
+                RiveLoaded(:final controller) =>
+                  RiveWidget(controller: controller),
+              },
             ),
           ),
         );

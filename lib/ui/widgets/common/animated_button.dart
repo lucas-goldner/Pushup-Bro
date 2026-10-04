@@ -6,8 +6,7 @@ import 'package:rive/rive.dart';
 
 class AnimatedButton extends StatefulWidget {
   const AnimatedButton({
-    super.key,
-    required this.text,
+    required this.text, super.key,
     this.icon,
     this.callback,
   });
@@ -22,7 +21,7 @@ class AnimatedButton extends StatefulWidget {
 class _AnimatedButtonState extends State<AnimatedButton>
     with SingleTickerProviderStateMixin {
   AnimationController? _controller;
-  OneShotAnimation? _btnController;
+  TriggerInput? _activeTrigger;
 
   @override
   void initState() {
@@ -31,31 +30,30 @@ class _AnimatedButtonState extends State<AnimatedButton>
       duration: const Duration(milliseconds: 350),
       vsync: this,
     );
-
-    _btnController = OneShotAnimation('active', autoplay: false);
-
-    const springDesc = SpringDescription(
-      mass: 0.1,
-      stiffness: 40,
-      damping: 5,
-    );
-
-    if (_btnController == null) return;
-    final isButtonControllerActive = _btnController?.isActive ?? false;
-
-    _btnController?.isActiveChanged.addListener(() {
-      if (!isButtonControllerActive) {
-        final springAnim = SpringSimulation(springDesc, 0, 1, 0);
-        _controller?.animateWith(springAnim);
-      }
-    });
   }
 
   @override
   void dispose() {
     _controller?.dispose();
-    _btnController?.dispose();
     super.dispose();
+  }
+
+  RiveWidgetController _createController(File file) {
+    final controller = RiveWidgetController(file);
+    // Rive 0.14 marks state machine inputs deprecated in favor of data
+    // binding; migrating the artboards to view models is out of scope here.
+    // ignore: deprecated_member_use
+    _activeTrigger = controller.stateMachine.trigger('active');
+
+    return controller;
+  }
+
+  void _onTap() {
+    _activeTrigger?.fire();
+    const springDesc = SpringDescription(mass: 0.1, stiffness: 40, damping: 5);
+    final springAnim = SpringSimulation(springDesc, 0, 1, 0);
+    _controller?.animateWith(springAnim);
+    widget.callback?.call();
   }
 
   @override
@@ -67,25 +65,25 @@ class _AnimatedButtonState extends State<AnimatedButton>
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 10),
           ),
         ],
       ),
       child: GestureDetector(
-        onTap: () {
-          _btnController?.isActive = true;
-          widget.callback?.call();
-        },
+        onTap: _onTap,
         child: Stack(
           children: [
-            Assets.rive.button.rive(
-              fit: BoxFit.cover,
-              controllers: <OneShotAnimation>[
-                if (_btnController != null)
-                  _btnController ?? OneShotAnimation(''),
-              ],
+            RiveWidgetBuilder(
+              fileLoader: Assets.rive.button.riveFileLoader(),
+              controller: _createController,
+              builder: (context, state) => switch (state) {
+                RiveLoading() => const SizedBox.shrink(),
+                RiveFailed() => const SizedBox.shrink(),
+                RiveLoaded(:final controller) =>
+                  RiveWidget(controller: controller, fit: Fit.cover),
+              },
             ),
             Center(
               child: Transform.translate(
@@ -98,10 +96,7 @@ class _AnimatedButtonState extends State<AnimatedButton>
                       child: Icon(widget.icon),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      widget.text,
-                      style: PBTextStyles.buttonTextStyle,
-                    ),
+                    Text(widget.text, style: PBTextStyles.buttonTextStyle),
                     const SizedBox(width: 20),
                   ],
                 ),
