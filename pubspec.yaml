@@ -18,15 +18,15 @@ dependencies:
   equatable: ^2.0.5
   flutter:
     sdk: flutter
-  flutter_airpods: ^1.0.3
+  flutter_airpods:
+    path: packages/flutter_airpods
   flutter_bloc: ^9.1.1
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
   intl_utils: ^2.8.1
-  isar_community: ^3.3.2
-  isar_community_flutter_libs: ^3.3.2
   liquid_swipe: ^3.0.0
+  mmkv: ^2.4.2
   modal_bottom_sheet: ^3.0.0-pre
   path_provider: ^2.0.12
   rive: ^0.14.11
@@ -39,7 +39,6 @@ dev_dependencies:
   flutter_gen_runner: ^5.1.0+1
   flutter_test:
     sdk: flutter
-  isar_community_generator: ^3.3.2
   very_good_analysis: ^11.0.0
 
 flutter:

@@ -328,11 +328,10 @@ packages:
   flutter_airpods:
     dependency: "direct main"
     description:
-      name: flutter_airpods
-      sha256: e5640157753aee95ae33259587ef5b636384fa402b2fe39b50708ac29dfd232a
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.5"
+      path: "packages/flutter_airpods"
+      relative: true
+    source: path
+    version: "1.0.6"
   flutter_bloc:
     dependency: "direct main"
     description:
@@ -468,30 +467,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
-  isar_community:
-    dependency: "direct main"
-    description:
-      name: isar_community
-      sha256: "683fd093956eac3a660776afb70d65d50a3391b3587b40b89e3d12586b8cc47f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.3.2"
-  isar_community_flutter_libs:
-    dependency: "direct main"
-    description:
-      name: isar_community_flutter_libs
-      sha256: c44340fa38c81ef16d924202d443bbe799cde4826be9a31a9dc92ee612e1966f
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.3.2"
-  isar_community_generator:
-    dependency: "direct dev"
-    description:
-      name: isar_community_generator
-      sha256: fd5a2a5df2aac2fccba82425005bf47fd2a48f34190536d0c9fd732dc7303fb3
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.3.2"
   jni:
     dependency: transitive
     description:
@@ -516,14 +491,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-  js:
-    dependency: transitive
-    description:
-      name: js
-      sha256: "53385261521cc4a0c4658fd0ad07a7d14591cf8fc33abbceae306ddb974888dc"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.2"
   json_annotation:
     dependency: transitive
     description:
@@ -604,6 +571,62 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  mmkv:
+    dependency: "direct main"
+    description:
+      name: mmkv
+      sha256: "35ac6a8a82c478ad27da0a80f1a13b4294a43d44190e07cd90cfae5701da8cce"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.2"
+  mmkv_android:
+    dependency: transitive
+    description:
+      name: mmkv_android
+      sha256: "57a834577adc2dcb9fb7f5b4336dc2320c0cdbe85c54f6a979f29a9b3ca61a27"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.2"
+  mmkv_ios:
+    dependency: transitive
+    description:
+      name: mmkv_ios
+      sha256: "0d5aa7c3fd181b31a13297ab90dc6daab97324c7fc1c0c2897490c05649da12b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.2"
+  mmkv_linux:
+    dependency: transitive
+    description:
+      name: mmkv_linux
+      sha256: b8dd1e6d36aa96d8bfb88bf68ebe16c420a37f3f6b2dc5223f81c151e4b27bd1
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.2"
+  mmkv_ohos:
+    dependency: transitive
+    description:
+      name: mmkv_ohos
+      sha256: b9b561776ff38e029ead03dda0af716d02b3b6cd698f8de8c599cbe3c9b571cb
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.2"
+  mmkv_platform_interface:
+    dependency: transitive
+    description:
+      name: mmkv_platform_interface
+      sha256: bef7422b14f84297fe637adc82b9fe018155a429fcbaef53efb06ecf005b0288
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.0"
+  mmkv_win32:
+    dependency: transitive
+    description:
+      name: mmkv_win32
+      sha256: "544f708d6e8821eb4ba10c07a23a049d7d6155eb81f89edfedbda1b0f4647447"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.2"
   modal_bottom_sheet:
     dependency: "direct main"
     description:
@@ -873,14 +896,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  source_gen:
-    dependency: transitive
-    description:
-      name: source_gen
-      sha256: a603f1fb984a7391ae5978d1b92bfaaa08b350dca5c825256f925818f7943bf5
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.2.4"
   source_span:
     dependency: transitive
     description:
@@ -1129,14 +1144,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
-  xxh3:
-    dependency: transitive
-    description:
-      name: xxh3
-      sha256: "399a0438f5d426785723c99da6b16e136f4953fb1e9db0bf270bd41dd4619916"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.0"
   yaml:
     dependency: transitive
     description:

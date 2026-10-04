@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:isar_community/isar.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:pushup_bro/model/pushup.dart';
 
-part 'pushup_set.g.dart';
-
-@collection
 class PushupSet {
-  PushupSet(this.pushups, this.effort);
-  final Id id = Isar.autoIncrement;
+  PushupSet(this.pushups, this.effort, {int? id})
+      : id = id ?? DateTime.now().microsecondsSinceEpoch;
+
+  factory PushupSet.fromJson(Map<String, dynamic> json) => PushupSet(
+        (json['pushups'] as List<dynamic>)
+            .map((e) => Pushup.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        json['effort'] as int,
+        id: json['id'] as int,
+      );
+
+  final int id;
   final List<Pushup> pushups;
   final int effort;
 
@@ -45,6 +51,13 @@ class PushupSet {
     return PushupSet(
       pushups ?? this.pushups,
       effort ?? this.effort,
+      id: id,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'pushups': pushups.map((p) => p.toJson()).toList(),
+        'effort': effort,
+      };
 }
