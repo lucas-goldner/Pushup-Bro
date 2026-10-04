@@ -77,6 +77,11 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet> {
     final localized = S.of(context);
 
     return Material(
+      // The app runs a `CupertinoApp` with `brightness: Brightness.dark`, so
+      // `Theme.of` now derives a dark Material theme from it. Pin the surface
+      // and the foreground together so they can never drift apart again.
+      color: PBColors.background,
+      textStyle: PBTextStyles.defaultTextStyle,
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
