@@ -1,0 +1,48 @@
+workflows:
+  ios-testflight:
+    name: iOS TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: master
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.lucas-goldner.pushup-bro
+    scripts:
+      - name: Enable Dart data assets
+        script: |
+          flutter config --enable-dart-data-assets
+
+      - name: Install dependencies
+        script: |
+          flutter pub get
+
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles
+
+      - name: Build iOS app
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+    integrations:
+      app_store_connect: Lucas Goldner AppStore
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        expire_build_submitted_for_review: true
+      scripts:
+        - name: Discord notification
+          script: |
+            curl -H "Content-Type: application/json" \
+              -X POST \
+              -d "{\"content\": \"**Pushup Bro iOS Build #$BUILD_NUMBER** finished with status: **$FCI_BUILD_STEP_STATUS**\nBranch: $FCI_BRANCH\nCommit: $FCI_COMMIT\"}" \
+              "https://discord.com/api/webhooks/1397248031488741376/kIiNDbHFpZYx6wAcZDZW3ULoNuVfrweB4TS_xF55rYSqf6f-TgSg3tyb14l8hdj1jllS"
