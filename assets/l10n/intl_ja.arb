@@ -70,7 +70,7 @@
   "mediumEffort": "普通",
   "hardEffort": "難しい",
   "superHardEffort": "超難しい",
-  "switchLanguage": "言語洗濯",
+  "switchLanguage": "言語選択",
   "goBack": "戻る",
   "setOfXOPushups": "{xPushupsOfSet}回のセット",
   "@setOfXOPushups": {
@@ -97,7 +97,7 @@
     }
   },
   "closeWithoutSaving": "保存せずに閉じますか？",
-  "closeExplanation": "今終了すると、設定は保存されません",
+  "closeExplanation": "今終了すると、セットは保存されません",
   "cancel": "キャンセル",
   "dontSave": "保存しない"
 }
