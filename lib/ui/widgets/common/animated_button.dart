@@ -2,11 +2,70 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 import 'package:pushup_bro/ui/styles/pb_text_styles.dart';
-import 'package:rive/rive.dart';
+import 'package:rive/rive.dart' as rive;
+
+/// Holds the button on its `idle` pose and replays `active` on every tap.
+///
+/// `button.riv` ships two linear animations (`idle`, `active`) and no state
+/// machine, so it cannot be driven by a `RiveWidgetController` — that one
+/// throws `RiveStateMachineException` when the artboard has no default state
+/// machine. The artboard also draws nothing on its own: the button's resting
+/// look lives in `idle`, so that animation has to stay applied.
+base class _ButtonPainter extends rive.BasicArtboardPainter {
+  _ButtonPainter() : super(fit: rive.Fit.cover);
+
+  rive.Animation? _idleAnimation;
+  rive.Animation? _activeAnimation;
+  bool _playingActive = false;
+
+  @override
+  void artboardChanged(rive.Artboard artboard) {
+    super.artboardChanged(artboard);
+    _idleAnimation = artboard.animationNamed('idle');
+    _activeAnimation = artboard.animationNamed('active');
+    notifyListeners();
+  }
+
+  /// Replays the press animation from its first frame.
+  void replayActive() {
+    final animation = _activeAnimation;
+    if (animation == null) return;
+
+    animation.time = 0;
+    _playingActive = true;
+    notifyListeners();
+  }
+
+  @override
+  bool advance(double elapsedSeconds) {
+    final active = _activeAnimation;
+    if (_playingActive && active != null) {
+      _playingActive = active.advanceAndApply(elapsedSeconds);
+
+      // Keep ticking one more frame so the idle pose below is reapplied.
+      return true;
+    }
+
+    final idle = _idleAnimation;
+    if (idle == null) return super.advance(elapsedSeconds);
+
+    return idle.advanceAndApply(elapsedSeconds);
+  }
+
+  @override
+  void dispose() {
+    _idleAnimation?.dispose();
+    _idleAnimation = null;
+    _activeAnimation?.dispose();
+    _activeAnimation = null;
+    super.dispose();
+  }
+}
 
 class AnimatedButton extends StatefulWidget {
   const AnimatedButton({
-    required this.text, super.key,
+    required this.text,
+    super.key,
     this.icon,
     this.callback,
   });
@@ -21,7 +80,9 @@ class AnimatedButton extends StatefulWidget {
 class _AnimatedButtonState extends State<AnimatedButton>
     with SingleTickerProviderStateMixin {
   AnimationController? _controller;
-  TriggerInput? _activeTrigger;
+  final _painter = _ButtonPainter();
+  late final rive.FileLoader _fileLoader;
+  late final Future<rive.File> _riveFile;
 
   @override
   void initState() {
@@ -30,26 +91,20 @@ class _AnimatedButtonState extends State<AnimatedButton>
       duration: const Duration(milliseconds: 350),
       vsync: this,
     );
+    _fileLoader = Assets.rive.button.riveFileLoader();
+    _riveFile = _fileLoader.file();
   }
 
   @override
   void dispose() {
     _controller?.dispose();
+    _painter.dispose();
+    _fileLoader.dispose();
     super.dispose();
   }
 
-  RiveWidgetController _createController(File file) {
-    final controller = RiveWidgetController(file);
-    // Rive 0.14 marks state machine inputs deprecated in favor of data
-    // binding; migrating the artboards to view models is out of scope here.
-    // ignore: deprecated_member_use
-    _activeTrigger = controller.stateMachine.trigger('active');
-
-    return controller;
-  }
-
   void _onTap() {
-    _activeTrigger?.fire();
+    _painter.replayActive();
     const springDesc = SpringDescription(mass: 0.1, stiffness: 40, damping: 5);
     final springAnim = SpringSimulation(springDesc, 0, 1, 0);
     _controller?.animateWith(springAnim);
@@ -75,14 +130,13 @@ class _AnimatedButtonState extends State<AnimatedButton>
         onTap: _onTap,
         child: Stack(
           children: [
-            RiveWidgetBuilder(
-              fileLoader: Assets.rive.button.riveFileLoader(),
-              controller: _createController,
-              builder: (context, state) => switch (state) {
-                RiveLoading() => const SizedBox.shrink(),
-                RiveFailed() => const SizedBox.shrink(),
-                RiveLoaded(:final controller) =>
-                  RiveWidget(controller: controller, fit: Fit.cover),
+            FutureBuilder<rive.File>(
+              future: _riveFile,
+              builder: (context, snapshot) {
+                final file = snapshot.data;
+                if (file == null) return const SizedBox.shrink();
+
+                return rive.RiveFileWidget(file: file, painter: _painter);
               },
             ),
             Center(
