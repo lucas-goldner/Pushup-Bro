@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:intl/intl.dart';
 import 'package:pushup_bro/ui/styles/pb_colors.dart';
 import 'package:pushup_bro/ui/styles/pb_text_styles.dart';
 
@@ -23,9 +22,15 @@ class PBCalendarSelectedMarker extends StatelessWidget {
           ),
         ),
         child: Center(
+          // The day number is intentionally not locale-formatted: CLDR appends
+          // a suffix for some locales (e.g. `30日` for `ja`) which wraps the
+          // cell onto two lines.
           child: Text(
-            DateFormat.d().format(day),
+            '${day.day}',
             style: PBTextStyles.defaultTextStyle,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.visible,
           ),
         ),
       ),
