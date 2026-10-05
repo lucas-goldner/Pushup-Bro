@@ -19,6 +19,14 @@ workflows:
         script: |
           flutter pub get
 
+      - name: Run code generation
+        script: |
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          dart pub global activate flutter_gen
+          fluttergen
+          dart run intl_utils:generate
+          dart run build_runner build
+
       - name: Set up code signing
         script: |
           xcode-project use-profiles
