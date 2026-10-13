@@ -1,1 +1,8 @@
 #include "Generated.xcconfig"
+
+// rive_native links as a static library and its Dart FFI bindings resolve
+// every entry point with dlsym via DynamicLibrary.process(). Archiving sets
+// DEPLOYMENT_POSTPROCESSING=YES, and the default STRIP_STYLE=all wipes those
+// global symbols from the executable, so every .riv load fails at runtime
+// (the widgets fall back to an empty box). Keep global symbols.
+STRIP_STYLE = non-global
