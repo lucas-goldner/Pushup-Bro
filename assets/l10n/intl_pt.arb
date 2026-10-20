@@ -159,5 +159,11 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pushupsLabel": "flexões",
+  "readyCaption": "Carlos já aqueceu e está pronto quando você estiver",
+  "islandShop": "Loja",
+  "islandAccessories": "Acessórios",
+  "islandCarlos": "Carlos",
+  "islandJungle": "Selva"
 }

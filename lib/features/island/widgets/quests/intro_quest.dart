@@ -1,6 +1,7 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/widgets/pb_button.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
@@ -101,7 +102,7 @@ to buy buildings and decorations.
                   child: const Icon(
                     CarbonIcons.arrow_right,
                     size: 32,
-                    color: Colors.white,
+                    color: primaryColor,
                   ),
                 )
               else

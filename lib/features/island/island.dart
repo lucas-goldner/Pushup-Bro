@@ -2,20 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/features/island/model/game_menu_type.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
-import 'package:pushup_bro/features/island/widgets/beach_overlay.dart';
 import 'package:pushup_bro/features/island/widgets/game_menu.dart';
-import 'package:pushup_bro/features/island/widgets/game_objects.dart';
-import 'package:pushup_bro/features/island/widgets/grass_overlay.dart';
-import 'package:pushup_bro/features/island/widgets/ground.dart';
+import 'package:pushup_bro/features/island/widgets/island_dock.dart';
+import 'package:pushup_bro/features/island/widgets/island_scene.dart';
 import 'package:pushup_bro/features/island/widgets/island_top_bar.dart';
 import 'package:pushup_bro/features/island/widgets/quest_dialog.dart';
-import 'package:pushup_bro/features/island/widgets/walking_monkey.dart';
 
 class Island extends StatefulWidget {
   const Island({super.key});
@@ -89,34 +85,60 @@ class _IslandState extends State<Island> {
     }
   }
 
+  bool get _hudVisible =>
+      !_firstTimeVisiting &&
+      !_menuVisible &&
+      !_isNewDayVisible &&
+      !_questVisible;
+
   @override
   Widget build(BuildContext context) => Stack(
         children: [
-          const Ground(),
-          GrassOverlay(openQuest),
-          const BeachOverlay(),
-          WalkingMonkey(
-            onMenuOpen: openMenu,
+          const Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF9CD6F2), islandHorizon],
+                  stops: [0, 0.55],
+                ),
+              ),
+            ),
           ),
-          GameObjects(
-            onMenuOpen: openMenu,
-          ),
+          const Positioned.fill(child: IslandScene()),
+          if (_hudVisible) ...[
+            IslandTopBar(openQuest: openQuest),
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: IslandDock(
+                    onShop: () => openMenu(GameMenuType.shop),
+                    onAccessories: () => openMenu(GameMenuType.accessories),
+                    onCarlos: () => openMenu(GameMenuType.monkey),
+                    onJungle: () => openQuest(
+                      gameMenuType: GameMenuType.quest,
+                      questType: QuestType.jungleQuest,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
           GameMenu(
             closeMenu: closeMenu,
-            menuVisible: _menuVisible,
+            menuVisible: _menuVisible && !_firstTimeVisiting,
             menuType: _gameMenuType,
           ),
-          if (!_firstTimeVisiting && !_menuVisible && !_isNewDayVisible)
-            IslandTopBar(
-              openQuest: openQuest,
-            ),
           if (_questVisible)
             QuestDialog(
               questVisible: _questVisible,
               onClose: closeQuest,
               questType: _quest,
             ),
-          if (_isNewDayVisible)
+          if (_isNewDayVisible && !_firstTimeVisiting)
             QuestDialog(
               questVisible: _isNewDayVisible,
               onClose: closeDailyLogin,

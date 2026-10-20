@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
-import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_colors.dart';
+import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 class BananaCounter extends StatelessWidget {
@@ -12,25 +13,32 @@ class BananaCounter extends StatelessWidget {
   Widget build(BuildContext context) =>
       BlocSelector<GameInventoryCubit, GameInventoryState, int>(
         selector: (state) => state.inventory.bananas,
-        builder: (context, count) => DecoratedBox(
+        builder: (context, count) => Container(
+          height: 40,
+          padding: const EdgeInsets.only(left: 8, right: 14),
           decoration: BoxDecoration(
-            color: context.colorScheme.surface,
-            borderRadius: const BorderRadius.all(
-              Radius.circular(12),
-            ),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: background2.withValues(alpha: 0.1),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(width: 8),
+              Assets.images.island.banana.image(width: 28),
+              const SizedBox(width: 6),
               Text(
-                '$count x',
-                style: context.textTheme.labelLarge?.copyWith(
-                  color: context.colorScheme.primary,
+                '$count',
+                style: buttonTextStyle.copyWith(
+                  color: primaryColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
                 ),
-              ),
-              const SizedBox(width: 8),
-              Assets.images.island.banana.image(
-                width: 48,
               ),
             ],
           ),
