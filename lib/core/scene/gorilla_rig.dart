@@ -5,69 +5,76 @@ import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
-const _fur = Color(0xFF302F36);
-const _skin = Color(0xFFA9A7BD);
-const _eyeWhite = Color(0xFFFAFAFF);
-const _pupil = Color(0xFF15141A);
+const _fur = Color(0xFF3B3A45);
+const _face = Color(0xFFC9C4DD);
+const _eye = Color(0xFF15141B);
+const _sparkle = Color(0xFFFFFFFF);
+const _blush = Color(0xFFF4A3B4);
 const _hatPink = Color(0xFFF0707E);
 const _hatWhite = Color(0xFFF4F1EA);
 const _hatPompom = Color(0xFFF5C343);
 
-// Bone lengths, in the rig's local units (the gorilla is ~1.6 long).
-const _torsoLength = 0.72;
-const _upperArm = 0.44;
-const _forearm = 0.42;
-const _thigh = 0.32;
-const _shin = 0.31;
-const _shoulderWidth = 0.30;
-const _hipWidth = 0.20;
+// Chibi proportions: a big head on a small round body with stubby limbs.
+// The baby stands about one unit tall.
+const _headRadius = 0.36;
+const _torsoLength = 0.26;
+const _upperArm = 0.16;
+const _forearm = 0.15;
+const _thigh = 0.16;
+const _shin = 0.16;
+const _shoulderWidth = 0.22;
+const _hipWidth = 0.12;
 
 /// What the gorilla is doing; poses blend smoothly between these.
 enum GorillaActivity { idle, pushups, walking }
 
-/// A stylized gorilla assembled from primitives and posed procedurally.
+/// A cute baby gorilla assembled from primitives and posed procedurally.
 ///
 /// Local space: +Z is where the gorilla faces, +Y is up, the ground is y = 0.
 /// Add [root] to a scene, then call [update] every frame.
 class GorillaRig {
   GorillaRig() {
-    final fur = matte(_fur);
-    final skin = matte(_skin, roughness: 0.7);
+    final fur = matte(_fur, roughness: 0.75);
+    final face = matte(_face, roughness: 0.6);
 
-    _hips = meshNode(SphereGeometry(radius: 0.30), fur);
-    _torso = meshNode(CapsuleGeometry(radius: 0.31, height: _torsoLength), fur);
-    _chest = meshNode(SphereGeometry(radius: 0.40), fur);
-    _belly = meshNode(SphereGeometry(radius: 0.24), skin);
+    _torso = meshNode(
+      reshaped(SphereGeometry(radius: 0.27), vm.Vector3(1, 1.15, 0.92)),
+      fur,
+    )..add(
+        // Light belly patch on the torso's front (its local +Z).
+        meshNode(
+          reshaped(SphereGeometry(radius: 0.19), vm.Vector3(0.95, 1.05, 0.5)),
+          face,
+          position: vm.Vector3(0, -0.02, 0.18),
+        ),
+      );
 
     for (final _ in [0, 1]) {
       _upperArms.add(
-        meshNode(CapsuleGeometry(radius: 0.13, height: _upperArm), fur),
+        meshNode(CapsuleGeometry(radius: 0.075, height: _upperArm), fur),
       );
       _forearms.add(
-        meshNode(CapsuleGeometry(radius: 0.12, height: _forearm), fur),
+        meshNode(CapsuleGeometry(radius: 0.075, height: _forearm), fur),
       );
-      _hands.add(meshNode(SphereGeometry(radius: 0.125), skin));
-      _thighs.add(meshNode(CapsuleGeometry(radius: 0.14, height: _thigh), fur));
-      _shins.add(meshNode(CapsuleGeometry(radius: 0.12, height: _shin), fur));
+      _hands.add(meshNode(SphereGeometry(radius: 0.085), face));
+      _thighs.add(
+        meshNode(CapsuleGeometry(radius: 0.085, height: _thigh), fur),
+      );
+      _shins.add(meshNode(CapsuleGeometry(radius: 0.085, height: _shin), fur));
       _feet.add(
         meshNode(
-          reshaped(SphereGeometry(radius: 0.12), vm.Vector3(1, 0.75, 1.35)),
-          skin,
+          reshaped(SphereGeometry(radius: 0.09), vm.Vector3(1, 0.7, 1.35)),
+          face,
         ),
       );
     }
 
-    _head = Node(name: 'head')
-      ..scale = vm.Vector3.all(1.25)
-      ..addAll(_buildHead(fur, skin));
+    _head = Node(name: 'head')..addAll(_buildHead(fur, face));
     _hat = _buildPartyHat()..visible = false;
     _head.add(_hat);
 
     root
-      ..add(_hips)
       ..add(_torso)
-      ..add(_chest)
-      ..add(_belly)
       ..add(_head)
       ..addAll(_upperArms)
       ..addAll(_forearms)
@@ -92,10 +99,7 @@ class GorillaRig {
   bool get partyHat => _hat.visible;
   set partyHat(bool value) => _hat.visible = value;
 
-  late final Node _hips;
   late final Node _torso;
-  late final Node _chest;
-  late final Node _belly;
   late final Node _head;
   late final Node _hat;
   late final List<Node> _eyesOpen;
@@ -116,73 +120,113 @@ class GorillaRig {
     GorillaActivity.walking: 0,
   };
 
-  List<Node> _buildHead(Material fur, Material skin) {
-    final eyeWhite = matte(_eyeWhite, roughness: 0.25);
-    final pupil = matte(_pupil, roughness: 0.2);
+  List<Node> _buildHead(Material fur, Material face) {
+    final eye = matte(_eye, roughness: 0.08);
+    final sparkle = UnlitMaterial()..baseColorFactor = linearColor(_sparkle);
+    final dark = matte(_eye, roughness: 0.4);
 
     _eyesOpen = [
       for (final side in [-1.0, 1.0]) ...[
         meshNode(
-          SphereGeometry(radius: 0.058, segments: 20, rings: 12),
-          eyeWhite,
-          position: vm.Vector3(0.085 * side, 0.05, 0.255),
+          SphereGeometry(radius: 0.058, segments: 24),
+          eye,
+          position: vm.Vector3(0.088 * side, 0.045, 0.372),
         ),
         meshNode(
-          SphereGeometry(radius: 0.03, segments: 16, rings: 10),
-          pupil,
-          position: vm.Vector3(0.088 * side, 0.052, 0.305),
+          SphereGeometry(radius: 0.019, segments: 12, rings: 8),
+          sparkle,
+          position: vm.Vector3(0.088 * side + 0.02, 0.07, 0.42),
         ),
       ],
     ];
+    // Happy "^ ^" arcs shown while blinking.
     _eyesClosed = [
       for (final side in [-1.0, 1.0])
         meshNode(
-          CapsuleGeometry(radius: 0.012, height: 0.08, radialSegments: 8),
-          pupil,
-          position: vm.Vector3(0.085 * side, 0.045, 0.300),
-          rotation: vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), math.pi / 2),
+          TubeGeometry(
+            CatmullRomPath([
+              vm.Vector3(0.088 * side - 0.045, 0.03, 0.4),
+              vm.Vector3(0.088 * side, 0.06, 0.41),
+              vm.Vector3(0.088 * side + 0.045, 0.03, 0.4),
+            ]),
+            radius: 0.011,
+            radialSegments: 8,
+            stations: 12,
+          ),
+          dark,
         )..visible = false,
     ];
 
     return [
-      meshNode(SphereGeometry(radius: 0.30), fur),
-      // Face mask and muzzle.
       meshNode(
-        reshaped(SphereGeometry(radius: 0.2), vm.Vector3(1.05, 0.95, 0.75)),
-        skin,
-        position: vm.Vector3(0, -0.01, 0.15),
+        SphereGeometry(radius: _headRadius, segments: 40, rings: 24),
+        fur,
+      ),
+      // A heart-shaped face: two brow lobes over a wide muzzle.
+      for (final side in [-1.0, 1.0])
+        meshNode(
+          SphereGeometry(radius: 0.15),
+          face,
+          position: vm.Vector3(0.085 * side, 0.035, 0.25),
+        ),
+      meshNode(
+        reshaped(SphereGeometry(radius: 0.16), vm.Vector3(1.25, 0.85, 0.9)),
+        face,
+        position: vm.Vector3(0, -0.11, 0.25),
+      ),
+      // Button nose and a little smile.
+      meshNode(
+        reshaped(SphereGeometry(radius: 0.04), vm.Vector3(1.4, 0.8, 0.8)),
+        dark,
+        position: vm.Vector3(0, -0.06, 0.385),
       ),
       meshNode(
-        reshaped(SphereGeometry(radius: 0.14), vm.Vector3(1.15, 0.8, 0.9)),
-        skin,
-        position: vm.Vector3(0, -0.11, 0.21),
+        TubeGeometry(
+          CatmullRomPath([
+            vm.Vector3(-0.045, -0.135, 0.378),
+            vm.Vector3(0, -0.158, 0.388),
+            vm.Vector3(0.045, -0.135, 0.378),
+          ]),
+          radius: 0.009,
+          radialSegments: 8,
+          stations: 12,
+        ),
+        dark,
       ),
       for (final side in [-1.0, 1.0])
         meshNode(
-          SphereGeometry(radius: 0.018, segments: 12, rings: 8),
-          matte(_pupil),
-          position: vm.Vector3(0.035 * side, -0.085, 0.335),
+          reshaped(SphereGeometry(radius: 0.05), vm.Vector3(1.3, 0.75, 0.5)),
+          matte(_blush, roughness: 0.7),
+          position: vm.Vector3(0.175 * side, -0.07, 0.31),
+          rotation: vm.Quaternion.fromTwoVectors(
+            vm.Vector3(0, 0, 1),
+            vm.Vector3(0.5 * side, 0, 1),
+          ),
         ),
-      // Brow ridge.
-      meshNode(
-        CapsuleGeometry(radius: 0.045, height: 0.2),
-        fur,
-        position: vm.Vector3(0, 0.12, 0.215),
-        rotation: vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), math.pi / 2),
-      ),
-      // Tuft on top of the head.
-      meshNode(
-        CylinderGeometry(bottomRadius: 0.13, topRadius: 0, height: 0.22),
-        fur,
-        position: vm.Vector3(0, 0.3, -0.02),
-        rotation: vm.Quaternion.axisAngle(vm.Vector3(1, 0, 0), 0.35),
-      ),
-      for (final side in [-1.0, 1.0])
+      // Round ears with light insides.
+      for (final side in [-1.0, 1.0]) ...[
         meshNode(
-          SphereGeometry(radius: 0.075),
-          skin,
-          position: vm.Vector3(0.28 * side, 0.02, -0.02),
+          SphereGeometry(radius: 0.085),
+          fur,
+          position: vm.Vector3(0.34 * side, 0.03, -0.02),
         ),
+        meshNode(
+          SphereGeometry(radius: 0.052),
+          face,
+          position: vm.Vector3(0.37 * side, 0.03, 0.02),
+        ),
+      ],
+      // A small tuft of hair.
+      meshNode(
+        SphereGeometry(radius: 0.075),
+        fur,
+        position: vm.Vector3(0, 0.34, 0.04),
+      ),
+      meshNode(
+        SphereGeometry(radius: 0.05),
+        fur,
+        position: vm.Vector3(0.07, 0.36, 0),
+      ),
       ..._eyesOpen,
       ..._eyesClosed,
     ];
@@ -190,10 +234,13 @@ class GorillaRig {
 
   Node _buildPartyHat() {
     final hat = Node(name: 'party-hat')
-      ..position = vm.Vector3(0.06, 0.29, 0.04)
-      ..rotation = vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), -0.3);
-    const height = 0.42;
-    const bottomRadius = 0.15;
+      ..position = vm.Vector3(-0.1, 0.32, -0.02)
+      ..rotation = vm.Quaternion.fromTwoVectors(
+        vm.Vector3(0, 1, 0),
+        vm.Vector3(-0.3, 1, 0),
+      );
+    const height = 0.36;
+    const bottomRadius = 0.13;
     const bands = 5;
     for (var i = 0; i < bands; i++) {
       final r0 = bottomRadius * (1 - i / bands);
@@ -216,7 +263,7 @@ class GorillaRig {
     return hat
       ..add(
         meshNode(
-          SphereGeometry(radius: 0.05),
+          SphereGeometry(radius: 0.045),
           matte(_hatPompom, roughness: 0.9),
           position: vm.Vector3(0, height, 0),
         ),
@@ -235,7 +282,7 @@ class GorillaRig {
       );
     }
     _depth = springTo(_depth, inPushup ? 1 : 0, deltaSeconds, 14);
-    _walkPhase += deltaSeconds * 5.5 * _weights[GorillaActivity.walking]!;
+    _walkPhase += deltaSeconds * 7 * _weights[GorillaActivity.walking]!;
 
     final pose = _Pose.blend([
       (_Pose.idle(_time), _weights[GorillaActivity.idle]!),
@@ -254,42 +301,40 @@ class GorillaRig {
         vm.Vector3(0, math.cos(pose.bodyPitch), -math.sin(pose.bodyPitch));
     final pelvis = pose.pelvis;
     final shoulders = pelvis + along * _torsoLength;
-    final breath = 1 + 0.025 * math.sin(_time * 2.4);
+    final breath = 1 + 0.02 * math.sin(_time * 2.6);
 
-    _hips.position = pelvis;
-    placeBetween(_torso, pelvis, shoulders);
-    _chest
-      ..position = shoulders - along * 0.08 + bodyUp * 0.04
+    _torso
+      ..position = pelvis + along * 0.13
+      ..rotation = alongY(along)
       ..scale = vm.Vector3.all(breath);
-    _belly.position = pelvis + along * 0.36 - bodyUp * 0.2;
 
-    final neck = shoulders + along * 0.3 + bodyUp * 0.3;
-    // The head is not parented to the torso, so it faces +Z by default; a
-    // positive nod tips the face down.
+    // A neckless chibi head, sitting on top of (or in front of) the body.
     final facing = vm.Vector3(
       math.sin(pose.headYaw) * math.cos(pose.headNod),
       -math.sin(pose.headNod),
       math.cos(pose.headYaw) * math.cos(pose.headNod),
     );
     _head
-      ..position = neck
-      ..rotation = vm.Quaternion.fromTwoVectors(vm.Vector3(0, 0, 1), facing);
+      ..position = shoulders + along * 0.2 + vm.Vector3(0, 0.1, 0)
+      ..rotation = vm.Quaternion.fromTwoVectors(vm.Vector3(0, 0, 1), facing) *
+          vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), pose.headTilt);
 
     for (var i = 0; i < 2; i++) {
       final side = i == 0 ? -1.0 : 1.0;
       final lateral = vm.Vector3(side, 0, 0);
 
-      final shoulder = shoulders + lateral * _shoulderWidth - bodyUp * 0.05;
+      final shoulder =
+          shoulders + lateral * _shoulderWidth - along * 0.05 - bodyUp * 0.02;
       final (elbow, hand) = solveTwoBone(
         shoulder,
         pose.hands[i],
         _upperArm,
         _forearm,
-        lateral * 0.6 - along,
+        lateral * 0.7 - along * 0.5 - bodyUp * 0.3,
       );
       placeBetween(_upperArms[i], shoulder, elbow);
       placeBetween(_forearms[i], elbow, hand);
-      _hands[i].position = hand + vm.Vector3(0, 0.06, 0);
+      _hands[i].position = hand;
 
       final hip = pelvis + lateral * _hipWidth;
       final (knee, foot) = solveTwoBone(
@@ -297,17 +342,17 @@ class GorillaRig {
         pose.feet[i],
         _thigh,
         _shin,
-        lateral * 0.4 + pose.kneeBend,
+        lateral * 0.3 + pose.kneeBend,
       );
       placeBetween(_thighs[i], hip, knee);
       placeBetween(_shins[i], knee, foot);
-      _feet[i].position = foot + vm.Vector3(0, 0.05, 0.05);
+      _feet[i].position = foot + vm.Vector3(0, -0.02, 0.04);
     }
   }
 
   void _blink() {
-    // A quick blink every ~3.7 seconds.
-    final closed = (_time % 3.7) < 0.12;
+    // A quick blink every ~3.4 seconds.
+    final closed = (_time % 3.4) < 0.14;
     for (final eye in _eyesOpen) {
       eye.visible = !closed;
     }
@@ -326,61 +371,72 @@ class _Pose {
     vm.Vector3? kneeBend,
     this.headYaw = 0,
     this.headNod = 0,
+    this.headTilt = 0,
   }) : kneeBend = kneeBend ?? vm.Vector3(0, 0, 1);
 
-  /// Standing on all fours, breathing and glancing around.
+  /// Sitting up with paws on its knees, bobbing and glancing around.
   factory _Pose.idle(double time) {
-    final sway = math.sin(time * 1.2) * 0.015;
+    final bob = math.sin(time * 2.6) * 0.008;
 
     return _Pose(
-      pelvis: vm.Vector3(sway, 0.52 + math.sin(time * 2.4) * 0.01, -0.36),
-      bodyPitch: 0.42,
-      hands: [vm.Vector3(-0.34, 0, 0.42), vm.Vector3(0.34, 0, 0.42)],
-      feet: [vm.Vector3(-0.24, 0, -0.38), vm.Vector3(0.24, 0, -0.38)],
-      headYaw: math.sin(time * 0.6) * 0.45,
-      headNod: math.sin(time * 0.9) * 0.06,
+      pelvis: vm.Vector3(math.sin(time * 1.1) * 0.01, 0.2 + bob, -0.04),
+      bodyPitch: 1.42,
+      hands: [
+        vm.Vector3(-0.2, 0.2 + bob, 0.19),
+        vm.Vector3(0.2, 0.2 + bob, 0.19),
+      ],
+      feet: [vm.Vector3(-0.15, 0.06, 0.25), vm.Vector3(0.15, 0.06, 0.25)],
+      kneeBend: vm.Vector3(0, 1, 0),
+      headYaw: math.sin(time * 0.55) * 0.4,
+      headNod: math.sin(time * 0.8) * 0.06 - 0.05,
+      headTilt: math.sin(time * 0.7) * 0.14,
     );
   }
 
-  /// A plank pivoting on the toes; [depth] 0 is arms extended, 1 is down.
+  /// A stubby plank; [depth] 0 is arms extended, 1 is chest to the floor.
   factory _Pose.pushup(double depth) {
-    const toes = -1.02;
-    // Just short of the full leg length, so the legs stay nearly straight.
-    const toeToPelvis = _thigh + _shin - 0.02;
-    final angle = _lerp(0.5, 0.17, depth);
-    final line = vm.Vector3(0, math.sin(angle), math.cos(angle));
+    final shoulderHeight = _lerp(0.36, 0.22, depth);
+    final pelvisHeight = _lerp(0.25, 0.21, depth);
+    final pitch = math.asin((shoulderHeight - pelvisHeight) / _torsoLength);
 
     return _Pose(
-      pelvis: vm.Vector3(0, 0, toes) + line * toeToPelvis,
-      bodyPitch: angle,
-      hands: [vm.Vector3(-0.42, 0, 0.12), vm.Vector3(0.42, 0, 0.12)],
-      feet: [vm.Vector3(-0.15, 0, toes), vm.Vector3(0.15, 0, toes)],
+      pelvis: vm.Vector3(0, pelvisHeight, -0.18),
+      bodyPitch: pitch,
+      hands: [vm.Vector3(-0.25, 0.05, 0.12), vm.Vector3(0.25, 0.05, 0.12)],
+      feet: [vm.Vector3(-0.1, 0.04, -0.46), vm.Vector3(0.1, 0.04, -0.46)],
       // Knees sag towards the floor instead of folding forwards.
       kneeBend: vm.Vector3(0, -1, 0),
-      // Glance towards the camera (on the +X side) between reps.
-      headYaw: 0.55,
-      headNod: _lerp(0.15, 0.3, depth),
+      // Look up and over to the camera (on the +X side) between reps.
+      headYaw: 0.45,
+      headNod: _lerp(-0.25, -0.1, depth),
     );
   }
 
-  /// Knuckle-walking; [phase] advances one stride per 2π.
+  /// Waddling upright; [phase] advances one stride per 2π.
   factory _Pose.walk(double phase) {
-    vm.Vector3 step(double x, double z, double offset) {
+    vm.Vector3 foot(double x, double offset) {
       final s = phase + offset;
 
       return vm.Vector3(
         x,
-        math.max(0, math.sin(s)) * 0.1,
-        z + math.cos(s) * 0.14,
+        0.04 + math.max(0, math.sin(s)) * 0.06,
+        math.cos(s) * 0.08,
       );
     }
 
+    vm.Vector3 hand(double x, double offset) =>
+        vm.Vector3(x, 0.26, -math.cos(phase + offset) * 0.08);
+
     return _Pose(
-      pelvis: vm.Vector3(0, 0.53 + math.sin(phase * 2) * 0.02, -0.36),
-      bodyPitch: 0.4,
-      hands: [step(-0.32, 0.42, 0), step(0.32, 0.42, math.pi)],
-      feet: [step(-0.24, -0.38, math.pi), step(0.24, -0.38, 0)],
-      headNod: math.sin(phase * 2) * 0.05,
+      pelvis: vm.Vector3(
+        math.sin(phase) * 0.03,
+        0.3 + math.cos(phase * 2) * 0.012,
+        0,
+      ),
+      bodyPitch: 1.45,
+      hands: [hand(-0.27, 0), hand(0.27, math.pi)],
+      feet: [foot(-0.12, math.pi), foot(0.12, 0)],
+      headTilt: math.sin(phase) * 0.12,
     );
   }
 
@@ -401,6 +457,7 @@ class _Pose {
       kneeBend: mix((p) => p.kneeBend),
       headYaw: mixValue((p) => p.headYaw),
       headNod: mixValue((p) => p.headNod),
+      headTilt: mixValue((p) => p.headTilt),
     );
   }
 
@@ -411,6 +468,7 @@ class _Pose {
   final vm.Vector3 kneeBend;
   final double headYaw;
   final double headNod;
+  final double headTilt;
 }
 
 double _lerp(double a, double b, double t) => a + (b - a) * t;

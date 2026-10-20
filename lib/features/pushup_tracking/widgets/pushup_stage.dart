@@ -74,10 +74,10 @@ class _PushupStageState extends State<PushupStage> {
         meshNode(
           reshaped(
             CylinderGeometry(radialSegments: 48),
-            vm.Vector3(1.2, 0.02, 2.5),
+            vm.Vector3(1, 0.02, 1.8),
           ),
           matte(_matColor, roughness: 0.7),
-          position: vm.Vector3(0, 0.012, -0.3),
+          position: vm.Vector3(0, 0.012, -0.1),
         ),
       )
       ..add(rig.root);
@@ -86,18 +86,18 @@ class _PushupStageState extends State<PushupStage> {
   Camera _camera(Duration elapsed) {
     // A three-quarter view that drifts slowly so the scene never feels static.
     final t = elapsed.inMicroseconds / 1e6;
-    final angle = 1.05 + math.sin(t * 0.18) * 0.1;
+    final angle = 0.8 + math.sin(t * 0.18) * 0.1;
     // Far back with a narrow lens: a portrait phone sees little horizontally.
-    const distance = 9.2;
+    const distance = 6.4;
 
     return PerspectiveCamera(
       fovRadiansY: 30 * vm.degrees2Radians,
       position: vm.Vector3(
         math.sin(angle) * distance,
-        3.4,
+        2.1,
         math.cos(angle) * distance - 0.3,
       ),
-      target: vm.Vector3(0, 0.35, -0.3),
+      target: vm.Vector3(0, 0.38, -0.08),
     );
   }
 

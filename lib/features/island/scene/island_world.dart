@@ -81,7 +81,7 @@ class IslandWorld {
           ..position = vm.Vector3(1.75, grassTop, 1)
           ..rotation = _yaw(-0.45),
       )
-      ..add(gorilla.root..scale = vm.Vector3.all(0.6));
+      ..add(gorilla.root..scale = vm.Vector3.all(0.9));
   }
 
   final Node root = Node(name: 'island');
