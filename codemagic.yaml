@@ -35,7 +35,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --flavor prod \
-            -t lib/flavor/main_prod.dart \
+            -t lib/main_prod.dart \
             --build-number=$(($BUILD_NUMBER + 2)) \
             --export-options-plist=/Users/builder/export_options.plist
 

@@ -3,14 +3,15 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'package:pushup_bro/ui/widgets/calendar/markers/pb_calendar_selected_marker.dart';
-import 'package:pushup_bro/ui/widgets/calendar/markers/pb_calendar_today_marker.dart';
+import 'package:pushup_bro/features/calendar/widgets/markers/pb_calendar_default_day.dart';
+import 'package:pushup_bro/features/calendar/widgets/markers/pb_calendar_selected.dart';
+import 'package:pushup_bro/features/calendar/widgets/markers/pb_calendar_today.dart';
 
 /// Regression tests for #22: the custom day-cell builders used
 /// `DateFormat.d()`, which resolves against the ambient locale. Under `ja`
 /// CLDR expands that to the pattern `d日`, so a selected day rendered as
 /// `30日` and wrapped the cell onto two lines.
-/// Width of the selected-day circle in [PBCalendarSelectedMarker]; the
+/// Width of the selected-day circle in [PBCalendarSelected]; the
 /// tightest horizontal budget a day label has to live within.
 const _dayCellWidth = 40.0;
 
@@ -55,7 +56,16 @@ void main() {
           (tester) async {
         Intl.defaultLocale = locale;
         await tester.pumpWidget(
-          host(PBCalendarSelectedMarker(DateTime(2024, 1, day))),
+          host(PBCalendarSelected(DateTime(2024, 1, day))),
+        );
+        expectBareDayOnOneLine(tester, day);
+      });
+
+      testWidgets('default day $day is numeric-only in $locale',
+          (tester) async {
+        Intl.defaultLocale = locale;
+        await tester.pumpWidget(
+          host(PBCalendarDefaultDay(DateTime(2024, 1, day))),
         );
         expectBareDayOnOneLine(tester, day);
       });
@@ -64,7 +74,7 @@ void main() {
           (tester) async {
         Intl.defaultLocale = locale;
         await tester.pumpWidget(
-          host(PBCalendarTodayMarker(DateTime(2024, 1, day))),
+          host(PBCalendarToday(DateTime(2024, 1, day))),
         );
         expectBareDayOnOneLine(tester, day);
       });

@@ -1,5 +1,5 @@
 {
-  "pushupBro": "Flexirmão",
+  "pushupBro": "Flexões Mano",
   "startPush": "Começar flexões",
   "pushupsCounter": "Flexões: ",
   "finishSet": "Terminar",
@@ -99,5 +99,65 @@
   "closeWithoutSaving": "Fechar sem salvar?",
   "closeExplanation": "Se sair agora, as alterações não serão salvas",
   "cancel": "Cancelar",
-  "dontSave": "Não salvar"
+  "dontSave": "Não salvar",
+  "progress": "Seu progresso",
+  "dayStreak": "Dias Streak",
+  "level": "Nível Mano {xLevel}",
+  "@level": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsReceived": "Recebeu {xPoints} Mano pontos!",
+  "@pointsReceived": {
+    "placeholders": {
+      "xPoints": {
+        "type": "int"
+      }
+    }
+  },
+  "levelReached": "Você alcançou o Mano Nível {xLevel}!",
+  "@levelReached": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "monkeyConfirm": "uh uh bom!",
+  "shareProfile": "Compartilhar perfil",
+  "friends": "Amigos",
+  "leaderboard": "Tabela de classificação",
+  "sharedStreak": "Streak compartilhado",
+  "openChallenges": "{xChallenges} Desafios abertos",
+  "@openChallenges": {
+    "placeholders": {
+      "xChallenges": {
+        "type": "int"
+      }
+    }
+  },
+  "sendChallenge": "Desafiar",
+  "acceptChallenge": "Aceitar desafio",
+  "longestStreak": "Maior streak",
+  "doublePoints": "Mano pontos duplos",
+  "triplePoints": "Mano pontos triplos",
+  "doublePointsEvent": "Evento de pontos duplos",
+  "eventTriplePoints": "Evento de pontos triplos",
+  "friendBoost": "Impulso do mano",
+  "sendBoost": "Enviar impulso",
+  "lastSevenDays": "Últimos 7 dias",
+  "total": "Total",
+  "search": "Pesquisar",
+  "island": "Ilha",
+  "bananasEarned": "Bananas ganhas: {xBananas}",
+  "@bananasEarned": {
+    "placeholders": {
+      "xBananas": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -99,5 +99,65 @@
   "closeWithoutSaving": "Close without saving?",
   "closeExplanation": "If you quit now, the set will not be saved",
   "cancel": "Cancel",
-  "dontSave": "Don't save"
+  "dontSave": "Don't save",
+  "progress": "Your Progress",
+  "dayStreak": "Days Streak",
+  "level": "Bro Level {xLevel}",
+  "@level": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsReceived": "{xPoints} Bro Points received",
+  "@pointsReceived": {
+    "placeholders": {
+      "xPoints": {
+        "type": "int"
+      }
+    }
+  },
+  "levelReached": "Reached Bro Level {xLevel}",
+  "@levelReached": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "monkeyConfirm": "oo oo ok!",
+  "shareProfile": "Share profile",
+  "friends": "Bros",
+  "leaderboard": "Leaderboard",
+  "sharedStreak": "Shared streak",
+  "openChallenges": "{xChallenges} Open challenges",
+  "@openChallenges": {
+    "placeholders": {
+      "xChallenges": {
+        "type": "int"
+      }
+    }
+  },
+  "sendChallenge": "Challenge",
+  "acceptChallenge": "Accept challenge",
+  "longestStreak": "Longest Streak",
+  "doublePoints": "Double Bro Points",
+  "triplePoints": "Tripple Bro Points",
+  "doublePointsEvent": "Double Bro Points Event",
+  "eventTriplePoints": "Tripple Bro Points Event",
+  "friendBoost": "Bro Boost",
+  "sendBoost": "Send Boost",
+  "lastSevenDays": "Last 7 days",
+  "total": "Total",
+  "search": "Search",
+  "island": "Island",
+  "bananasEarned": "You earned {xBananas} bananas!",
+  "@bananasEarned": {
+    "placeholders": {
+      "xBananas": {
+        "type": "int"
+      }
+    }
+  }
 }
