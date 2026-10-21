@@ -49,3 +49,18 @@ $ flutter run --flavor dev -t lib/main_dev.dart
 # For prod run
 $ flutter run --flavor prod -t lib/main_prod.dart
 ```
+
+### Web (mocked)
+
+The app also runs in the browser for demos and UI work. Native-only pieces
+are swapped for mocks via conditional imports (`dart.library.js_interop`):
+
+- **AirPods motion** (`motion_updates_web.dart`): simulates one pushup every
+  two seconds once a set is started.
+- **Storage** (`key_value_store_web.dart`): in memory instead of MMKV, seeded
+  with a week of demo workouts and 600 bananas; it resets on reload.
+
+```
+$ flutter run -d chrome -t lib/main_dev.dart
+$ flutter build web -t lib/main_dev.dart
+```

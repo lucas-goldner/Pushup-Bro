@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:intl/intl_standalone.dart';
 import 'package:pushup_bro/core/constants.dart';
 import 'package:pushup_bro/core/cubit/active_effects_cubit.dart';
 import 'package:pushup_bro/core/cubit/booster_item_cubit.dart';
@@ -20,6 +20,7 @@ import 'package:pushup_bro/core/extensions/string_ext.dart';
 import 'package:pushup_bro/core/flavor.dart';
 import 'package:pushup_bro/core/model/environment.dart';
 import 'package:pushup_bro/core/model/shared_preferences_key.dart';
+import 'package:pushup_bro/core/platform/system_locale.dart';
 import 'package:pushup_bro/core/provider/audio_player_provider.dart';
 import 'package:pushup_bro/core/provider/db_provider.dart';
 import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
@@ -76,14 +77,16 @@ class Main extends StatelessWidget {
     GameInventoryCubit gameInventoryCubit,
   ) async {
     await initializeDateFormatting();
-    await SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.portraitUp],
-    );
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle.dark.copyWith(
-        statusBarBrightness: Brightness.light,
-      ),
-    );
+    if (!kIsWeb) {
+      await SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp],
+      );
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle.dark.copyWith(
+          statusBarBrightness: Brightness.light,
+        ),
+      );
+    }
     await setAudioContext();
     await initializeSharedPreferences(
       sharedPreferencesProvider,

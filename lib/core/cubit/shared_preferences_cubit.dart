@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/intl_standalone.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/string_ext.dart';
 import 'package:pushup_bro/core/model/shared_preferences_key.dart';
+import 'package:pushup_bro/core/platform/system_locale.dart';
 import 'package:pushup_bro/core/provider/shared_preferences_interface.dart';
 
 class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
