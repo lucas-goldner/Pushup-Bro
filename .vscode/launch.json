@@ -8,7 +8,7 @@
       "name": "Debug Pushup Bro",
       "request": "launch",
       "type": "dart",
-      "args": ["--flavor", "dev", "-t", "lib/flavor/main_dev.dart"]
+      "args": ["--flavor", "dev", "-t", "lib/main_dev.dart"]
     },
     {
       "name": "pushup_bro (profile mode)",

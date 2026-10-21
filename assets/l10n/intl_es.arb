@@ -1,5 +1,5 @@
 {
-  "pushupBro": "Compañero de flexiones",
+  "pushupBro": "Bro flexiones",
   "startPush": "Empezar a hacer",
   "pushupsCounter": "Flexiones: ",
   "finishSet": "Terminar",
@@ -99,5 +99,65 @@
   "closeWithoutSaving": "¿Cerrar sin guardar?",
   "closeExplanation": "Si sales ahora, los cambios no serán guardados",
   "cancel": "Cancelar",
-  "dontSave": "No guardar"
+  "dontSave": "No guardar",
+  "progress": "Tú progreso",
+  "dayStreak": "Días Streak",
+  "level": "Bro Nivel {xLevel}",
+  "@level": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsReceived": "¡Recibiste {xPoints} puntos Bro!",
+  "@pointsReceived": {
+    "placeholders": {
+      "xPoints": {
+        "type": "int"
+      }
+    }
+  },
+  "levelReached": "¡Llego a Bro Nivel {xLevel}!",
+  "@levelReached": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "monkeyConfirm": "uh uh ok!",
+  "shareProfile": "Compartir perfil",
+  "friends": "Bros",
+  "leaderboard": "Tabla de clasificación",
+  "sharedStreak": "Streak compartido",
+  "openChallenges": "{xChallenges} Desafíos abiertos",
+  "@openChallenges": {
+    "placeholders": {
+      "xChallenges": {
+        "type": "int"
+      }
+    }
+  },
+  "sendChallenge": "Desafiar",
+  "acceptChallenge": "Aceptar desafío",
+  "longestStreak": "Streak más largo",
+  "doublePoints": "Doble puntos Bro",
+  "triplePoints": "Triple puntos Bro",
+  "doublePointsEvent": "Evento de doble puntos Bro",
+  "eventTriplePoints": "Evento de triple puntos Bro",
+  "friendBoost": "Bro Boost",
+  "sendBoost": "Enviar Boost",
+  "lastSevenDays": "Últimos 7 días",
+  "total": "Total",
+  "search": "Buscar",
+  "island": "Isla",
+  "bananasEarned": "Plátanos ganados: {xBananas}",
+  "@bananasEarned": {
+    "placeholders": {
+      "xBananas": {
+        "type": "int"
+      }
+    }
+  }
 }

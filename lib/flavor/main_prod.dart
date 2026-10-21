@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:pushup_bro/flavor/flavor.dart';
-import 'package:pushup_bro/main.dart';
-import 'package:pushup_bro/model/enum/environment.dart';
+import 'package:pushup_bro/main_prod.dart' as prod;
 
-void main() async {
-  Flavor.setEnvironment(Environment.prod);
-  runApp(const Main());
-}
+/// The prod entrypoint moved to `lib/main_prod.dart`; this keeps the old
+/// `-t lib/flavor/main_prod.dart` path working for the GitHub Actions iOS
+/// build until the workflow is updated.
+void main() => prod.main();

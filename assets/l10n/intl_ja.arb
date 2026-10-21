@@ -53,7 +53,7 @@
   "friendsFeature": "友達と競争",
   "syncFeature": "デバイス間でデータを同期",
   "comingSoon": "もっと近日公開予定...",
-  "moreIdeas": "もっとアイデアがある？提出機能セクションに移動して教えてください。",
+  "moreIdeas": "いいアイデアがある？提出機能セクションに移動して教えてください。",
   "createAccount": "アカウントを作成",
   "orCreateAccount": "またはアカウントを作成",
   "login": "ログイン",
@@ -99,5 +99,65 @@
   "closeWithoutSaving": "保存せずに閉じますか？",
   "closeExplanation": "今終了すると、セットは保存されません",
   "cancel": "キャンセル",
-  "dontSave": "保存しない"
+  "dontSave": "保存しない",
+  "progress": "あなたの進捗",
+  "dayStreak": "日連続",
+  "level": "兄貴レベル {xLevel}",
+  "@level": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsReceived": "{xPoints} 兄貴ポイントもらった",
+  "@pointsReceived": {
+    "placeholders": {
+      "xPoints": {
+        "type": "int"
+      }
+    }
+  },
+  "levelReached": "兄貴レベル{xLevel}上がった!",
+  "@levelReached": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "monkeyConfirm": "キーキーオーケー!",
+  "shareProfile": "プロフィールを共有",
+  "friends": "兄貴",
+  "leaderboard": "リーダーボード",
+  "sharedStreak": "共有した連続",
+  "openChallenges": "{xChallenges} オープンチャレンジ",
+  "@openChallenges": {
+    "placeholders": {
+      "xChallenges": {
+        "type": "int"
+      }
+    }
+  },
+  "sendChallenge": "友達にチャレンジを送る",
+  "acceptChallenge": "チャレンジを受け入れる",
+  "longestStreak": "最長連続",
+  "doublePoints": "ダブル兄貴ポイント",
+  "triplePoints": "トリプル兄貴ポイント",
+  "doublePointsEvent": "ダブル兄貴ポイントイベント",
+  "eventTriplePoints": "トリプル兄貴ポイントイベント",
+  "friendBoost": "兄貴ブースト",
+  "sendBoost": "応援する",
+  "lastSevenDays": "過去7日間",
+  "total": "合計",
+  "search": "検索",
+  "island": "島",
+  "bananasEarned": "{xBananas}バナナをもらった",
+  "@bananasEarned": {
+    "placeholders": {
+      "xBananas": {
+        "type": "int"
+      }
+    }
+  }
 }

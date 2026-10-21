@@ -88,7 +88,7 @@
   "privacyPolicy": "Datenschutzrichtlinie",
   "termsOfService": "Nutzungsbedingungen",
   "setVolume": "Lautstärke einstellen",
-  "volumeLevel": "Volumen: {xVolumeLevel}",
+  "volumeLevel": "Lautstärke: {xVolumeLevel}",
   "@volumeLevel": {
     "placeholders": {
       "xVolumeLevel": {
@@ -99,5 +99,65 @@
   "closeWithoutSaving": "Ohne Speichern verlassen?",
   "closeExplanation": "Wenn du das Fenster verlässt, verlierst du dein aufgenommenen Satz",
   "cancel": "Abbrechen",
-  "dontSave": "Nicht speichern"
+  "dontSave": "Nicht speichern",
+  "progress": "Dein Fortschritt",
+  "dayStreak": "Tage Streak",
+  "level": "Bro Level {xLevel}",
+  "@level": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "pointsReceived": "{xPoints} Bro Punkte erhalten",
+  "@pointsReceived": {
+    "placeholders": {
+      "xPoints": {
+        "type": "int"
+      }
+    }
+  },
+  "levelReached": "Bro Level {xLevel} erreicht",
+  "@levelReached": {
+    "placeholders": {
+      "xLevel": {
+        "type": "int"
+      }
+    }
+  },
+  "monkeyConfirm": "Huh-huh-gut!",
+  "shareProfile": "Profil teilen",
+  "friends": "Bros",
+  "leaderboard": "Rangliste",
+  "openChallenges": "{xChallenges} Offene Herausforderungen",
+  "@openChallenges": {
+    "placeholders": {
+      "xChallenges": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedStreak": "Geteile Streak",
+  "sendChallenge": "Herausfordern",
+  "acceptChallenge": "Herausforderung annehmen",
+  "longestStreak": "Longest Streak",
+  "doublePoints": "Doppelte Bro Punkte",
+  "triplePoints": "Dreifache Bro Punkte",
+  "doublePointsEvent": "Doppelte Bro Punkte Event",
+  "eventTriplePoints": "Dreifache Bro Punkte Event",
+  "friendBoost": "Bro Boost",
+  "sendBoost": "Boost senden",
+  "lastSevenDays": "Letzte 7 Tage",
+  "total": "Insgesamt",
+  "search": "Suche",
+  "island": "Insel",
+  "bananasEarned": "Du hast {xBananas} Bananen erhalten!",
+  "@bananasEarned": {
+    "placeholders": {
+      "xBananas": {
+        "type": "int"
+      }
+    }
+  }
 }

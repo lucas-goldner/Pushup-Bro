@@ -2,7 +2,7 @@ name: pushup_bro
 description: Track your pushups with ease using the sensors in your AirPods!
 publish_to: "none"
 
-version: 1.0.1+3
+version: 2.0.0+4
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -16,6 +16,7 @@ dependencies:
   circular_clip_route: ^0.2.0+3
   cupertino_icons: ^2.0.0
   equatable: ^2.0.5
+  fl_chart: ^1.1.1
   flutter:
     sdk: flutter
   flutter_airpods:
@@ -46,6 +47,12 @@ flutter:
   assets:
     - assets/audio/
     - assets/fonts/
+    - assets/images/
+    - assets/images/island/
+    - assets/images/island/accessories/
+    - assets/images/island/quests/
+    - assets/images/island/quests/intro/
+    - assets/images/island/quests/jungle/
     - assets/rive/
 
   fonts:
