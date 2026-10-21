@@ -24,6 +24,8 @@ dependencies:
   flutter_bloc: ^9.1.1
   flutter_localizations:
     sdk: flutter
+  flutter_scene: ^0.24.3
+  hooks: ^2.2.0
   intl: ^0.20.2
   intl_utils: ^2.8.1
   liquid_swipe: ^3.0.0
@@ -34,6 +36,7 @@ dependencies:
   shared_preferences: ^2.0.17
   table_calendar: ^3.0.8
   url_launcher: ^6.1.9
+  vector_math: ^2.4.3
 
 dev_dependencies:
   build_runner: ^2.3.3
@@ -54,6 +57,21 @@ flutter:
     - assets/images/island/quests/intro/
     - assets/images/island/quests/jungle/
     - assets/rive/
+    - flutter_scene_generated/
+    - path: flutter_scene_generated/metal_ios/
+      platforms:
+        - ios
+    - path: flutter_scene_generated/metal_desktop/
+      platforms:
+        - macos
+    - path: flutter_scene_generated/opengl_es_vulkan/
+      platforms:
+        - android
+        - linux
+        - windows
+    - path: flutter_scene_generated/opengl_es/
+      platforms:
+        - web
 
   fonts:
     - family: Satoshi

@@ -159,5 +159,11 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pushupsLabel": "回",
+  "readyCaption": "カルロスは準備万端、いつでも始められます",
+  "islandShop": "ショップ",
+  "islandAccessories": "アクセサリー",
+  "islandCarlos": "カルロス",
+  "islandJungle": "ジャングル"
 }

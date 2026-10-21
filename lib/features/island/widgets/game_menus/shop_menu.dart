@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/widgets/pb_button.dart';
+import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
@@ -177,17 +177,13 @@ class _ShopMenuState extends State<ShopMenu> {
                 ),
               ),
             if (_showBuyConfirmation)
-              Column(
-                children: [
-                  Text(
-                    'Buying ${selectBuyable?.getLocalizedName(context)}',
-                    style: context.textTheme.headlineSmall,
-                  ),
-                  PBButton(
-                    'Confirm',
-                    callback: confirmPurchase,
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
+                child: PillButton(
+                  label: 'Buy ${selectBuyable?.getLocalizedName(context)}',
+                  icon: CarbonIcons.shopping_cart,
+                  onPressed: confirmPurchase,
+                ),
               ),
           ],
         ),

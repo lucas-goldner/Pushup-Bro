@@ -53,10 +53,7 @@ class PushupTrackingBottomRow extends StatelessWidget {
                 ),
               ],
             ),
-          FeatureVariants.gamification => const SizedBox(
-              width: 56,
-              height: 200,
-            ),
+          FeatureVariants.gamification => const SizedBox.shrink(),
         },
       ],
     );

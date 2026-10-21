@@ -1,4 +1,0 @@
-enum TurningDirection {
-  left,
-  right,
-}

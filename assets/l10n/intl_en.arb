@@ -159,5 +159,11 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pushupsLabel": "pushups",
+  "readyCaption": "Carlos is warmed up and ready when you are",
+  "islandShop": "Shop",
+  "islandAccessories": "Accessories",
+  "islandCarlos": "Carlos",
+  "islandJungle": "Jungle"
 }

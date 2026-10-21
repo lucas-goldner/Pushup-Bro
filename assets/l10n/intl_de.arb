@@ -159,5 +159,11 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pushupsLabel": "Liegestützen",
+  "readyCaption": "Carlos ist aufgewärmt und bereit, wenn du es bist",
+  "islandShop": "Laden",
+  "islandAccessories": "Accessoires",
+  "islandCarlos": "Carlos",
+  "islandJungle": "Dschungel"
 }

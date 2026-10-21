@@ -17,7 +17,9 @@ class IslandTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SafeArea(
+        minimum: const EdgeInsets.only(top: 8),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Spacer(),
             CommunityGoal(
@@ -28,7 +30,7 @@ class IslandTopBar extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             const BananaCounter(),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
           ],
         ),
       );
