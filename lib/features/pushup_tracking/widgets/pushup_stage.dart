@@ -3,19 +3,16 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart';
-import 'package:pushup_bro/core/scene/gorilla_rig.dart';
-import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_state.dart';
+import 'package:pushup_bro/features/pushup_tracking/scene/gym_world.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
-const _matColor = Color(0xFF5E9EFF);
-
-/// The 3D gorilla on its workout mat.
+/// The 3D gym: Carlos on his mat in front of a class of gym buddies.
 ///
-/// It idles until [tracking] turns on, then holds a plank and dips in step
-/// with every pushup [PushupCubit] counts.
+/// Everyone idles until [tracking] turns on, then the whole class holds a
+/// plank and dips in step with every pushup [PushupCubit] counts.
 class PushupStage extends StatefulWidget {
   const PushupStage({
     required this.tracking,
@@ -32,29 +29,27 @@ class PushupStage extends StatefulWidget {
 
 class _PushupStageState extends State<PushupStage> {
   /// Built in [_populate]: geometry needs the engine's static resources.
-  GorillaRig? _rig;
+  GymWorld? _gym;
 
   @override
   void didUpdateWidget(covariant PushupStage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _syncRig();
+    _syncGym();
   }
 
-  void _syncRig() {
-    _rig
-      ?..activity =
-          widget.tracking ? GorillaActivity.pushups : GorillaActivity.idle
-      ..partyHat = widget.partyHat
-      ..inPushup = context.read<PushupCubit>().state.inPushup;
+  void _syncGym() {
+    _gym
+      ?..tracking = widget.tracking
+      ..inPushup = context.read<PushupCubit>().state.inPushup
+      ..carlos.partyHat = widget.partyHat;
   }
 
   void _populate(Scene scene) {
-    final rig = _rig = GorillaRig();
-    _syncRig();
+    final gym = _gym = GymWorld();
+    _syncGym();
     scene
       ..directionalLight = DirectionalLight(
-        direction: vm.Vector3(-0.45, -1, -0.35),
-        intensity: 3.2,
+        direction: vm.Vector3(-0.35, -1, -0.5),
         castsShadow: true,
         shadowSoftness: 0.25,
       )
@@ -63,41 +58,36 @@ class _PushupStageState extends State<PushupStage> {
         ambientOcclusionEnabled: true,
         ambientOcclusionIntensity: 0.8,
       )
-      ..add(
-        // Catches the gorilla's shadow on the otherwise invisible floor.
-        meshNode(
-          DiscGeometry(radius: 4, segments: 48),
-          ShadowCatcherMaterial(shadowIntensity: 0.35, softness: 0.6),
-        ),
-      )
-      ..add(
-        meshNode(
-          reshaped(
-            CylinderGeometry(radialSegments: 48),
-            vm.Vector3(1, 0.02, 1.8),
-          ),
-          matte(_matColor, roughness: 0.7),
-          position: vm.Vector3(0, 0.012, -0.1),
-        ),
-      )
-      ..add(rig.root);
+      ..add(gym.root);
   }
 
   Camera _camera(Duration elapsed) {
-    // A three-quarter view that drifts slowly so the scene never feels static.
+    // Looks past Carlos at the gym behind him, far back with a narrow lens:
+    // a portrait phone sees little horizontally. It floats like a phone held
+    // up to film him: a slow drift, a side-to-side sway, a little bob and
+    // roll, all from a few out-of-step sines so it never visibly repeats.
     final t = elapsed.inMicroseconds / 1e6;
-    final angle = 0.8 + math.sin(t * 0.18) * 0.1;
-    // Far back with a narrow lens: a portrait phone sees little horizontally.
-    const distance = 6.4;
+    final angle = gymViewAngle + math.sin(t * 0.18) * 0.06;
+    final right = vm.Vector3(math.cos(angle), 0, -math.sin(angle));
+    final sway = math.sin(t * 0.9) * 0.18 + math.sin(t * 2.3 + 1) * 0.06;
+    final bob = math.sin(t * 1.7 + 0.5) * 0.05 + math.sin(t * 3.1) * 0.02;
+    final roll = math.sin(t * 1.1 + 2) * 0.025 + math.sin(t * 2.7) * 0.008;
+    final target = gymToWorld(vm.Vector3(0, 0.55, -1.7)) +
+        right * (math.sin(t * 1.3 + 2) * 0.05) +
+        vm.Vector3(0, math.sin(t * 1.9 + 1) * 0.03, 0);
+    const distance = 8.6;
 
     return PerspectiveCamera(
-      fovRadiansY: 30 * vm.degrees2Radians,
-      position: vm.Vector3(
-        math.sin(angle) * distance,
-        2.1,
-        math.cos(angle) * distance - 0.3,
-      ),
-      target: vm.Vector3(0, 0.38, -0.08),
+      fovRadiansY: 32 * vm.degrees2Radians,
+      position: target +
+          right * sway +
+          vm.Vector3(
+            math.sin(angle) * distance,
+            2.4 + bob,
+            math.cos(angle) * distance,
+          ),
+      target: target,
+      up: vm.Vector3(0, 1, 0) + right * roll,
     );
   }
 
@@ -105,11 +95,11 @@ class _PushupStageState extends State<PushupStage> {
   Widget build(BuildContext context) => BlocListener<PushupCubit, PushupState>(
         listenWhen: (previous, current) =>
             previous.inPushup != current.inPushup,
-        listener: (context, state) => _rig?.inPushup = state.inPushup,
+        listener: (context, state) => _gym?.inPushup = state.inPushup,
         child: SceneStage(
           populate: _populate,
           cameraBuilder: _camera,
-          onTick: (deltaSeconds) => _rig?.update(deltaSeconds),
+          onTick: (deltaSeconds) => _gym?.update(deltaSeconds),
         ),
       );
 }

@@ -28,6 +28,8 @@ class _IslandState extends State<Island> {
   QuestType _quest = QuestType.intro;
   bool _firstTimeVisiting = false;
   bool _isNewDayVisible = false;
+  bool _journeying = false;
+  final _sceneKey = GlobalKey<IslandSceneState>();
 
   void openMenu(GameMenuType gameMenuType) => setState(() {
         _gameMenuType = gameMenuType;
@@ -89,7 +91,8 @@ class _IslandState extends State<Island> {
       !_firstTimeVisiting &&
       !_menuVisible &&
       !_isNewDayVisible &&
-      !_questVisible;
+      !_questVisible &&
+      !_journeying;
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -106,7 +109,13 @@ class _IslandState extends State<Island> {
               ),
             ),
           ),
-          const Positioned.fill(child: IslandScene()),
+          Positioned.fill(
+            child: IslandScene(
+              key: _sceneKey,
+              onJourneyChanged: (journeying) =>
+                  setState(() => _journeying = journeying),
+            ),
+          ),
           if (_hudVisible) ...[
             IslandTopBar(openQuest: openQuest),
             SafeArea(
@@ -118,10 +127,7 @@ class _IslandState extends State<Island> {
                     onShop: () => openMenu(GameMenuType.shop),
                     onAccessories: () => openMenu(GameMenuType.accessories),
                     onCarlos: () => openMenu(GameMenuType.monkey),
-                    onJungle: () => openQuest(
-                      gameMenuType: GameMenuType.quest,
-                      questType: QuestType.jungleQuest,
-                    ),
+                    onJungle: () => _sceneKey.currentState?.goToJungle(),
                   ),
                 ),
               ),

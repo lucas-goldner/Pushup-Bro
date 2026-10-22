@@ -3,8 +3,10 @@ import 'dart:ui' show Color;
 
 import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
+import 'package:pushup_bro/core/scene/nature_kit.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
+import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 const _sea = Color(0xFF3FB2D6);
@@ -12,11 +14,6 @@ const _shallows = Color(0xFF8BDCE8);
 const _foam = Color(0xFFF4FBFF);
 const _sand = Color(0xFFF1DAA9);
 const _grass = Color(0xFF8CCB6E);
-const _bark = Color(0xFF9A6B47);
-const _frond = Color(0xFF4CA85A);
-const _coconut = Color(0xFF6B4A2F);
-const _rock = Color(0xFF9BA1B0);
-const _bush = Color(0xFF5DAA55);
 const _white = Color(0xFFFAF8F4);
 const _navy = Color(0xFF17203A);
 const _glass = Color(0xFF7FC4E8);
@@ -25,233 +22,378 @@ const _banana = Color(0xFFF5C343);
 const sandTop = 0.22;
 const grassTop = 0.36;
 
-/// The player's island: terrain, sea, palms, the buildings they bought, and
-/// Carlos wandering around. Build it once the engine is ready, add [root] to
-/// a scene and call [update] every frame.
+/// Grass radius of a brand new island; every building adds [_growth].
+const _baseRadius = 4.2;
+const _growth = 0.7;
+const _sandMargin = 1.3;
+
+/// Building slots, as angles from the island's front (+Z), filled in the
+/// order the buildings were bought. The jungle takes the back.
+const _slots = [0.75, -0.75, 1.55, -1.55, 2.25];
+
+/// How fast (m/s) Carlos runs to the jungle.
+const _runSpeed = 2.1;
+
+/// Something on the island placed in polar coordinates, so it moves out
+/// with the coast as the island grows. `offset` is relative to the grass
+/// radius; `minBuildings` hides it until the island has that many.
+typedef _Prop = ({
+  Node node,
+  double angle,
+  double offset,
+  double top,
+  int minBuildings,
+});
+
+/// The player's island: terrain, sea, palms, a patch of jungle, the
+/// buildings they bought, and Carlos wandering around. The island grows with
+/// every building. Build it once the engine is ready, add [root] to a scene
+/// and call [update] every frame.
 class IslandWorld {
   IslandWorld() {
+    _sandNode = meshNode(_sandGeometry(_radius), _sandMaterial);
+    _grassNode = meshNode(_grassGeometry(_radius), _grassMaterial);
     root
       ..add(_buildSea())
-      ..add(
-        meshNode(
-          _plateau(
-            radius: (a) =>
-                4.3 *
-                (1 + 0.06 * math.sin(3 * a + 0.5) + 0.04 * math.sin(5 * a + 2)),
-            top: sandTop,
-            bottom: -0.4,
-            bottomScale: 1.12,
-          ),
-          matte(_sand, roughness: 0.95),
-        ),
-      )
-      ..add(
-        meshNode(
-          _plateau(
-            radius: (a) =>
-                3.0 * (1 + 0.08 * math.sin(2 * a + 1) + 0.05 * math.sin(4 * a)),
-            top: grassTop,
-            bottom: 0.15,
-            bottomScale: 1.04,
-          ),
-          matte(_grass, roughness: 0.9),
-        ),
-      )
-      ..addAll(_buildScenery());
+      ..add(_sandNode)
+      ..add(_grassNode)
+      ..add(jungle.root);
+    for (final prop in _props()) {
+      _scenery.add(prop);
+      root.add(prop.node);
+    }
 
     _buildings = {
-      ShopBuyables.accessories: _accessoriesShop()
-        ..position = vm.Vector3(-1.75, grassTop, 1)
-        ..rotation = _yaw(0.5),
-      ShopBuyables.airport: _airport()
-        ..position = vm.Vector3(1.9, grassTop, -1.35)
-        ..rotation = _yaw(-0.6),
-      ShopBuyables.gym: _gym()
-        ..position = vm.Vector3(-1.75, grassTop, -1.45)
-        ..rotation = _yaw(0.6),
-      ShopBuyables.monkeyAdoption: _adoptionHut()
-        ..position = vm.Vector3(0.05, grassTop, -2.15),
+      ShopBuyables.none: _foodTruck(),
+      ShopBuyables.accessories: _accessoriesShop(),
+      ShopBuyables.airport: _airport(),
+      ShopBuyables.gym: _gym(),
+      ShopBuyables.monkeyAdoption: _adoptionHut(),
     };
     for (final building in _buildings.values) {
       root.add(building..visible = false);
     }
-    root
-      ..add(
-        _foodTruck()
-          ..position = vm.Vector3(1.75, grassTop, 1)
-          ..rotation = _yaw(-0.45),
-      )
-      ..add(gorilla.root..scale = vm.Vector3.all(0.9));
+    _buildings[ShopBuyables.none]!.visible = true;
+    root.add(gorilla.root..scale = vm.Vector3.all(0.9));
+    _layout();
   }
 
   final Node root = Node(name: 'island');
   final GorillaRig gorilla = GorillaRig();
+  final JunglePatch jungle = JunglePatch();
   late final Map<ShopBuyables, Node> _buildings;
+  final List<_Prop> _scenery = [];
+  final PhysicallyBasedMaterial _sandMaterial = matte(_sand, roughness: 0.95);
+  final PhysicallyBasedMaterial _grassMaterial = matte(_grass, roughness: 0.9);
+  late final Node _sandNode;
+  late final Node _grassNode;
   late final Node _foamRing;
+  late final Node _shallowsRing;
+
+  /// Buildings on the island in purchase order, the food truck first.
+  List<ShopBuyables> _order = [ShopBuyables.none];
+  double _radius = _baseRadius;
+  double _builtRadius = _baseRadius;
   double _time = 0;
   double _lap = 0;
 
-  /// Shows the buildings in [owned]; the food truck shop is always there.
-  void showOwned(List<ShopBuyables> owned) {
-    for (final MapEntry(:key, :value) in _buildings.entries) {
-      value.visible = owned.contains(key);
+  vm.Vector3? _runFrom;
+  double _runProgress = 0;
+  void Function()? _onArrive;
+
+  /// The island's current grass radius, growing towards its target.
+  double get radius => _radius;
+
+  /// The grass radius the island grows to with its current buildings.
+  double get targetRadius => _baseRadius + _growth * (_order.length - 1);
+
+  /// Outer edge of the beach.
+  double get extent => _radius + _sandMargin;
+
+  /// The jungle's centre on the ground.
+  vm.Vector3 get jungleCenter => vm.Vector3(0, grassTop, -(_radius - 1.75));
+
+  /// The jungle's gate, where Carlos goes in.
+  vm.Vector3 get jungleGate => jungleCenter + jungle.gate;
+
+  /// Whether Carlos is on his way to the jungle.
+  bool get running => _runFrom != null;
+
+  /// Whether [node] is part of the jungle: a tree, a rock, the hill...
+  bool isJungle(Node node) {
+    for (Node? n = node; n != null; n = n.parent) {
+      if (identical(n, jungle.root)) return true;
     }
+
+    return false;
+  }
+
+  /// Shows the buildings in [owned], in the order they were bought; the food
+  /// truck is always there. The island grows to make room.
+  void showOwned(List<ShopBuyables> owned) {
+    final bought = [
+      for (final item in owned)
+        if (ShopBuyables.buildingsShopBuyables.contains(item)) item,
+    ];
+    _order = [ShopBuyables.none, ...bought.toSet()];
+    for (final MapEntry(:key, :value) in _buildings.entries) {
+      value.visible = _order.contains(key);
+    }
+    _layout();
+  }
+
+  /// Sends Carlos running to the jungle gate; [onArrive] fires once he is
+  /// through it.
+  void runToJungle(void Function() onArrive) {
+    if (running) return;
+    _runFrom = gorilla.root.position.clone();
+    _runProgress = 0;
+    _onArrive = onArrive;
+  }
+
+  /// Puts Carlos back on his laps, e.g. after returning from the jungle.
+  void stopRun() {
+    _runFrom = null;
+    _onArrive = null;
+    gorilla
+      ..walkSpeed = 1
+      ..root.visible = true;
   }
 
   void update(double deltaSeconds) {
     _time += deltaSeconds;
 
-    // Carlos walks laps around the middle, pausing every so often.
+    final target = targetRadius;
+    _radius = springTo(_radius, target, deltaSeconds, 1.6);
+    if ((_radius - _builtRadius).abs() > 0.01) _resize();
+
+    final runFrom = _runFrom;
+    if (runFrom != null) {
+      _updateRun(runFrom, deltaSeconds);
+    } else {
+      _updateLap(deltaSeconds);
+    }
+    gorilla.update(deltaSeconds);
+    jungle.update(deltaSeconds);
+
+    _foamRing.scale = vm.Vector3.all(
+      extent / 5.5 * (1 + 0.012 * math.sin(_time * 1.3)),
+    );
+  }
+
+  void _updateLap(double deltaSeconds) {
+    // Carlos walks laps in front of the jungle, pausing every so often.
     final walking = (_time % 12) < 8.5;
     gorilla.activity = walking ? GorillaActivity.walking : GorillaActivity.idle;
     if (walking) _lap += deltaSeconds * 0.32;
-    const lapRadius = 0.85;
+    final lapRadius = _radius * 0.17;
     gorilla.root
       ..position = vm.Vector3(
         math.cos(_lap) * lapRadius,
         grassTop,
-        math.sin(_lap) * lapRadius + 0.25,
+        math.sin(_lap) * lapRadius + _radius * 0.22,
       )
       // Face along the lap: the tangent of the circle.
       ..rotation = vm.Quaternion.fromTwoVectors(
         vm.Vector3(0, 0, 1),
         vm.Vector3(-math.sin(_lap), 0, math.cos(_lap)),
       );
-    gorilla.update(deltaSeconds);
-
-    _foamRing.scale = vm.Vector3.all(1 + 0.012 * math.sin(_time * 1.3));
   }
 
+  void _updateRun(vm.Vector3 from, double deltaSeconds) {
+    // Run to just in front of the gate, then on through it into the trees.
+    final gate = jungleGate;
+    final front = gate + vm.Vector3(0, 0, 0.5);
+    final inside = gate + vm.Vector3(0, jungleFloorTop, -0.7);
+    final firstLeg = (front - from).length;
+    final total = firstLeg + (inside - front).length;
+    _runProgress += deltaSeconds * _runSpeed;
+    final vm.Vector3 position;
+    final vm.Vector3 heading;
+    if (_runProgress < firstLeg) {
+      heading = front - from;
+      position = from + heading.normalized() * _runProgress;
+    } else {
+      heading = inside - front;
+      final t = ((_runProgress - firstLeg) / (total - firstLeg)).clamp(0, 1);
+      position = front + heading * t.toDouble();
+    }
+    heading.y = 0;
+    gorilla
+      ..activity = GorillaActivity.walking
+      ..walkSpeed = 2.2
+      ..root.position = position;
+    if (heading.length2 > 1e-6) {
+      gorilla.root.rotation = vm.Quaternion.fromTwoVectors(
+        vm.Vector3(0, 0, 1),
+        heading.normalized(),
+      );
+    }
+    if (_runProgress >= total) {
+      final onArrive = _onArrive;
+      _onArrive = null;
+      gorilla.root.visible = false;
+      onArrive?.call();
+    }
+  }
+
+  /// Rebuilds the coast for the current radius and moves everything on it.
+  void _resize() {
+    _builtRadius = _radius;
+    // A fresh mesh: swapping a primitive's geometry doesn't re-upload it.
+    _sandNode.mesh = Mesh(_sandGeometry(_radius), _sandMaterial);
+    _grassNode.mesh = Mesh(_grassGeometry(_radius), _grassMaterial);
+    _shallowsRing.scale = vm.Vector3.all(extent / 5.5);
+    _layout();
+  }
+
+  /// Places the buildings, the jungle and the scenery for the current
+  /// radius.
+  void _layout() {
+    jungle.root.position = jungleCenter;
+    for (final (i, item) in _order.indexed) {
+      final angle = _slots[i % _slots.length];
+      final r = _radius * 0.6;
+      _buildings[item]!
+        ..position =
+            vm.Vector3(math.sin(angle) * r, grassTop, math.cos(angle) * r)
+        // Turn the fronts mostly towards the camera.
+        ..rotation =
+            yaw(angle * 0.55 + (item == ShopBuyables.none ? math.pi : 0))
+        ..visible = true;
+    }
+    final buildings = _order.length - 1;
+    for (final prop in _scenery) {
+      final r = _radius + prop.offset;
+      prop.node
+        ..visible = buildings >= prop.minBuildings
+        ..position = vm.Vector3(
+          math.sin(prop.angle) * r,
+          prop.top,
+          math.cos(prop.angle) * r,
+        );
+    }
+  }
+
+  MeshGeometry _sandGeometry(double grassRadius) => plateau(
+        radius: (a) =>
+            (grassRadius + _sandMargin) *
+            (1 + 0.05 * math.sin(3 * a + 0.5) + 0.03 * math.sin(5 * a + 2)),
+        top: sandTop,
+        bottom: -0.4,
+        bottomScale: 1.1,
+      );
+
+  MeshGeometry _grassGeometry(double grassRadius) => plateau(
+        radius: (a) =>
+            grassRadius *
+            (1 + 0.06 * math.sin(2 * a + 1) + 0.04 * math.sin(4 * a)),
+        top: grassTop,
+        bottom: 0.15,
+        bottomScale: 1.03,
+      );
+
   Node _buildSea() {
+    // Both rings are sized for a 5.5 m beach and scaled with the island.
+    // They float well clear of the sea so they don't z-fight with it when
+    // the camera pulls far back.
     _foamRing = meshNode(
-      RingGeometry(innerRadius: 4.2, outerRadius: 4.75, segments: 96),
+      RingGeometry(innerRadius: 5.35, outerRadius: 5.95, segments: 128),
       matte(_foam, roughness: 0.6),
-      position: vm.Vector3(0, 0.02, 0),
+      position: vm.Vector3(0, 0.1, 0),
+    );
+    _shallowsRing = meshNode(
+      RingGeometry(innerRadius: 5, outerRadius: 8.4, segments: 128),
+      matte(_shallows, roughness: 0.2),
+      position: vm.Vector3(0, 0.05, 0),
     );
 
     return Node(name: 'sea')
       ..add(
         meshNode(
-          DiscGeometry(radius: 60, segments: 96),
+          DiscGeometry(radius: 220, segments: 96),
           matte(_sea, roughness: 0.15),
         ),
       )
-      ..add(
-        meshNode(
-          RingGeometry(innerRadius: 4, outerRadius: 6.6, segments: 96),
-          matte(_shallows, roughness: 0.2),
-          position: vm.Vector3(0, 0.01, 0),
-        ),
-      )
+      ..add(_shallowsRing)
       ..add(_foamRing);
   }
 
-  List<Node> _buildScenery() => [
-        _palm(vm.Vector3(-3.25, sandTop, -1.3), lean: 0.4),
-        _palm(vm.Vector3(2.85, sandTop, -2.35), lean: 2.4, height: 2.3),
-        _palm(vm.Vector3(-1, grassTop, -2.75), lean: 1.4, height: 1.8),
-        _palm(vm.Vector3(-3.5, sandTop, 1.75), lean: -0.6, height: 1.6),
-        _palm(vm.Vector3(3.55, sandTop, 0.4), lean: 3.4, height: 1.7),
-        _rockAt(vm.Vector3(2.9, sandTop, 2.3), 0.3),
-        _rockAt(vm.Vector3(3.15, sandTop, 2), 0.18),
-        _rockAt(vm.Vector3(-2.6, sandTop, 2.7), 0.26),
-        _rockAt(vm.Vector3(0.9, sandTop, 3.6), 0.2),
-        _bushAt(vm.Vector3(0.6, grassTop, 1.95)),
-        _bushAt(vm.Vector3(-0.85, grassTop, 2.15)),
-        _bushAt(vm.Vector3(2.5, grassTop, -0.2)),
-        _bushAt(vm.Vector3(-2.45, grassTop, -0.15)),
-      ];
+  List<_Prop> _props() {
+    final random = math.Random(3);
+    _Prop prop(
+      Node node,
+      double angle,
+      double offset, {
+      double top = grassTop,
+      int minBuildings = 0,
+    }) =>
+        (
+          node: node,
+          angle: angle,
+          offset: offset,
+          top: top,
+          minBuildings: minBuildings,
+        );
 
-  Node _palm(vm.Vector3 base, {double lean = 0, double height = 2}) {
-    final top = vm.Vector3(0.22 * height, height, 0.05);
-    final trunk = TubeGeometry(
-      CatmullRomPath([
-        vm.Vector3.zero(),
-        vm.Vector3(0.08, height * 0.4, 0),
-        vm.Vector3(0.28, height * 0.75, 0.03),
-        top,
-      ]),
-      radius: 0.075,
-      radialSegments: 10,
-      stations: 24,
-    );
-    final frondMaterial = matte(_frond, roughness: 0.75)..doubleSided = true;
-    final tree = Node(name: 'palm')
-      ..position = base
-      ..rotation = _yaw(lean)
-      ..add(meshNode(trunk, matte(_bark)));
-
-    const fronds = 7;
-    for (var i = 0; i < fronds; i++) {
-      final angle = i / fronds * math.pi * 2 + 0.3;
-      final dir = vm.Vector3(math.cos(angle), 0, math.sin(angle));
-      tree.add(
-        meshNode(
-          RibbonGeometry(
-            CatmullRomPath([
-              top,
-              top + dir * 0.45 + vm.Vector3(0, 0.22, 0),
-              top + dir * 0.9 + vm.Vector3(0, 0.05, 0),
-              top + dir * 1.15 + vm.Vector3(0, -0.4, 0),
-            ]),
-            width: 0.3,
-            stations: 16,
-          ),
-          frondMaterial,
-        ),
-      );
-    }
-    for (var i = 0; i < 3; i++) {
-      final angle = i / 3 * math.pi * 2;
-      tree.add(
-        meshNode(
-          SphereGeometry(radius: 0.075, segments: 16, rings: 10),
-          matte(_coconut, roughness: 0.7),
-          position: top +
-              vm.Vector3(math.cos(angle) * 0.09, -0.08, math.sin(angle) * 0.09),
-        ),
-      );
-    }
-
-    return tree;
-  }
-
-  Node _rockAt(vm.Vector3 position, double size) => meshNode(
-        reshaped(
-          IcosphereGeometry(radius: size, subdivisions: 1),
-          vm.Vector3(1.3, 0.75, 1),
-          rotation: _yaw(position.x * 3),
-        ),
-        matte(_rock, roughness: 0.9),
-        position: position + vm.Vector3(0, size * 0.25, 0),
-      );
-
-  Node _bushAt(vm.Vector3 position) {
-    final material = matte(_bush);
-
-    return Node(name: 'bush')
-      ..position = position
-      ..add(
-        meshNode(
-          IcosphereGeometry(radius: 0.22),
-          material,
-          position: vm.Vector3(0, 0.12, 0),
-        ),
-      )
-      ..add(
-        meshNode(
-          IcosphereGeometry(radius: 0.16),
-          material,
-          position: vm.Vector3(0.2, 0.08, 0.05),
-        ),
-      )
-      ..add(
-        meshNode(
-          IcosphereGeometry(radius: 0.15),
-          material,
-          position: vm.Vector3(-0.18, 0.07, 0.08),
-        ),
-      );
+    return [
+      // Palms along the beach.
+      prop(palmTree(lean: 0.4), 1.15, 0.55, top: sandTop),
+      prop(palmTree(lean: 3.4, height: 1.7), -1.1, 0.6, top: sandTop),
+      prop(palmTree(lean: 2.4, height: 2.3), 2.05, 0.5, top: sandTop),
+      prop(palmTree(lean: -0.6, height: 1.6), -2.1, 0.55, top: sandTop),
+      prop(palmTree(lean: 1.2, height: 1.9), 0.42, 0.7, top: sandTop),
+      prop(
+        palmTree(lean: 4.1, height: 1.8),
+        -0.45,
+        0.65,
+        top: sandTop,
+        minBuildings: 1,
+      ),
+      prop(
+        palmTree(lean: 5, height: 2.1),
+        2.6,
+        0.55,
+        top: sandTop,
+        minBuildings: 2,
+      ),
+      prop(
+        palmTree(lean: 0.9, height: 1.7),
+        -2.65,
+        0.6,
+        top: sandTop,
+        minBuildings: 3,
+      ),
+      // Rocks at the water's edge.
+      prop(rock(0.3, turn: 1), 0.12, 0.9, top: sandTop),
+      prop(rock(0.18, turn: 2), 0.2, 1.05, top: sandTop),
+      prop(rock(0.26, turn: 3), -0.25, 0.95, top: sandTop),
+      prop(rock(0.22, turn: 4), 1.7, 0.95, top: sandTop, minBuildings: 2),
+      prop(rock(0.2, turn: 5), -1.8, 0.9, top: sandTop, minBuildings: 4),
+      // Bushes and flowers on the grass.
+      prop(bush(), 0.22, -0.55),
+      prop(bush(size: 0.9), -0.3, -0.5),
+      prop(bush(size: 1.1), 1.15, -0.45),
+      prop(bush(), -1.15, -0.5),
+      prop(flowers(random), 0.05, -0.35),
+      prop(flowers(random), 0.95, -0.6, minBuildings: 1),
+      prop(flowers(random), -0.9, -0.65, minBuildings: 2),
+      prop(bush(size: 0.8), 1.9, -0.5, minBuildings: 3),
+      prop(flowers(random), -1.95, -0.55, minBuildings: 4),
+      // The island fills in as it grows.
+      prop(bush(size: 1.2), 0, -1.3, minBuildings: 1),
+      prop(flowers(random), 1.15, -1.4, minBuildings: 1),
+      prop(palmTree(lean: 2, height: 1.5), -1.15, -1.5, minBuildings: 2),
+      prop(bush(size: 0.9), -1.05, -1.1, minBuildings: 2),
+      prop(bush(), 1.9, -1, minBuildings: 2),
+      prop(rock(0.2, mossy: true), -1.9, -1, minBuildings: 2),
+      prop(flowers(random), 2.6, -1.2, minBuildings: 3),
+      prop(bush(size: 1.1), -2.6, -1.2, minBuildings: 3),
+      prop(palmTree(lean: 4, height: 1.4), 1.2, -1.9, minBuildings: 3),
+      prop(flowers(random), -0.2, -1.8, minBuildings: 4),
+      prop(rock(0.16, mossy: true), 0.45, -1.6, minBuildings: 4),
+      prop(bush(size: 0.8), 2.2, -2, minBuildings: 4),
+    ];
   }
 
   Node _foodTruck() {
@@ -464,47 +606,4 @@ class IslandWorld {
         matte(color, roughness: 0.7),
         position: position,
       );
-}
-
-vm.Quaternion _yaw(double angle) =>
-    vm.Quaternion.axisAngle(vm.Vector3(0, 1, 0), angle);
-
-/// A tapered plateau whose outline follows [radius] (by angle), with a flat
-/// top at [top] and walls flaring out by [bottomScale] down to [bottom].
-MeshGeometry _plateau({
-  required double Function(double angle) radius,
-  required double top,
-  required double bottom,
-  required double bottomScale,
-  int segments = 96,
-}) {
-  final builder = GeometryBuilder(deduplicate: false);
-  final center = builder.addVertex(vm.Vector3(0, top, 0));
-  final capRing = <int>[];
-  final sideTop = <int>[];
-  final sideBottom = <int>[];
-  for (var i = 0; i < segments; i++) {
-    final angle = i / segments * math.pi * 2;
-    final r = radius(angle);
-    final x = math.cos(angle);
-    final z = math.sin(angle);
-    capRing.add(builder.addVertex(vm.Vector3(x * r, top, z * r)));
-    sideTop.add(builder.addVertex(vm.Vector3(x * r, top, z * r)));
-    sideBottom.add(
-      builder.addVertex(
-        vm.Vector3(x * r * bottomScale, bottom, z * r * bottomScale),
-      ),
-    );
-  }
-  for (var i = 0; i < segments; i++) {
-    final j = (i + 1) % segments;
-    // Wound counter-clockwise around the outward normal: +Y on the cap,
-    // outwards on the walls.
-    builder
-      ..addTriangle(center, capRing[j], capRing[i])
-      ..addTriangle(sideTop[i], sideTop[j], sideBottom[i])
-      ..addTriangle(sideTop[j], sideBottom[j], sideBottom[i]);
-  }
-
-  return builder.build();
 }

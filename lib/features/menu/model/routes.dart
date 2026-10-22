@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/features/debug/debug.dart';
 import 'package:pushup_bro/features/friends/friends.dart';
 import 'package:pushup_bro/features/island/island.dart';
+import 'package:pushup_bro/features/jungle/jungle.dart';
 import 'package:pushup_bro/features/leaderboard/leaderboard.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 import 'package:pushup_bro/features/menu/widgets/page_container.dart';
@@ -64,6 +65,17 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
           const PageContainer(
             Debug(),
             menuTab: MenuTabInfo.debug,
+          ),
+        ),
+      // Carlos has just run in through the jungle's gate: fade in on him.
+      Jungle.routeName => PageRouteBuilder(
+          settings: settings,
+          transitionDuration: const Duration(milliseconds: 700),
+          reverseTransitionDuration: const Duration(milliseconds: 500),
+          pageBuilder: (context, _, __) => const Jungle(),
+          transitionsBuilder: (context, animation, _, child) => FadeTransition(
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+            child: child,
           ),
         ),
       LanguageSetting.routeName => CupertinoPageRoute(
