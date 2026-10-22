@@ -33,9 +33,15 @@ enum GorillaActivity { idle, pushups, walking }
 /// Local space: +Z is where the gorilla faces, +Y is up, the ground is y = 0.
 /// Add [root] to a scene, then call [update] every frame.
 class GorillaRig {
-  GorillaRig() {
-    final fur = matte(_fur, roughness: 0.75);
-    final face = matte(_face, roughness: 0.6);
+  /// [furColor] and [faceColor] tint the baby; [timeOffset] shifts its idle
+  /// animation so several gorillas side by side do not move in lockstep.
+  GorillaRig({
+    Color furColor = _fur,
+    Color faceColor = _face,
+    double timeOffset = 0,
+  }) : _time = timeOffset {
+    final fur = matte(furColor, roughness: 0.75);
+    final face = matte(faceColor, roughness: 0.6);
 
     _torso = meshNode(
       reshaped(SphereGeometry(radius: 0.27), vm.Vector3(1, 1.15, 0.92)),
@@ -95,6 +101,9 @@ class GorillaRig {
   /// Whether the gorilla is currently at the bottom of a pushup.
   bool inPushup = false;
 
+  /// Stride rate while walking; above 1 the waddle becomes a run.
+  double walkSpeed = 1;
+
   /// Whether to wear the party hat.
   bool get partyHat => _hat.visible;
   set partyHat(bool value) => _hat.visible = value;
@@ -111,7 +120,7 @@ class GorillaRig {
   final _shins = <Node>[];
   final _feet = <Node>[];
 
-  double _time = 0;
+  double _time;
   double _depth = 0;
   double _walkPhase = 0;
   final _weights = <GorillaActivity, double>{
@@ -282,7 +291,8 @@ class GorillaRig {
       );
     }
     _depth = springTo(_depth, inPushup ? 1 : 0, deltaSeconds, 14);
-    _walkPhase += deltaSeconds * 7 * _weights[GorillaActivity.walking]!;
+    _walkPhase +=
+        deltaSeconds * 7 * walkSpeed * _weights[GorillaActivity.walking]!;
 
     final pose = _Pose.blend([
       (_Pose.idle(_time), _weights[GorillaActivity.idle]!),
