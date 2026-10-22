@@ -96,6 +96,8 @@ class IslandWorld {
   double _builtRadius = _baseRadius;
   double _time = 0;
   double _lap = 0;
+  double _greeting = 0;
+  vm.Vector3 _greetToward = vm.Vector3(0, 0, 1);
 
   vm.Vector3? _runFrom;
   double _runProgress = 0;
@@ -119,10 +121,30 @@ class IslandWorld {
   /// Whether Carlos is on his way to the jungle.
   bool get running => _runFrom != null;
 
+  /// Whether Carlos is stopped, waving at the camera.
+  bool get greeting => _greeting > 0;
+
+  /// The top of Carlos's head, for hanging a speech bubble over it.
+  vm.Vector3 get carlosHead =>
+      gorilla.root.position + vm.Vector3(0, 1.05 * gorilla.root.scale.y, 0);
+
+  /// Whether [node] is part of Carlos.
+  bool isCarlos(Node node) => _within(node, gorilla.root);
+
   /// Whether [node] is part of the jungle: a tree, a rock, the hill...
-  bool isJungle(Node node) {
+  bool isJungle(Node node) => _within(node, jungle.root);
+
+  /// Stops Carlos's laps for [seconds] to turn towards [toward] (a world
+  /// direction, usually the camera) and wave.
+  void greet(vm.Vector3 toward, {double seconds = 3.4}) {
+    if (running) return;
+    _greeting = seconds;
+    _greetToward = vm.Vector3(toward.x, 0, toward.z)..normalize();
+  }
+
+  static bool _within(Node node, Node ancestor) {
     for (Node? n = node; n != null; n = n.parent) {
-      if (identical(n, jungle.root)) return true;
+      if (identical(n, ancestor)) return true;
     }
 
     return false;
@@ -170,6 +192,14 @@ class IslandWorld {
     final runFrom = _runFrom;
     if (runFrom != null) {
       _updateRun(runFrom, deltaSeconds);
+    } else if (_greeting > 0) {
+      _greeting -= deltaSeconds;
+      gorilla
+        ..activity = GorillaActivity.wave
+        ..root.rotation = vm.Quaternion.fromTwoVectors(
+          vm.Vector3(0, 0, 1),
+          _greetToward,
+        );
     } else {
       _updateLap(deltaSeconds);
     }

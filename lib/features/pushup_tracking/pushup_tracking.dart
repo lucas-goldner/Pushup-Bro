@@ -11,7 +11,6 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
-import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_state.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/news_cubit.dart';
@@ -120,7 +119,7 @@ class _PushupTrackingState extends State<PushupTracking> {
                 selector: (state) => state.inventory.monkeys.first,
                 builder: (context, monkey) => PushupStage(
                   tracking: started,
-                  partyHat: monkey.accessory == ShopBuyables.accessoryPartyHat,
+                  look: monkey.look,
                 ),
               ),
             ),

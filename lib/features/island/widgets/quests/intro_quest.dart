@@ -1,8 +1,8 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/widgets/pb_button.dart';
+import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 class IntroQuest extends StatefulWidget {
@@ -33,42 +33,42 @@ class _IntroQuestState extends State<IntroQuest> {
   }
 
   @override
-  Widget build(BuildContext context) => PageView(
-        controller: _pageController,
-        children: [
-          _buildPage(
-            text: '''
+  Widget build(BuildContext context) => SizedBox(
+        height: 400,
+        child: PageView(
+          controller: _pageController,
+          children: [
+            _buildPage(
+              text: '''
 Welcome to your new island!
-In the past it used to be inhibited by various monkeys.
+It used to be home to lots of monkeys.
 ''',
-            image: Assets.images.island.quests.intro.part1.image(
-              width: 160,
-              height: 160,
+              image: Assets.images.island.quests.intro.part1.image(
+                width: 160,
+                height: 160,
+              ),
             ),
-          ),
-          _buildPage(
-            text: '''
-Due to a mysterious storm all the monkeys have disappeared.
+            _buildPage(
+              text: '''
+Then a mysterious storm swept all the monkeys away.
 ''',
-            image: Assets.images.island.quests.intro.part2.image(
-              width: 160,
-              height: 160,
+              image: Assets.images.island.quests.intro.part2.image(
+                width: 160,
+                height: 160,
+              ),
             ),
-          ),
-          _buildPage(
-            text: '''
-Carlos the Gorilla feels lonely. 
-Help him restore his lively island
-by earning bananas through pushups 
-to buy buildings and decorations.
+            _buildPage(
+              text: '''
+Carlos the gorilla feels lonely. Help him rebuild his island by earning bananas with pushups, so his friends can find their way home.
 ''',
-            image: Assets.images.island.quests.intro.part3.image(
-              width: 160,
-              height: 160,
+              image: Assets.images.island.quests.intro.part3.image(
+                width: 160,
+                height: 160,
+              ),
+              showArrow: false,
             ),
-            showArrow: false,
-          ),
-        ],
+          ],
+        ),
       );
 
   Widget _buildPage({
@@ -77,41 +77,38 @@ to buy buildings and decorations.
     bool showArrow = true,
   }) =>
       Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              image,
-              const SizedBox(
-                height: 16,
-              ),
-              Text(
-                text,
-                textAlign: TextAlign.left,
-                style: context.textTheme.bodyMedium,
-              ),
-              if (showArrow)
-                GestureDetector(
-                  onTap: () => setState(() {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  }),
-                  child: const Icon(
-                    CarbonIcons.arrow_right,
-                    size: 32,
-                    color: primaryColor,
-                  ),
-                )
-              else
-                PBButton(
-                  'Help Carlos!',
-                  callback: widget.onClose,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          children: [
+            ClipRRect(borderRadius: BorderRadius.circular(24), child: image),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Text(
+                text.trim(),
+                textAlign: TextAlign.center,
+                style: defaultTextStyle.copyWith(
+                  color: background2,
+                  fontSize: 17,
+                  height: 1.45,
                 ),
-            ],
-          ),
+              ),
+            ),
+            if (showArrow)
+              PillButton(
+                label: 'Next',
+                icon: CarbonIcons.arrow_right,
+                onPressed: () => _pageController.nextPage(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                ),
+              )
+            else
+              PillButton(
+                label: 'Help Carlos!',
+                icon: CarbonIcons.favorite_filled,
+                onPressed: widget.onClose,
+              ),
+          ],
         ),
       );
 }

@@ -7,7 +7,6 @@ import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
-import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
@@ -33,8 +32,7 @@ class _JungleSceneState extends State<JungleScene> {
   void _populate(Scene scene) {
     final jungle = _jungle = JunglePatch(radius: 4.2, clearing: true, seed: 11);
     final inventory = context.read<GameInventoryCubit>().state.inventory;
-    _carlos.partyHat = inventory.monkeys.isNotEmpty &&
-        inventory.monkeys.first.accessory == ShopBuyables.accessoryPartyHat;
+    _carlos.look = inventory.monkeys.first.look;
     scene
       ..directionalLight = DirectionalLight(
         direction: vm.Vector3(-0.4, -1, -0.3),

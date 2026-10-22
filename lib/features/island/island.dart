@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
-import 'package:pushup_bro/features/island/model/game_menu_type.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
 import 'package:pushup_bro/features/island/widgets/game_menu.dart';
 import 'package:pushup_bro/features/island/widgets/island_dock.dart';
 import 'package:pushup_bro/features/island/widgets/island_scene.dart';
 import 'package:pushup_bro/features/island/widgets/island_top_bar.dart';
 import 'package:pushup_bro/features/island/widgets/quest_dialog.dart';
+import 'package:pushup_bro/features/wardrobe/wardrobe.dart';
 
 class Island extends StatefulWidget {
   const Island({super.key});
@@ -24,29 +24,22 @@ class Island extends StatefulWidget {
 class _IslandState extends State<Island> {
   bool _menuVisible = false;
   bool _questVisible = false;
-  GameMenuType _gameMenuType = GameMenuType.shop;
   QuestType _quest = QuestType.intro;
   bool _firstTimeVisiting = false;
   bool _isNewDayVisible = false;
   bool _journeying = false;
   final _sceneKey = GlobalKey<IslandSceneState>();
 
-  void openMenu(GameMenuType gameMenuType) => setState(() {
-        _gameMenuType = gameMenuType;
-        _menuVisible = true;
-      });
+  void openMenu() => setState(() => _menuVisible = true);
+
+  void openWardrobe() => Navigator.of(context).pushNamed(Wardrobe.routeName);
 
   void closeMenu() => setState(() {
         _menuVisible = false;
       });
 
-  void openQuest({
-    required GameMenuType gameMenuType,
-    required QuestType questType,
-  }) =>
-      setState(() {
+  void openQuest(QuestType questType) => setState(() {
         _quest = questType;
-        _gameMenuType = gameMenuType;
         _questVisible = true;
       });
 
@@ -124,9 +117,9 @@ class _IslandState extends State<Island> {
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: IslandDock(
-                    onShop: () => openMenu(GameMenuType.shop),
-                    onAccessories: () => openMenu(GameMenuType.accessories),
-                    onCarlos: () => openMenu(GameMenuType.monkey),
+                    onShop: openMenu,
+                    onAccessories: openWardrobe,
+                    onCarlos: openWardrobe,
                     onJungle: () => _sceneKey.currentState?.goToJungle(),
                   ),
                 ),
@@ -136,7 +129,6 @@ class _IslandState extends State<Island> {
           GameMenu(
             closeMenu: closeMenu,
             menuVisible: _menuVisible && !_firstTimeVisiting,
-            menuType: _gameMenuType,
           ),
           if (_questVisible)
             QuestDialog(

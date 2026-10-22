@@ -4,14 +4,17 @@ import 'package:pushup_bro/features/debug/debug.dart';
 import 'package:pushup_bro/features/friends/friends.dart';
 import 'package:pushup_bro/features/island/island.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
+import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/leaderboard/leaderboard.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 import 'package:pushup_bro/features/menu/widgets/page_container.dart';
 import 'package:pushup_bro/features/progress/progress.dart';
 import 'package:pushup_bro/features/pushup_tracking/pushup_tracking.dart';
+import 'package:pushup_bro/features/quest/quest_page.dart';
 import 'package:pushup_bro/features/settings/settings.dart';
 import 'package:pushup_bro/features/settings/view/settings_language.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
+import 'package:pushup_bro/features/wardrobe/wardrobe.dart';
 
 Route<CupertinoPageRoute<Widget>> generateRoutes(
   RouteSettings settings,
@@ -67,16 +70,27 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
             menuTab: MenuTabInfo.debug,
           ),
         ),
-      // Carlos has just run in through the jungle's gate: fade in on him.
+      // The island and the jungle fade through white themselves, so the
+      // routes swap in an instant while the screen is white.
       Jungle.routeName => PageRouteBuilder(
           settings: settings,
-          transitionDuration: const Duration(milliseconds: 700),
-          reverseTransitionDuration: const Duration(milliseconds: 500),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
           pageBuilder: (context, _, __) => const Jungle(),
-          transitionsBuilder: (context, animation, _, child) => FadeTransition(
-            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-            child: child,
-          ),
+        ),
+      QuestPage.routeName => PageRouteBuilder(
+          settings: settings,
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+          pageBuilder: (context, _, __) {
+            final (quest, replay) = settings.arguments! as (JungleQuest, bool);
+
+            return QuestPage(quest: quest, replay: replay);
+          },
+        ),
+      Wardrobe.routeName => CupertinoPageRoute(
+          settings: settings,
+          builder: (context) => const Wardrobe(),
         ),
       LanguageSetting.routeName => CupertinoPageRoute(
           builder: (context) => const LanguageSetting(),

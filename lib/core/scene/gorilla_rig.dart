@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:ui' show Color;
 
 import 'package:flutter_scene/scene.dart';
+import 'package:pushup_bro/core/model/monkey_look.dart';
+import 'package:pushup_bro/core/scene/costumes.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
@@ -10,9 +12,6 @@ const _face = Color(0xFFC9C4DD);
 const _eye = Color(0xFF15141B);
 const _sparkle = Color(0xFFFFFFFF);
 const _blush = Color(0xFFF4A3B4);
-const _hatPink = Color(0xFFF0707E);
-const _hatWhite = Color(0xFFF4F1EA);
-const _hatPompom = Color(0xFFF5C343);
 
 // Chibi proportions: a big head on a small round body with stubby limbs.
 // The baby stands about one unit tall.
@@ -47,6 +46,9 @@ enum GorillaActivity {
 
   /// Jumping for joy with both arms waving in the air.
   dance,
+
+  /// Standing and waving hello with its left paw.
+  wave,
 }
 
 /// A cute baby gorilla assembled from primitives and posed procedurally.
@@ -60,9 +62,10 @@ class GorillaRig {
     Color furColor = _fur,
     Color faceColor = _face,
     double timeOffset = 0,
+    MonkeyLook? look,
   }) : _time = timeOffset {
-    final fur = matte(furColor, roughness: 0.75);
-    final face = matte(faceColor, roughness: 0.6);
+    final fur = _furMaterial = matte(furColor, roughness: 0.75);
+    final face = _faceMaterial = matte(faceColor, roughness: 0.6);
 
     _torso = meshNode(
       reshaped(SphereGeometry(radius: 0.27), vm.Vector3(1, 1.15, 0.92)),
@@ -96,9 +99,14 @@ class GorillaRig {
       );
     }
 
-    _head = Node(name: 'head')..addAll(_buildHead(fur, face));
-    _hat = _buildPartyHat()..visible = false;
-    _head.add(_hat);
+    _head = Node(name: 'head')
+      ..addAll(_buildHead(fur, face))
+      ..add(_hatSlot)
+      ..add(_eyewearSlot);
+    _torso.add(_outfitSlot);
+    for (final (i, forearm) in _forearms.indexed) {
+      forearm.add(_forearmSlots[i]);
+    }
 
     root
       ..add(_torso)
@@ -110,6 +118,7 @@ class GorillaRig {
       ..addAll(_shins)
       ..addAll(_feet);
 
+    if (look != null) this.look = look;
     update(0);
   }
 
@@ -137,13 +146,42 @@ class GorillaRig {
     update(0);
   }
 
-  /// Whether to wear the party hat.
-  bool get partyHat => _hat.visible;
-  set partyHat(bool value) => _hat.visible = value;
+  /// The gorilla's colours and costume. Its mat is the caller's (see
+  /// [buildMat]).
+  MonkeyLook get look => _look;
+  set look(MonkeyLook value) {
+    if (value == _look && _dressed) return;
+    _dressed = true;
+    _look = value;
+    _furMaterial.baseColorFactor = linearColor(value.furColor);
+    _faceMaterial.baseColorFactor = linearColor(value.faceColor);
+    _dress(_hatSlot, [buildHat(value.hat)].nonNulls.toList());
+    _dress(
+      _eyewearSlot,
+      [buildEyewear(value.eyewear)].nonNulls.toList(),
+    );
+    final outfit = buildOutfit(value.outfit);
+    _dress(_outfitSlot, outfit.torso);
+    for (final (i, slot) in _forearmSlots.indexed) {
+      _dress(slot, [if (i < outfit.forearms.length) outfit.forearms[i]]);
+    }
+    _spinners
+      ..clear()
+      ..addAll(_findSpinners(_hatSlot));
+  }
+
+  MonkeyLook _look = const MonkeyLook();
+  bool _dressed = false;
+  late final PhysicallyBasedMaterial _furMaterial;
+  late final PhysicallyBasedMaterial _faceMaterial;
+  final Node _hatSlot = Node(name: 'hat');
+  final Node _eyewearSlot = Node(name: 'eyewear');
+  final Node _outfitSlot = Node(name: 'outfit');
+  final List<Node> _forearmSlots = [Node(), Node()];
+  final List<Node> _spinners = [];
 
   late final Node _torso;
   late final Node _head;
-  late final Node _hat;
   late final List<Node> _eyesOpen;
   late final List<Node> _eyesClosed;
   final _upperArms = <Node>[];
@@ -273,42 +311,16 @@ class GorillaRig {
     ];
   }
 
-  Node _buildPartyHat() {
-    final hat = Node(name: 'party-hat')
-      ..position = vm.Vector3(-0.1, 0.32, -0.02)
-      ..rotation = vm.Quaternion.fromTwoVectors(
-        vm.Vector3(0, 1, 0),
-        vm.Vector3(-0.3, 1, 0),
-      );
-    const height = 0.36;
-    const bottomRadius = 0.13;
-    const bands = 5;
-    for (var i = 0; i < bands; i++) {
-      final r0 = bottomRadius * (1 - i / bands);
-      final r1 = bottomRadius * (1 - (i + 1) / bands);
-      hat.add(
-        meshNode(
-          CylinderGeometry(
-            bottomRadius: r0,
-            topRadius: r1,
-            height: height / bands,
-            bottomCap: i == 0,
-            topCap: false,
-          ),
-          matte(i.isEven ? _hatPink : _hatWhite, roughness: 0.6),
-          position: vm.Vector3(0, height / bands * (i + 0.5), 0),
-        ),
-      );
-    }
+  static void _dress(Node slot, List<Node> parts) {
+    [...slot.children].forEach(slot.remove);
+    slot.addAll(parts);
+  }
 
-    return hat
-      ..add(
-        meshNode(
-          SphereGeometry(radius: 0.045),
-          matte(_hatPompom, roughness: 0.9),
-          position: vm.Vector3(0, height, 0),
-        ),
-      );
+  static Iterable<Node> _findSpinners(Node node) sync* {
+    if (node.name == 'spin') yield node;
+    for (final child in node.children) {
+      yield* _findSpinners(child);
+    }
   }
 
   /// Advances the animation by [deltaSeconds] and re-poses every part.
@@ -343,12 +355,17 @@ class GorillaRig {
               GorillaActivity.gobletSquat => _Pose.gobletSquat(_depth, _time),
               GorillaActivity.carrying => _Pose.carry(_walkPhase),
               GorillaActivity.dance => _Pose.dance(_time),
+              GorillaActivity.wave => _Pose.wave(_time),
             },
             weight,
           ),
     ]);
     _apply(pose);
     _blink();
+    for (final spinner in _spinners) {
+      spinner.rotation =
+          vm.Quaternion.axisAngle(vm.Vector3(0, 1, 0), _time * 9);
+    }
   }
 
   void _apply(_Pose pose) {
@@ -616,6 +633,24 @@ class _Pose {
       headTilt: sway * 0.22,
       headNod: -0.15,
       elbowPole: vm.Vector3(1, 0, 0),
+    );
+  }
+
+  /// Standing tall, waving its left paw high over its head.
+  factory _Pose.wave(double time) {
+    final swing = math.sin(time * 9);
+
+    return _Pose(
+      pelvis: vm.Vector3(0, 0.3 + math.sin(time * 4.5).abs() * 0.01, 0),
+      bodyPitch: 1.5,
+      hands: [
+        vm.Vector3(-0.24, 0.24, 0.08),
+        vm.Vector3(0.3 + swing * 0.07, 0.72, 0.1),
+      ],
+      feet: [vm.Vector3(-0.12, 0.04, 0.02), vm.Vector3(0.12, 0.04, 0.02)],
+      headTilt: -0.18 + swing * 0.05,
+      headNod: -0.12,
+      elbowPole: vm.Vector3(1, -0.4, 0),
     );
   }
 

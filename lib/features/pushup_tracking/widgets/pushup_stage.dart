@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart';
+import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_state.dart';
@@ -16,12 +17,12 @@ import 'package:vector_math/vector_math.dart' as vm;
 class PushupStage extends StatefulWidget {
   const PushupStage({
     required this.tracking,
-    required this.partyHat,
+    required this.look,
     super.key,
   });
 
   final bool tracking;
-  final bool partyHat;
+  final MonkeyLook look;
 
   @override
   State<PushupStage> createState() => _PushupStageState();
@@ -41,7 +42,7 @@ class _PushupStageState extends State<PushupStage> {
     _gym
       ?..tracking = widget.tracking
       ..inPushup = context.read<PushupCubit>().state.inPushup
-      ..carlos.partyHat = widget.partyHat;
+      ..carlosLook = widget.look;
   }
 
   void _populate(Scene scene) {
