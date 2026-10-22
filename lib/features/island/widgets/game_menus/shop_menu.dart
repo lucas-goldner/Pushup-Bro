@@ -1,13 +1,17 @@
 import 'package:carbon_icons/carbon_icons.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
-import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/model/game_inventory.dart';
+import 'package:pushup_bro/core/style/pb_colors.dart';
+import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
-import 'package:pushup_bro/generated/assets.gen.dart';
 
+/// The island's building shop: a grid of buildings; pick one, then build
+/// it for its price in bananas.
 class ShopMenu extends StatefulWidget {
   const ShopMenu({
     required this.closeMenu,
@@ -21,57 +25,20 @@ class ShopMenu extends StatefulWidget {
 }
 
 class _ShopMenuState extends State<ShopMenu> {
-  bool _showBuyConfirmation = false;
-  ShopBuyables? selectBuyable;
-  bool cantBuy = false;
-  String cantBuyReason = '';
+  ShopBuyables? _selected;
 
-  Future<void> selectItem(ShopBuyables buyable) async {
-    if (await checktIfCanBuy(buyable)) {
-      setState(() {
-        cantBuyReason = '';
-        cantBuy = false;
-        _showBuyConfirmation = true;
-        selectBuyable = buyable;
-      });
-    }
-  }
-
-  Future<bool> checktIfCanBuy(ShopBuyables buyable) async {
+  Future<void> _build(ShopBuyables building) async {
     final gameInvCubit = context.read<GameInventoryCubit>();
     await gameInvCubit.fetchInventory();
     final inventory = gameInvCubit.state.inventory;
-
-    if (inventory.bananas < buyable.price) {
-      setState(() {
-        _showBuyConfirmation = false;
-        cantBuy = true;
-        cantBuyReason = 'Not enough bananas';
-      });
-      return false;
+    if (inventory.bananas < building.price ||
+        inventory.boughtItems.contains(building)) {
+      return;
     }
-
-    if (inventory.boughtItems.contains(buyable)) {
-      setState(() {
-        _showBuyConfirmation = false;
-        cantBuy = true;
-        cantBuyReason = 'Already bought';
-      });
-      return false;
-    }
-
-    return true;
-  }
-
-  Future<void> confirmPurchase() async {
-    final gameInvCubit = context.read<GameInventoryCubit>();
-    await gameInvCubit.fetchInventory();
-    final inventory = gameInvCubit.state.inventory;
-    final boughItem = selectBuyable ?? ShopBuyables.accessories;
     await gameInvCubit.updateInventory(
       inventory.copyWith(
-        bananas: inventory.bananas - boughItem.price,
-        boughtItems: [...inventory.boughtItems, boughItem],
+        bananas: inventory.bananas - building.price,
+        boughtItems: [...inventory.boughtItems, building],
       ),
     );
     widget.closeMenu();
@@ -79,112 +46,115 @@ class _ShopMenuState extends State<ShopMenu> {
 
   @override
   Widget build(BuildContext context) =>
-      BlocSelector<GameInventoryCubit, GameInventoryState, List<ShopBuyables>>(
-        selector: (state) => state.inventory.boughtItems,
-        builder: (context, boughItems) => Column(
+      BlocSelector<GameInventoryCubit, GameInventoryState, GameInventory>(
+        selector: (state) => state.inventory,
+        builder: (context, inventory) {
+          final selected = _selected;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.86,
+                children: [
+                  for (final building in ShopBuyables.buildingsShopBuyables)
+                    _BuildingCard(
+                      building: building,
+                      built: inventory.boughtItems.contains(building),
+                      affordable: inventory.bananas >= building.price,
+                      selected: building == selected,
+                      onTap: () => setState(() => _selected = building),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (selected != null)
+                Center(
+                  child: _action(selected, inventory),
+                ),
+            ],
+          );
+        },
+      );
+
+  Widget _action(ShopBuyables building, GameInventory inventory) {
+    if (inventory.boughtItems.contains(building)) {
+      return SheetTag(
+        '${building.getLocalizedName(context)} is already on your island',
+        icon: CarbonIcons.checkmark_filled,
+        color: const Color(0xFF2FA37A),
+      );
+    }
+    final missing = building.price - inventory.bananas;
+    if (missing > 0) {
+      return SheetTag(
+        '$missing more bananas needed',
+        icon: CarbonIcons.warning_alt,
+        color: const Color(0xFFE5534B),
+      );
+    }
+
+    return PillButton(
+      label: 'Build for ${building.price}',
+      icon: CarbonIcons.construction,
+      onPressed: () => _build(building),
+    );
+  }
+}
+
+class _BuildingCard extends StatelessWidget {
+  const _BuildingCard({
+    required this.building,
+    required this.built,
+    required this.affordable,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ShopBuyables building;
+  final bool built;
+  final bool affordable;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => SheetCard(
+        selected: selected,
+        onTap: onTap,
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        child: Column(
           children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: ShopBuyables.buildingsShopBuyables
-                    .map(
-                      (buyable) => GestureDetector(
-                        onTap: () => selectItem(buyable),
-                        child: Container(
-                          constraints: const BoxConstraints(
-                            minWidth: 200,
-                          ),
-                          margin: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: context.colorScheme.surface,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(12),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Column(
-                              children: [
-                                buyable.genImg.image(
-                                  width: 100,
-                                ),
-                                Text(
-                                  buyable.getLocalizedName(context),
-                                  style: context.textTheme.labelLarge?.copyWith(
-                                    color: context.colorScheme.primary,
-                                  ),
-                                ),
-                                if (boughItems.contains(buyable))
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Already bought',
-                                        style: TextStyle(
-                                          color: context.colorScheme.primary,
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      const Icon(
-                                        CarbonIcons.checkmark,
-                                        color: CupertinoColors.activeGreen,
-                                      ),
-                                    ],
-                                  )
-                                else
-                                  Row(
-                                    children: [
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        buyable.price.toString(),
-                                        style: context.textTheme.labelLarge
-                                            ?.copyWith(
-                                          color: context.colorScheme.primary,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Assets.images.island.banana.image(
-                                        width: 48,
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
+            Expanded(
+              child: Opacity(
+                opacity: built ? 0.55 : 1,
+                child: building.genImg.image(fit: BoxFit.contain),
               ),
             ),
-            if (cantBuy)
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: context.colorScheme.surfaceDim,
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(12),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Text(
-                    cantBuyReason,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.colorScheme.error,
-                    ),
-                  ),
-                ),
+            const SizedBox(height: 8),
+            Text(
+              building.getLocalizedName(context),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: defaultTextStyle.copyWith(
+                fontWeight: FontWeight.w700,
+                color: background2,
               ),
-            if (_showBuyConfirmation)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
-                child: PillButton(
-                  label: 'Buy ${selectBuyable?.getLocalizedName(context)}',
-                  icon: CarbonIcons.shopping_cart,
-                  onPressed: confirmPurchase,
-                ),
-              ),
+            ),
+            const SizedBox(height: 6),
+            if (built)
+              const SheetTag(
+                'Built',
+                icon: CarbonIcons.checkmark,
+                color: Color(0xFF2FA37A),
+              )
+            else
+              BananaPrice(building.price, affordable: affordable),
           ],
         ),
       );

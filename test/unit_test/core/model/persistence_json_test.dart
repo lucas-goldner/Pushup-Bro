@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pushup_bro/core/model/friend.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
+import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/model/pushup.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
+import 'package:pushup_bro/core/model/quest_log.dart';
 import 'package:pushup_bro/core/model/user.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
@@ -27,9 +29,15 @@ void main() {
           AdoptableMonkey(
             name: 'Carlos',
             xp: 42,
-            accessory: ShopBuyables.accessoryPartyHat,
+            look: const MonkeyLook(
+              fur: 'fur.mint',
+              hat: 'hat.crown',
+              matPattern: 'pattern.stars',
+            ),
           ),
         ],
+        ownedCosmetics: const ['fur.mint', 'hat.crown', 'pattern.stars'],
+        quests: const QuestLog().complete('volcano', DateTime(2026, 10, 22)),
       );
 
       final decoded = GameInventory.fromJson(roundTrip(inventory));
@@ -38,10 +46,38 @@ void main() {
       expect(decoded.boughtItems, inventory.boughtItems);
       expect(decoded.monkeys.single.name, 'Carlos');
       expect(decoded.monkeys.single.xp, 42);
+      expect(decoded.monkeys.single.look, inventory.monkeys.single.look);
+      expect(decoded.ownedCosmetics, containsAll(inventory.ownedCosmetics));
+      expect(decoded.quests, inventory.quests);
+      expect(decoded.quests.completedOn(DateTime(2026, 10, 22, 23)), isTrue);
+    });
+
+    test('carries a party hat from before the wardrobe over', () {
+      final decoded = GameInventory.fromJson(const {
+        'bananas': 3,
+        'boughtItems': ['accessories', 'accessoryPartyHat'],
+        'monkeys': [
+          {'name': 'Carlos', 'xp': 0, 'accessory': 'accessoryPartyHat'},
+        ],
+      });
+
+      expect(decoded.monkeys.single.look.hat, 'hat.party');
+      // Saving and loading again doesn't pile up copies.
+      final again = GameInventory.fromJson(roundTrip(decoded));
       expect(
-        decoded.monkeys.single.accessory,
-        ShopBuyables.accessoryPartyHat,
+        again.ownedCosmetics.where((id) => id == 'hat.party'),
+        hasLength(1),
       );
+      expect(decoded.owns('hat.party'), isTrue);
+      expect(decoded.owns('hat.crown'), isFalse);
+      // The starting look is always owned.
+      expect(decoded.owns('fur.charcoal'), isTrue);
+    });
+
+    test('ignores cosmetics it no longer knows', () {
+      final look = MonkeyLook.fromJson(const {'hat': 'hat.gone', 'fur': 'x'});
+
+      expect(look, const MonkeyLook());
     });
 
     test('drops bought items it no longer knows', () {

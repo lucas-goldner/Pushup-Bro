@@ -19,7 +19,8 @@ import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/model/user.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
-import 'package:pushup_bro/core/widgets/pb_button.dart';
+import 'package:pushup_bro/core/widgets/island_sheet.dart';
+import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/progress/model/level_scalings.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/finished_pushup_sheet/finished_set_stats_item.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
@@ -216,311 +217,336 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
         ),
       );
 
+  static const _efforts = ['😌', '🙂', '😅', '😤', '🥵', '💀'];
+
   @override
   Widget build(BuildContext context) {
     final localized = context.l10n;
     final featureVariant =
         context.read<FeatureSwitchCubit>().state.featureVariant;
+    final pushups = widget.pushupSet.pushups.length;
 
     return BlocSelector<DBCubit, DBState, User>(
       selector: (state) => state.user,
-      builder: (context, user) {
-        return Material(
-          // Pin the surface rather than relying on the ambient canvas colour,
-          // which turns near-black whenever `Theme.of` resolves a theme
-          // derived from the dark `CupertinoApp` instead of the app theme.
-          color: context.colorScheme.surface,
-          child: SafeArea(
-            child: Stack(
-              children: [
-                Column(
+      builder: (context, user) => Material(
+        // Pin the surface rather than relying on the ambient canvas colour,
+        // which turns near-black whenever `Theme.of` resolves a theme
+        // derived from the dark `CupertinoApp` instead of the app theme.
+        color: context.colorScheme.surface,
+        child: SafeArea(
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     Row(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 16, top: 16),
+                        const SheetBadge('🏆', color: Color(0xFFF5A623)),
+                        const SizedBox(width: 14),
+                        Expanded(
                           child: Text(
                             localized.congrats,
-                            style: pageTitleTextStyle,
-                          ),
-                        ),
-                        const Spacer(),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
+                            style: pageTitleTextStyle.copyWith(
+                              fontSize: 26,
                               color: background2,
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                            child: IconButton(
-                              onPressed: closeModal,
-                              icon: Icon(
-                                CarbonIcons.close,
-                                color: context.colorScheme.surfaceBright,
-                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(
-                          width: 16,
-                        ),
+                        SheetCloseButton(onPressed: closeModal),
                       ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16, top: 16),
-                      child: Text(
-                        localized.difficulty,
-                        style: context.textTheme.titleSmall,
-                      ),
-                    ),
-                    Slider(
-                      value: difficultySliderValue,
-                      activeColor: context.colorScheme.inversePrimary,
-                      inactiveColor: context.colorScheme.secondary,
-                      max: 5,
-                      divisions: 5,
-                      label: difficultySliderValue.round().toString(),
-                      onChanged: (value) =>
-                          setState(() => difficultySliderValue = value),
-                    ),
+                    const SizedBox(height: 18),
+                    _hero(pushups),
+                    const SizedBox(height: 14),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Text(
-                          context.l10n.easyDifficulty,
-                          style: context.textTheme.bodyMedium,
+                        Expanded(
+                          child: FinishedSetStatsItem(
+                            icon: CarbonIcons.time,
+                            text: context.l10n.completedInXMinutes(
+                              widget.pushupSet.timeSpent.toString(),
+                            ),
+                          ),
                         ),
-                        Text(
-                          context.l10n.middleDifficulty,
-                          style: context.textTheme.bodyMedium,
-                        ),
-                        Text(
-                          context.l10n.hardDifficulty,
-                          style: context.textTheme.bodyMedium,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: FinishedSetStatsItem(
+                            icon: CarbonIcons.chart_average,
+                            text: context.l10n.onAverage(
+                              '$pushups/${widget.pushupSet.timeSpent}',
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    Padding(
-                      padding:
-                          const EdgeInsets.only(left: 16, top: 16, bottom: 16),
-                      child: Text(
-                        context.l10n.stats,
-                        style: context.textTheme.titleSmall,
+                    const SizedBox(height: 22),
+                    Text(
+                      localized.difficulty,
+                      style: headerTextStyle.copyWith(
+                        color: background2,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
                       ),
                     ),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: FinishedSetStatsItem(
-                              icon: CarbonIcons.time,
-                              text: context.l10n.completedInXMinutes(
-                                widget.pushupSet.timeSpent.toString(),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        for (final (i, emoji) in _efforts.indexed)
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3,
+                              ),
+                              child: _EffortChip(
+                                emoji: emoji,
+                                selected: difficultySliderValue.round() == i,
+                                onTap: () => setState(
+                                  () => difficultySliderValue = i.toDouble(),
+                                ),
                               ),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: FinishedSetStatsItem(
-                              icon: CarbonIcons.add_alt,
-                              text: context.l10n.madeXPushups(
-                                widget.pushupSet.pushups.length.toString(),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: FinishedSetStatsItem(
-                              icon: CarbonIcons.chart_average,
-                              text: context.l10n.onAverage(
-                                '${widget.pushupSet.pushups.length}/${widget.pushupSet.timeSpent}',
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      ],
                     ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        for (final label in [
+                          context.l10n.easyDifficulty,
+                          context.l10n.middleDifficulty,
+                          context.l10n.hardDifficulty,
+                        ])
+                          Text(
+                            label,
+                            style: defaultTextStyle.copyWith(
+                              fontSize: 13,
+                              color: background2.withValues(alpha: 0.55),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 22),
                     switch (featureVariant) {
-                      FeatureVariants.hookmodel => Column(
-                          children: [
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    context.l10n.progress,
-                                    style: context.textTheme.titleSmall,
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    context.l10n.level(level),
-                                    style:
-                                        context.textTheme.titleSmall?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: LinearProgressIndicator(
-                                value: _animation.value,
-                                backgroundColor: context.colorScheme.surface,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  context.colorScheme.primary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
-                                children: [
-                                  const Spacer(),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        context.l10n.pointsReceived(amountOfXP),
-                                        style: context.textTheme.titleSmall,
-                                      ),
-                                      BlocBuilder<ActiveEffectsCubit,
-                                          ActiveEffectsState>(
-                                        builder: (context, state) {
-                                          if (state
-                                              is ActiveEffectsStateActivated) {
-                                            return Column(
-                                              children: [
-                                                ...state.effects.map(
-                                                  (effect) => Text(
-                                                    effect
-                                                        .getLocalizedWithFactor(
-                                                      context,
-                                                    ),
-                                                    style: context
-                                                        .textTheme.titleSmall,
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          }
-
-                                          return const SizedBox.shrink();
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 8,
-                            ),
-                            Visibility(
-                              visible: levelUpVisible,
-                              child: Positioned.fill(
-                                child: BackdropFilter(
-                                  filter:
-                                      ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                                  child: Center(
-                                    child: DecoratedBox(
-                                      decoration: const BoxDecoration(
-                                        color: background,
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(20),
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(20),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              CarbonIcons.trophy,
-                                              size: 100,
-                                              color: ternaryColor,
-                                            ),
-                                            const SizedBox(
-                                              height: 16,
-                                            ),
-                                            Text(
-                                              context.l10n.levelReached(level),
-                                              style:
-                                                  context.textTheme.titleLarge,
-                                            ),
-                                            const SizedBox(
-                                              height: 20,
-                                            ),
-                                            PBButton(
-                                              localized.monkeyConfirm,
-                                              callback: () => setState(
-                                                () => levelUpVisible = false,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      FeatureVariants.gamification => Column(
-                          children: [
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(left: 16, right: 8),
-                                  child: Text(
-                                    context.l10n.bananasEarned(
-                                      widget.pushupSet.pushups.length,
-                                    ),
-                                    style: context.textTheme.titleSmall,
-                                  ),
-                                ),
-                                Assets.images.island.banana.image(
-                                  height: 40,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                          ],
-                        ),
+                      FeatureVariants.hookmodel => _levelProgress(),
+                      FeatureVariants.gamification => _bananas(pushups),
                     },
-                    PBButton(
-                      localized.saveSet,
-                      callback: closeModalAndSave,
-                      expanded: true,
+                    const SizedBox(height: 22),
+                    Center(
+                      child: PillButton(
+                        label: localized.saveSet,
+                        icon: CarbonIcons.checkmark,
+                        onPressed: closeModalAndSave,
+                      ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              if (levelUpVisible) _levelUp(),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
+
+  Widget _hero(int pushups) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF5E9EFF), Color(0xFF7C6CF2)],
+          ),
+          borderRadius: BorderRadius.circular(26),
+          boxShadow: [
+            BoxShadow(
+              color: accentColor.withValues(alpha: 0.35),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              '$pushups',
+              style: pushupTextStyle.copyWith(
+                fontSize: 64,
+                color: Colors.white,
+                height: 1,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              context.l10n.madeXPushups(pushups.toString()),
+              style: buttonTextStyle.copyWith(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _bananas(int pushups) => SheetCard(
+        color: const Color(0xFFFFF4D6),
+        child: Row(
+          children: [
+            Assets.images.island.banana.image(height: 44),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                context.l10n.bananasEarned(pushups),
+                style: headerTextStyle.copyWith(
+                  color: background2,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
+                ),
+              ),
+            ),
+            Text(
+              '+$pushups',
+              style: pushupTextStyle.copyWith(
+                fontSize: 26,
+                color: const Color(0xFFD08A28),
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _levelProgress() => SheetCard(
+        color: Colors.white,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Text(
+                  context.l10n.progress,
+                  style: headerTextStyle.copyWith(
+                    color: background2,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 17,
+                  ),
+                ),
+                const Spacer(),
+                SheetTag(context.l10n.level(level), icon: CarbonIcons.trophy),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: _animation.value,
+                minHeight: 12,
+                backgroundColor: background,
+                valueColor: const AlwaysStoppedAnimation<Color>(accentColor),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                context.l10n.pointsReceived(amountOfXP),
+                style: defaultTextStyle.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+            BlocBuilder<ActiveEffectsCubit, ActiveEffectsState>(
+              builder: (context, state) => state is ActiveEffectsStateActivated
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        for (final effect in state.effects)
+                          Text(
+                            effect.getLocalizedWithFactor(context),
+                            style: defaultTextStyle,
+                          ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      );
+
+  Widget _levelUp() => Positioned.fill(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+          child: Center(
+            child: Container(
+              margin: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: [
+                  BoxShadow(
+                    color: background2.withValues(alpha: 0.2),
+                    blurRadius: 40,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SheetBadge('🎉', size: 72, color: Color(0xFFF5A623)),
+                  const SizedBox(height: 16),
+                  Text(
+                    context.l10n.levelReached(level),
+                    textAlign: TextAlign.center,
+                    style: pageTitleTextStyle.copyWith(
+                      fontSize: 24,
+                      color: background2,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  PillButton(
+                    label: context.l10n.monkeyConfirm,
+                    onPressed: () => setState(() => levelUpVisible = false),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+class _EffortChip extends StatelessWidget {
+  const _EffortChip({
+    required this.emoji,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String emoji;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 52,
+        decoration: BoxDecoration(
+          color: selected ? background2 : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(18),
+            onTap: onTap,
+            child: Center(
+              child: AnimatedScale(
+                scale: selected ? 1.2 : 1,
+                duration: const Duration(milliseconds: 180),
+                child: Text(emoji, style: const TextStyle(fontSize: 24)),
+              ),
+            ),
+          ),
+        ),
+      );
 }

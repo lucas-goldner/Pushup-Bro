@@ -1,31 +1,19 @@
 import 'package:flutter/material.dart';
 
+/// The island's quest sheets. The jungle's daily quests live in
+/// `features/jungle/model/jungle_quest.dart`.
 enum QuestType {
   intro(dismissable: false),
   dailyLogin(dismissable: false),
-  jungleQuest(dismissable: true),
-  community(dismissable: true),
-  doubleValue(dismissable: false, canAppearAsJungleQuest: true),
-  fastPushups(dismissable: false, canAppearAsJungleQuest: true),
-  longPushups(dismissable: false, canAppearAsJungleQuest: true);
+  community(dismissable: true);
 
-  const QuestType({
-    required this.dismissable,
-    this.canAppearAsJungleQuest = false,
-  });
+  const QuestType({required this.dismissable});
 
   final bool dismissable;
-  final bool canAppearAsJungleQuest;
 
   String getLocalizedTitle(BuildContext context) => switch (this) {
-        intro => 'Intro Quest',
+        intro => 'Welcome to the island',
         community => 'Coming together',
-        dailyLogin => 'Daily Login',
-        jungleQuest => 'Jungle Quest',
-        _ => 'Nothingburger',
+        dailyLogin => 'Daily bananas',
       };
-
-  List<QuestType> get jungleQuests => QuestType.values
-      .where((questType) => questType.canAppearAsJungleQuest)
-      .toList();
 }

@@ -127,7 +127,12 @@ Node palmTree({double lean = 0, double height = 2}) {
 }
 
 /// A squashed, faceted boulder resting on the ground.
-Node rock(double size, {double turn = 0, bool mossy = false}) {
+Node rock(
+  double size, {
+  double turn = 0,
+  bool mossy = false,
+  Color color = rockGrey,
+}) {
   final node = Node(name: 'rock')
     ..add(
       meshNode(
@@ -136,7 +141,7 @@ Node rock(double size, {double turn = 0, bool mossy = false}) {
           vm.Vector3(1.3, 0.75, 1),
           rotation: yaw(turn),
         ),
-        matte(rockGrey, roughness: 0.9),
+        matte(color, roughness: 0.9),
         position: vm.Vector3(0, size * 0.25, 0),
       ),
     );
