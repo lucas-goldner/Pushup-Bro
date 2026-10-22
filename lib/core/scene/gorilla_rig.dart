@@ -26,7 +26,28 @@ const _shoulderWidth = 0.22;
 const _hipWidth = 0.12;
 
 /// What the gorilla is doing; poses blend smoothly between these.
-enum GorillaActivity { idle, pushups, walking }
+///
+/// The gym exercises ([deadlift], [benchPress], [curls], [gobletSquat])
+/// follow [GorillaRig.inPushup] just like [pushups], so a whole gym can rep
+/// in step. They need props (a bar, dumbbells, a bench) placed by the caller
+/// using [GorillaRig.hand].
+enum GorillaActivity {
+  idle,
+  pushups,
+  walking,
+  deadlift,
+
+  /// Lying on its back with the head towards -Z, on a bench top at y 0.24.
+  benchPress,
+  curls,
+  gobletSquat,
+
+  /// Running with something held in front of the belly (a rolled-up mat).
+  carrying,
+
+  /// Jumping for joy with both arms waving in the air.
+  dance,
+}
 
 /// A cute baby gorilla assembled from primitives and posed procedurally.
 ///
@@ -104,6 +125,18 @@ class GorillaRig {
   /// Stride rate while walking; above 1 the waddle becomes a run.
   double walkSpeed = 1;
 
+  /// Where hand [index] (0 is the gorilla's right, on -X) currently is, in
+  /// [root]'s space.
+  vm.Vector3 hand(int index) => _hands[index].position;
+
+  /// Jumps straight to [activity]'s pose instead of easing into it.
+  void settle() {
+    for (final entry in GorillaActivity.values) {
+      _weights[entry] = entry == activity ? 1 : 0;
+    }
+    update(0);
+  }
+
   /// Whether to wear the party hat.
   bool get partyHat => _hat.visible;
   set partyHat(bool value) => _hat.visible = value;
@@ -124,9 +157,8 @@ class GorillaRig {
   double _depth = 0;
   double _walkPhase = 0;
   final _weights = <GorillaActivity, double>{
-    GorillaActivity.idle: 1,
-    GorillaActivity.pushups: 0,
-    GorillaActivity.walking: 0,
+    for (final activity in GorillaActivity.values)
+      activity: activity == GorillaActivity.idle ? 1 : 0,
   };
 
   List<Node> _buildHead(Material fur, Material face) {
@@ -291,13 +323,29 @@ class GorillaRig {
       );
     }
     _depth = springTo(_depth, inPushup ? 1 : 0, deltaSeconds, 14);
-    _walkPhase +=
-        deltaSeconds * 7 * walkSpeed * _weights[GorillaActivity.walking]!;
+    _walkPhase += deltaSeconds *
+        7 *
+        walkSpeed *
+        (_weights[GorillaActivity.walking]! +
+            _weights[GorillaActivity.carrying]!);
 
     final pose = _Pose.blend([
-      (_Pose.idle(_time), _weights[GorillaActivity.idle]!),
-      (_Pose.pushup(_depth), _weights[GorillaActivity.pushups]!),
-      (_Pose.walk(_walkPhase), _weights[GorillaActivity.walking]!),
+      for (final MapEntry(key: activity, value: weight) in _weights.entries)
+        if (weight > 0.001)
+          (
+            switch (activity) {
+              GorillaActivity.idle => _Pose.idle(_time),
+              GorillaActivity.pushups => _Pose.pushup(_depth),
+              GorillaActivity.walking => _Pose.walk(_walkPhase),
+              GorillaActivity.deadlift => _Pose.deadlift(_depth, _time),
+              GorillaActivity.benchPress => _Pose.benchPress(_depth),
+              GorillaActivity.curls => _Pose.curls(_depth, _time),
+              GorillaActivity.gobletSquat => _Pose.gobletSquat(_depth, _time),
+              GorillaActivity.carrying => _Pose.carry(_walkPhase),
+              GorillaActivity.dance => _Pose.dance(_time),
+            },
+            weight,
+          ),
     ]);
     _apply(pose);
     _blink();
@@ -340,7 +388,10 @@ class GorillaRig {
         pose.hands[i],
         _upperArm,
         _forearm,
-        lateral * 0.7 - along * 0.5 - bodyUp * 0.3,
+        switch (pose.elbowPole) {
+          final pole? => vm.Vector3(pole.x * side, pole.y, pole.z),
+          null => lateral * 0.7 - along * 0.5 - bodyUp * 0.3,
+        },
       );
       placeBetween(_upperArms[i], shoulder, elbow);
       placeBetween(_forearms[i], elbow, hand);
@@ -382,6 +433,7 @@ class _Pose {
     this.headYaw = 0,
     this.headNod = 0,
     this.headTilt = 0,
+    this.elbowPole,
   }) : kneeBend = kneeBend ?? vm.Vector3(0, 0, 1);
 
   /// Sitting up with paws on its knees, bobbing and glancing around.
@@ -450,6 +502,123 @@ class _Pose {
     );
   }
 
+  /// Lifting a barbell from the floor; [depth] 1 is the bar on the floor.
+  factory _Pose.deadlift(double depth, double time) {
+    final barHeight = _lerp(0.3, 0.11, depth);
+
+    return _Pose(
+      pelvis:
+          vm.Vector3(0, _lerp(0.31, 0.2, depth), _lerp(-0.02, -0.12, depth)),
+      bodyPitch: _lerp(1.45, 0.8, depth),
+      hands: [
+        vm.Vector3(-0.2, barHeight, _lerp(0.13, 0.2, depth)),
+        vm.Vector3(0.2, barHeight, _lerp(0.13, 0.2, depth)),
+      ],
+      feet: [vm.Vector3(-0.13, 0.04, 0.04), vm.Vector3(0.13, 0.04, 0.04)],
+      headNod: _lerp(-0.05, 0.25, depth),
+      headYaw: math.sin(time * 0.5) * 0.2 * (1 - depth),
+      elbowPole: vm.Vector3(0.3, 0, -1),
+    );
+  }
+
+  /// Pressing a bar while lying on its back; [depth] 1 is the bar at the
+  /// chest. The head points to -Z.
+  factory _Pose.benchPress(double depth) {
+    const chest = 0.47;
+
+    return _Pose(
+      pelvis: vm.Vector3(0, chest, 0.12),
+      bodyPitch: math.pi,
+      hands: [
+        vm.Vector3(-0.21, _lerp(chest + 0.29, chest + 0.12, depth), -0.1),
+        vm.Vector3(0.21, _lerp(chest + 0.29, chest + 0.12, depth), -0.1),
+      ],
+      // Little legs hanging off the end of the bench.
+      feet: [vm.Vector3(-0.17, 0.12, 0.36), vm.Vector3(0.17, 0.12, 0.36)],
+      kneeBend: vm.Vector3(0, 1, 0.4),
+      headNod: -math.pi / 2 + 0.25,
+      elbowPole: vm.Vector3(1, -0.7, 0),
+    );
+  }
+
+  /// Dumbbell curls; [depth] 1 is the weights up at the shoulders.
+  factory _Pose.curls(double depth, double time) {
+    final bob = math.sin(time * 2.6) * 0.006;
+
+    return _Pose(
+      pelvis: vm.Vector3(0, 0.3 + bob, 0),
+      bodyPitch: _lerp(1.5, 1.42, depth),
+      hands: [
+        vm.Vector3(-0.21, _lerp(0.24, 0.48, depth), _lerp(0.1, 0.17, depth)),
+        vm.Vector3(0.21, _lerp(0.24, 0.48, depth), _lerp(0.1, 0.17, depth)),
+      ],
+      feet: [vm.Vector3(-0.12, 0.04, 0.02), vm.Vector3(0.12, 0.04, 0.02)],
+      headYaw: math.sin(time * 0.45) * 0.25 * (1 - depth),
+      headNod: _lerp(-0.05, 0.12, depth),
+      elbowPole: vm.Vector3(0.35, -1, -0.5),
+    );
+  }
+
+  /// Squatting with a kettlebell held at the chest; [depth] 1 is the bottom
+  /// of the squat.
+  factory _Pose.gobletSquat(double depth, double time) {
+    final handHeight = _lerp(0.44, 0.33, depth);
+    final handDepth = _lerp(0.22, 0.24, depth);
+
+    return _Pose(
+      pelvis: vm.Vector3(0, _lerp(0.3, 0.16, depth), _lerp(0, -0.12, depth)),
+      bodyPitch: _lerp(1.45, 1.2, depth),
+      hands: [
+        vm.Vector3(-0.06, handHeight, handDepth),
+        vm.Vector3(0.06, handHeight, handDepth),
+      ],
+      feet: [vm.Vector3(-0.17, 0.04, 0.05), vm.Vector3(0.17, 0.04, 0.05)],
+      kneeBend: vm.Vector3(0.6, 0, 1),
+      headYaw: math.sin(time * 0.5 + 1) * 0.2 * (1 - depth),
+      elbowPole: vm.Vector3(0.6, -1, 0),
+    );
+  }
+
+  /// [_Pose.walk] with both hands together in front, holding something.
+  factory _Pose.carry(double phase) {
+    final walk = _Pose.walk(phase);
+    final lift = math.cos(phase * 2) * 0.01;
+
+    return _Pose(
+      pelvis: walk.pelvis,
+      bodyPitch: 1.42,
+      hands: [
+        vm.Vector3(-0.17, 0.33 + lift, 0.21),
+        vm.Vector3(0.17, 0.33 + lift, 0.21),
+      ],
+      feet: walk.feet,
+      headTilt: walk.headTilt,
+      elbowPole: vm.Vector3(0.6, -1, 0),
+    );
+  }
+
+  /// Hopping on the spot with arms up, wiggling side to side.
+  factory _Pose.dance(double time) {
+    final hop = math.sin(time * 7).abs() * 0.1;
+    final sway = math.sin(time * 3.5);
+
+    return _Pose(
+      pelvis: vm.Vector3(sway * 0.04, 0.3 + hop, 0),
+      bodyPitch: 1.5,
+      hands: [
+        vm.Vector3(-0.31, 0.74 + hop + sway * 0.05, 0.06),
+        vm.Vector3(0.31, 0.74 + hop - sway * 0.05, 0.06),
+      ],
+      feet: [
+        vm.Vector3(-0.13, 0.04 + hop * 0.8, 0.03),
+        vm.Vector3(0.13, 0.04 + hop * 0.8, 0.03),
+      ],
+      headTilt: sway * 0.22,
+      headNod: -0.15,
+      elbowPole: vm.Vector3(1, 0, 0),
+    );
+  }
+
   factory _Pose.blend(List<(_Pose, double)> weighted) {
     final total = weighted.fold<double>(0, (sum, e) => sum + e.$2);
     vm.Vector3 mix(vm.Vector3 Function(_Pose) pick) => weighted.fold(
@@ -468,6 +637,8 @@ class _Pose {
       headYaw: mixValue((p) => p.headYaw),
       headNod: mixValue((p) => p.headNod),
       headTilt: mixValue((p) => p.headTilt),
+      // Poles don't blend meaningfully; follow the dominant pose.
+      elbowPole: weighted.reduce((a, b) => a.$2 >= b.$2 ? a : b).$1.elbowPole,
     );
   }
 
@@ -479,6 +650,10 @@ class _Pose {
   final double headYaw;
   final double headNod;
   final double headTilt;
+
+  /// Where the elbows point, for the gorilla's left arm (+X); mirrored for
+  /// the right. Null uses the default, out and behind the shoulders.
+  final vm.Vector3? elbowPole;
 }
 
 double _lerp(double a, double b, double t) => a + (b - a) * t;

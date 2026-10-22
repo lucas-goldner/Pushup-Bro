@@ -62,23 +62,32 @@ class _PushupStageState extends State<PushupStage> {
   }
 
   Camera _camera(Duration elapsed) {
-    // Looks past Carlos at the class behind him, drifting slowly so the
-    // scene never feels static. Far back with a narrow lens: a portrait
-    // phone sees little horizontally.
+    // Looks past Carlos at the gym behind him, far back with a narrow lens:
+    // a portrait phone sees little horizontally. It floats like a phone held
+    // up to film him: a slow drift, a side-to-side sway, a little bob and
+    // roll, all from a few out-of-step sines so it never visibly repeats.
     final t = elapsed.inMicroseconds / 1e6;
     final angle = gymViewAngle + math.sin(t * 0.18) * 0.06;
-    final target = gymToWorld(vm.Vector3(0, 0.55, -1.7));
+    final right = vm.Vector3(math.cos(angle), 0, -math.sin(angle));
+    final sway = math.sin(t * 0.9) * 0.18 + math.sin(t * 2.3 + 1) * 0.06;
+    final bob = math.sin(t * 1.7 + 0.5) * 0.05 + math.sin(t * 3.1) * 0.02;
+    final roll = math.sin(t * 1.1 + 2) * 0.025 + math.sin(t * 2.7) * 0.008;
+    final target = gymToWorld(vm.Vector3(0, 0.55, -1.7)) +
+        right * (math.sin(t * 1.3 + 2) * 0.05) +
+        vm.Vector3(0, math.sin(t * 1.9 + 1) * 0.03, 0);
     const distance = 8.6;
 
     return PerspectiveCamera(
       fovRadiansY: 32 * vm.degrees2Radians,
       position: target +
+          right * sway +
           vm.Vector3(
             math.sin(angle) * distance,
-            2.4,
+            2.4 + bob,
             math.cos(angle) * distance,
           ),
       target: target,
+      up: vm.Vector3(0, 1, 0) + right * roll,
     );
   }
 
