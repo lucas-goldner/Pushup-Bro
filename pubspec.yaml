@@ -56,6 +56,7 @@ flutter:
     - assets/images/island/quests/
     - assets/images/island/quests/intro/
     - assets/images/island/quests/jungle/
+    - assets/images/trek/
     - assets/rive/
     - flutter_scene_generated/
     - path: flutter_scene_generated/metal_ios/

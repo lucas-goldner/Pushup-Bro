@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:carbon_icons/carbon_icons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
@@ -20,7 +21,23 @@ import 'package:pushup_bro/features/trek/widgets/rest_panel.dart';
 import 'package:pushup_bro/features/trek/widgets/stats_sheet.dart';
 import 'package:pushup_bro/features/wardrobe/widgets/cosmetic_tile.dart';
 
-const _stageGap = 150.0;
+const _stageGap = 170.0;
+
+/// The ground colour of each stretch of the trail, from the Fern Trail up
+/// to the misty peak still to come.
+const _zones = [
+  Color(0xFF2E6B3F),
+  Color(0xFF225A35),
+  Color(0xFF3B5E48),
+  Color(0xFF2A5E78),
+  Color(0xFF8A7448),
+  Color(0xFF7A4F38),
+  Color(0xFF3E3352),
+  Color(0xFF5D6675),
+];
+
+/// Stops on the map: every stage, then the stretch still to come.
+int get _stops => TrekStage.all.length + 1;
 
 /// Whether [stage] can be played: the first, or the one after a cleared
 /// stage.
@@ -48,6 +65,7 @@ class TrekMapPage extends StatefulWidget {
 
 class _TrekMapPageState extends State<TrekMapPage> {
   TrekStage? _selected;
+  bool _soon = false;
   bool _white = true;
   bool _stats = false;
 
@@ -85,14 +103,19 @@ class _TrekMapPageState extends State<TrekMapPage> {
           final safe = MediaQuery.paddingOf(context);
 
           return Scaffold(
-            backgroundColor: const Color(0xFF1F4A33),
+            backgroundColor: _zones.first,
             body: Stack(
               children: [
                 Positioned.fill(
                   child: _Trail(
                     trek: trek,
                     selected: selected,
-                    onSelect: (stage) => setState(() => _selected = stage),
+                    soonSelected: _soon,
+                    onSelect: (stage) => setState(() {
+                      _selected = stage;
+                      _soon = false;
+                    }),
+                    onSoon: () => setState(() => _soon = true),
                     bottomPadding: 330 + safe.bottom,
                   ),
                 ),
@@ -110,12 +133,14 @@ class _TrekMapPageState extends State<TrekMapPage> {
                   left: 16,
                   right: 16,
                   bottom: safe.bottom + 16,
-                  child: _StagePanel(
-                    key: ValueKey(selected.id),
-                    stage: selected,
-                    trek: trek,
-                    onPlay: () => _play(selected),
-                  ),
+                  child: _soon
+                      ? const _ComingSoonPanel(key: ValueKey('soon'))
+                      : _StagePanel(
+                          key: ValueKey(selected.id),
+                          stage: selected,
+                          trek: trek,
+                          onPlay: () => _play(selected),
+                        ),
                 ),
                 if (_stats)
                   StatsSheet(onClose: () => setState(() => _stats = false)),
@@ -156,8 +181,8 @@ class _TopBar extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF123524),
-            const Color(0xFF123524).withValues(alpha: 0),
+            Colors.black.withValues(alpha: 0.45),
+            Colors.black.withValues(alpha: 0),
           ],
         ),
       ),
@@ -267,13 +292,17 @@ class _Trail extends StatefulWidget {
   const _Trail({
     required this.trek,
     required this.selected,
+    required this.soonSelected,
     required this.onSelect,
+    required this.onSoon,
     required this.bottomPadding,
   });
 
   final TrekProgress trek;
   final TrekStage selected;
+  final bool soonSelected;
   final ValueChanged<TrekStage> onSelect;
+  final VoidCallback onSoon;
   final double bottomPadding;
 
   @override
@@ -289,12 +318,16 @@ class _TrailState extends State<_Trail> {
     // Start with the current stage in view (the trail runs bottom to top).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
+      final done = TrekStage.all.every((s) => widget.trek.cleared(s.id));
       final index = TrekStage.all.indexOf(currentStage(widget.trek));
+      // Once every stage is cleared, show what's still to come.
       _scroll.jumpTo(
-        math.min(
-          _scroll.position.maxScrollExtent,
-          math.max(0, index - 1) * _stageGap,
-        ),
+        done
+            ? _scroll.position.maxScrollExtent
+            : math.min(
+                _scroll.position.maxScrollExtent,
+                math.max(0, index - 1) * _stageGap,
+              ),
       );
     });
   }
@@ -307,15 +340,25 @@ class _TrailState extends State<_Trail> {
 
   Offset _node(int index, double width) => Offset(
         width / 2 + math.sin(index * 1.35) * width * 0.27,
-        (TrekStage.all.length - 1 - index) * _stageGap + 150,
+        (_stops - 1 - index) * _stageGap + 250,
       );
+
+  /// Where stop [index]'s landmark sits: across the trail from its node.
+  Offset _landmark(int index, double width) {
+    final swing = math.sin(index * 1.35);
+    final side = swing.abs() < 0.2 ? (index.isEven ? 1 : -1) : -swing.sign;
+    final away = swing.abs() < 0.2 ? 0.3 : 0.2;
+
+    return Offset(width * (0.5 + side * away), _node(index, width).dy - 10);
+  }
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
-          final height = (TrekStage.all.length - 1) * _stageGap + 150 + 120;
+          final height = (_stops - 1) * _stageGap + 250 + 150;
           final current = currentStage(widget.trek);
+          final stages = TrekStage.all.length;
 
           return SingleChildScrollView(
             controller: _scroll,
@@ -329,10 +372,18 @@ class _TrailState extends State<_Trail> {
                 children: [
                   Positioned.fill(
                     child: CustomPaint(
+                      painter: _GroundPainter(
+                        stops: [
+                          for (var i = 0; i < _stops; i++) _node(i, width).dy,
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: CustomPaint(
                       painter: _TrailPainter(
                         points: [
-                          for (var i = 0; i < TrekStage.all.length; i++)
-                            _node(i, width),
+                          for (var i = 0; i < _stops; i++) _node(i, width),
                         ],
                         clearedUpTo: TrekStage.all
                             .where((s) => widget.trek.cleared(s.id))
@@ -340,17 +391,21 @@ class _TrailState extends State<_Trail> {
                       ),
                     ),
                   ),
-                  // Jungle around the trail.
-                  for (var i = 0; i < 22; i++)
+                  for (var i = 0; i < _stops; i++)
                     Positioned(
-                      left: (i * 97 % 100) / 100 * width - 20,
-                      top: i * height / 22,
-                      child: Opacity(
-                        opacity: 0.55,
-                        child: Text(
-                          ['🌴', '🌿', '🌳', '🪨', '🍄', '🌺'][i % 6],
-                          style: TextStyle(fontSize: 26.0 + (i * 7 % 18)),
+                      left: _landmark(i, width).dx - 72,
+                      top: _landmark(i, width).dy - 72,
+                      width: 144,
+                      height: 144,
+                      child: _Landmark(
+                        asset: TrekStage.landmarkFor(
+                          i < stages ? TrekStage.all[i].id : 'soon',
                         ),
+                        faded: i < stages &&
+                            !unlocked(widget.trek, TrekStage.all[i]),
+                        onTap: i < stages
+                            ? () => widget.onSelect(TrekStage.all[i])
+                            : widget.onSoon,
                       ),
                     ),
                   for (final (i, stage) in TrekStage.all.indexed)
@@ -364,16 +419,141 @@ class _TrailState extends State<_Trail> {
                         unlocked: unlocked(widget.trek, stage),
                         current:
                             stage == current && !widget.trek.cleared(stage.id),
-                        selected: stage == widget.selected,
+                        selected:
+                            !widget.soonSelected && stage == widget.selected,
                         onTap: () => widget.onSelect(stage),
                       ),
                     ),
+                  Positioned(
+                    left: _node(stages, width).dx - 60,
+                    top: _node(stages, width).dy - 44,
+                    width: 120,
+                    child: _SoonNode(
+                      selected: widget.soonSelected,
+                      onTap: widget.onSoon,
+                    ),
+                  ),
                 ],
               ),
             ),
           );
         },
       );
+}
+
+/// A landmark diorama on the map, bobbing gently, with a soft shadow.
+class _Landmark extends StatelessWidget {
+  const _Landmark({
+    required this.asset,
+    required this.faded,
+    required this.onTap,
+  });
+
+  final String asset;
+  final bool faded;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              bottom: 10,
+              child: Container(
+                width: 104,
+                height: 22,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(60),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 14,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Opacity(
+              opacity: faded ? 0.6 : 1,
+              child: ColorFiltered(
+                colorFilter: faded
+                    ? const ColorFilter.matrix([
+                        0.4, 0.4, 0.2, 0, 0, //
+                        0.4, 0.4, 0.2, 0, 0, //
+                        0.4, 0.4, 0.2, 0, 0, //
+                        0, 0, 0, 1, 0,
+                      ])
+                    : const ColorFilter.mode(
+                        Colors.transparent,
+                        BlendMode.dst,
+                      ),
+                child: Image.asset(asset, width: 144, height: 144),
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+/// The ground under the trail: a band of colour per stretch, blended into
+/// each other, dotted with soft clumps of foliage, water and stone.
+class _GroundPainter extends CustomPainter {
+  _GroundPainter({required this.stops});
+
+  /// The y of each stop, from the first stage (bottom) to the last.
+  final List<double> stops;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Bottom to top in the scroll view is high y to low y.
+    final colors = [for (var i = stops.length - 1; i >= 0; i--) _zones[i]];
+    final positions = [
+      for (var i = stops.length - 1; i >= 0; i--) stops[i] / size.height,
+    ];
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: colors,
+          stops: positions,
+        ).createShader(Offset.zero & size),
+    );
+
+    final random = math.Random(7);
+    for (var i = 0; i < stops.length; i++) {
+      final zone = _zones[i];
+      for (var k = 0; k < 14; k++) {
+        final center = Offset(
+          random.nextDouble() * size.width,
+          stops[i] + (random.nextDouble() - 0.5) * _stageGap,
+        );
+        final radius = 18 + random.nextDouble() * 46;
+        final light = random.nextBool();
+        canvas.drawOval(
+          Rect.fromCenter(
+            center: center,
+            width: radius * 2,
+            height: radius * 1.3,
+          ),
+          Paint()
+            ..color = Color.lerp(
+              zone,
+              light ? Colors.white : Colors.black,
+              light ? 0.1 : 0.16,
+            )!
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_GroundPainter oldDelegate) =>
+      !listEquals(oldDelegate.stops, stops);
 }
 
 class _TrailPainter extends CustomPainter {
@@ -403,7 +583,21 @@ class _TrailPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final all = _path(points);
+    final stagePoints = points.take(points.length - 1);
+    final all = _path(stagePoints);
+    // The stretch still to come: a dotted line into the mist.
+    final toCome = _path(points.skip(points.length - 2));
+    for (final metric in toCome.computeMetrics()) {
+      for (var d = 0.0; d < metric.length; d += 22) {
+        final at = metric.getTangentForOffset(d)?.position;
+        if (at == null) continue;
+        canvas.drawCircle(
+          at,
+          6,
+          Paint()..color = Colors.white.withValues(alpha: 0.5),
+        );
+      }
+    }
     canvas
       ..drawPath(
         all,
@@ -423,7 +617,7 @@ class _TrailPainter extends CustomPainter {
       );
     if (clearedUpTo > 0) {
       canvas.drawPath(
-        _path(points.take(math.min(points.length, clearedUpTo + 1))),
+        _path(stagePoints.take(math.min(points.length - 1, clearedUpTo + 1))),
         Paint()
           ..color = const Color(0xFFF5C343)
           ..style = PaintingStyle.stroke
@@ -693,6 +887,145 @@ class _StagePanel extends StatelessWidget {
                 color: const Color(0xFF6B7A72),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The last stop on the map: the trail runs on into the mist.
+class _SoonNode extends StatelessWidget {
+  const _SoonNode({required this.selected, required this.onTap});
+
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Container(
+              width: 86,
+              height: 86,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selected ? Colors.white : Colors.transparent,
+                  width: 4,
+                ),
+              ),
+              child: Container(
+                width: 72,
+                height: 72,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7D8696),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    width: 3,
+                  ),
+                ),
+                child: Text(
+                  '?',
+                  style: pageTitleTextStyle.copyWith(
+                    color: Colors.white,
+                    fontSize: 34,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5C343),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                context.l10n.trekComingSoon,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                style: buttonTextStyle.copyWith(
+                  color: background2,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+/// What the panel says about the stretch still to come.
+class _ComingSoonPanel extends StatelessWidget {
+  const _ComingSoonPanel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeOutBack,
+      builder: (context, t, child) => Transform.translate(
+        offset: Offset(0, (1 - t) * 40),
+        child: Opacity(opacity: t.clamp(0, 1), child: child),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        constraints: const BoxConstraints(maxWidth: 520),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 30,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Image.asset(TrekStage.landmarkFor('soon'), width: 84, height: 84),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.trekComingSoon,
+                    style: buttonTextStyle.copyWith(
+                      color: const Color(0xFFD08A28),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                  Text(
+                    l.trekComingSoonTitle,
+                    style: pageTitleTextStyle.copyWith(
+                      color: background2,
+                      fontSize: 22,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    l.trekComingSoonInfo,
+                    style: defaultTextStyle.copyWith(
+                      fontSize: 14,
+                      color: background2.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

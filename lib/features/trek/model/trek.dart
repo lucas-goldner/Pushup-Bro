@@ -166,6 +166,13 @@ class TrekStage {
 
   int get number => all.indexOf(this) + 1;
 
+  /// A little 3D diorama of the stage's place, shown beside it on the map.
+  String get landmark => landmarkFor(id);
+
+  /// The map's diorama for [id] (`soon` for the trail still to come).
+  static String landmarkFor(String id) =>
+      'assets/images/trek/landmark_$id.webp';
+
   static TrekStage? byId(String id) {
     for (final stage in all) {
       if (stage.id == id) return stage;

@@ -5,6 +5,7 @@ import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/model/cosmetics.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart' show GorillaRig;
+import 'package:pushup_bro/core/scene/nature_kit.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
@@ -248,31 +249,13 @@ Node _beanie() {
     );
 }
 
+/// A banana lying over the head, its ends drooping to the ears.
 Node _bananaHat() => Node(name: 'banana-hat')
   ..add(
-    _part(
-      TubeGeometry(
-        CatmullRomPath([
-          vm.Vector3(-0.3, 0.28, 0),
-          vm.Vector3(-0.12, 0.41, 0.02),
-          vm.Vector3(0.12, 0.41, 0.02),
-          vm.Vector3(0.3, 0.3, 0),
-        ]),
-        radius: 0.085,
-        radialSegments: 14,
-        stations: 24,
-      ),
-      matte(_yellow, roughness: 0.5),
-    ),
-  )
-  ..addAll([
-    for (final x in [-0.31, 0.31])
-      _part(
-        SphereGeometry(radius: 0.04),
-        matte(const Color(0xFF6B4A2F)),
-        at: vm.Vector3(x, 0.29, 0),
-      ),
-  ]);
+    banana()
+      ..position = vm.Vector3(0, 0.43, 0.01)
+      ..rotation = vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), math.pi),
+  );
 
 Node _flowerCrown() {
   final crown = Node(name: 'flower-crown');
