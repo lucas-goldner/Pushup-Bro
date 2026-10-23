@@ -20,12 +20,8 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
 
     final systemLanguage = await findSystemLocale();
 
-    emit(
-      SharedPreferencesLoaded(
-        language: Locale(selectedLanguage ?? systemLanguage.getLanguageCode()),
-        volumeLevel: state.volumeLevel,
-        firstPushupCompleted: state.firstPushupCompleted,
-      ),
+    _update(
+      language: Locale(selectedLanguage ?? systemLanguage.getLanguageCode()),
     );
 
     return selectedLanguage ?? systemLanguage.getLanguageCode();
@@ -61,13 +57,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
       locale.toLanguageTag(),
     );
 
-    emit(
-      SharedPreferencesLoaded(
-        language: locale,
-        volumeLevel: state.volumeLevel,
-        firstPushupCompleted: state.firstPushupCompleted,
-      ),
-    );
+    _update(language: locale);
   }
 
   Future<void> setVolume(int volume) async {
@@ -76,13 +66,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
       value: volume,
     );
 
-    emit(
-      SharedPreferencesLoaded(
-        language: state.language,
-        volumeLevel: volume,
-        firstPushupCompleted: state.firstPushupCompleted,
-      ),
-    );
+    _update(volumeLevel: volume);
   }
 
   Future<void> setFirstPushupCompleted({required bool completed}) async {
@@ -91,13 +75,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
       value: completed,
     );
 
-    emit(
-      SharedPreferencesLoaded(
-        language: state.language,
-        volumeLevel: state.volumeLevel,
-        firstPushupCompleted: completed,
-      ),
-    );
+    _update(firstPushupCompleted: completed);
   }
 
   Future<void> setFirstJoined() async {
@@ -127,9 +105,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
       SharedPreferencesKey.firstTimeIslandVisited,
       value: isFirstVisit,
     );
-    emit(
-      SharedPreferencesLoaded(firstTimeIslandVisited: isFirstVisit),
-    );
+    _update(firstTimeIslandVisited: isFirstVisit);
   }
 
   Future<bool> getFirstTimeIslandVisited() async {
@@ -138,10 +114,26 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
         ) ??
         true;
 
-    emit(
-      SharedPreferencesLoaded(firstTimeIslandVisited: isFirstVisit),
-    );
+    _update(firstTimeIslandVisited: isFirstVisit);
 
     return isFirstVisit;
   }
+
+  /// Emits the loaded state with the given fields changed, keeping the rest.
+  void _update({
+    Locale? language,
+    int? volumeLevel,
+    bool? firstPushupCompleted,
+    bool? firstTimeIslandVisited,
+  }) =>
+      emit(
+        SharedPreferencesLoaded(
+          language: language ?? state.language,
+          volumeLevel: volumeLevel ?? state.volumeLevel,
+          firstPushupCompleted:
+              firstPushupCompleted ?? state.firstPushupCompleted,
+          firstTimeIslandVisited:
+              firstTimeIslandVisited ?? state.firstTimeIslandVisited,
+        ),
+      );
 }

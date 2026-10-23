@@ -455,3 +455,113 @@ Color _tint(Color base, math.Random random) {
     blue: (base.b + shift).clamp(0, 1),
   );
 }
+
+/// A banana lying along X, curved like a smile (its ends up), about 0.6
+/// long. Five soft ridges run along it, it greens towards the stalk and
+/// ends in a brown nub at the tip and a cut stalk at the other end.
+MeshGeometry bananaGeometry() {
+  const stations = 48;
+  const sides = 30;
+  const bend = 0.75;
+  const curve = 0.45;
+  const stalkFrom = 0.84;
+  final yellow = linearColor(const Color(0xFFFAD03C));
+  final ochre = linearColor(const Color(0xFFE0A21E));
+  final green = linearColor(const Color(0xFFA9C23F));
+  final stalk = linearColor(const Color(0xFF7D8A35));
+  final brown = linearColor(const Color(0xFF5A3D22));
+  vm.Vector4 mix(vm.Vector4 a, vm.Vector4 b, double t) =>
+      a + (b - a) * t.clamp(0.0, 1.0);
+
+  double radiusAt(double t) {
+    if (t >= stalkFrom) {
+      // The stalk, flaring a little at the cut.
+      final s = (t - stalkFrom) / (1 - stalkFrom);
+      return 0.024 + 0.008 * math.pow(s, 4);
+    }
+    final s = t / stalkFrom;
+    final body = 0.098 * math.pow(math.sin(math.pi * (0.06 + 0.9 * s)), 0.5);
+    // Blend smoothly into the stalk.
+    final neck = ((s - 0.82) / 0.18).clamp(0.0, 1.0);
+    return body * (1 - neck) + 0.024 * neck;
+  }
+
+  final builder = GeometryBuilder();
+  final rings = <List<int>>[];
+  for (var i = 0; i <= stations; i++) {
+    final t = i / stations;
+    final angle = (t - 0.5) * 2 * bend;
+    final centre = vm.Vector3(
+      curve * math.sin(angle),
+      curve * (1 - math.cos(angle)),
+      0,
+    );
+    final inward = vm.Vector3(-math.sin(angle), math.cos(angle), 0);
+    final side = vm.Vector3(0, 0, 1);
+    final r = radiusAt(t);
+    final ring = <int>[];
+    for (var j = 0; j < sides; j++) {
+      final phi = j / sides * math.pi * 2;
+      final ridge = math.cos(5 * phi);
+      final rr = r * (0.94 + 0.06 * ridge);
+      // Colour: ochre on the ridges, green towards the stalk, brown ends.
+      var color = mix(yellow, ochre, 0.35 * math.max(0, ridge));
+      color = mix(color, green, (t - 0.62) / 0.22);
+      if (t >= stalkFrom) {
+        color = mix(stalk, brown, (t - 0.96) / 0.04);
+      }
+      color = mix(brown, color, t / 0.035);
+      builder.color(color);
+      ring.add(
+        builder.addVertex(
+          centre +
+              inward * (math.cos(phi) * rr) +
+              side * (math.sin(phi) * rr * 0.94),
+        ),
+      );
+    }
+    rings.add(ring);
+  }
+  for (var i = 0; i < stations; i++) {
+    for (var j = 0; j < sides; j++) {
+      final a = rings[i][j];
+      final b = rings[i][(j + 1) % sides];
+      final c = rings[i + 1][(j + 1) % sides];
+      final d = rings[i + 1][j];
+      builder
+        ..addTriangle(a, b, c)
+        ..addTriangle(a, c, d);
+    }
+  }
+  // Close both ends.
+  final ends = [(rings.first, 0.0, false), (rings.last, 1.0, true)];
+  for (final (ring, t, flip) in ends) {
+    final angle = (t - 0.5) * 2 * bend;
+    final tangent = vm.Vector3(math.cos(angle), math.sin(angle), 0);
+    builder.color(brown);
+    final cap = builder.addVertex(
+      vm.Vector3(curve * math.sin(angle), curve * (1 - math.cos(angle)), 0) +
+          tangent * (flip ? 0.004 : -0.012),
+    );
+    for (var j = 0; j < sides; j++) {
+      final a = ring[j];
+      final b = ring[(j + 1) % sides];
+      if (flip) {
+        builder.addTriangle(cap, a, b);
+      } else {
+        builder.addTriangle(cap, b, a);
+      }
+    }
+  }
+
+  return builder.build();
+}
+
+/// A [bananaGeometry] banana with a waxy finish.
+Node banana() => meshNode(
+      bananaGeometry(),
+      PhysicallyBasedMaterial()
+        ..metallicFactor = 0
+        ..roughnessFactor = 0.45,
+      name: 'banana',
+    );

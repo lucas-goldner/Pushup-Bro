@@ -9,6 +9,7 @@ class PillButton extends StatelessWidget {
     required this.onPressed,
     this.icon,
     this.color = background2,
+    this.compact = false,
     super.key,
   });
 
@@ -17,11 +18,14 @@ class PillButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Color color;
 
+  /// Smaller, to sit in a row with other things.
+  final bool compact;
+
   @override
   Widget build(BuildContext context) => AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        height: 60,
-        constraints: const BoxConstraints(minWidth: 240),
+        height: compact ? 48 : 60,
+        constraints: BoxConstraints(minWidth: compact ? 0 : 240),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(30),
@@ -39,7 +43,7 @@ class PillButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
             onTap: onPressed,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: EdgeInsets.symmetric(horizontal: compact ? 18 : 32),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -53,7 +57,7 @@ class PillButton extends StatelessWidget {
                     style: buttonTextStyle.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      fontSize: 18,
+                      fontSize: compact ? 16 : 18,
                       letterSpacing: 0.2,
                     ),
                   ),

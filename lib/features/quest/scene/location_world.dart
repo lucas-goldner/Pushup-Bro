@@ -7,7 +7,9 @@ import 'package:pushup_bro/core/scene/costumes.dart';
 import 'package:pushup_bro/core/scene/critters.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/nature_kit.dart';
+import 'package:pushup_bro/core/scene/reptiles.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
+import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
@@ -30,6 +32,30 @@ import 'package:vector_math/vector_math.dart' as vm;
           const Color(0xFF6FB7F2),
           const Color(0xFFFFE6F2)
         ),
+      ChallengeLocation.fernTrail => (
+          const Color(0xFF2E6B45),
+          const Color(0xFFBFE6B0)
+        ),
+      ChallengeLocation.canopy => (
+          const Color(0xFF5FA8E8),
+          const Color(0xFFDFF3E4)
+        ),
+      ChallengeLocation.swamp => (
+          const Color(0xFF1E3B36),
+          const Color(0xFF8FB8A0)
+        ),
+      ChallengeLocation.lake => (
+          const Color(0xFF4F8FD8),
+          const Color(0xFFF8DDB8)
+        ),
+      ChallengeLocation.gorge => (
+          const Color(0xFF7A3328),
+          const Color(0xFFF2B27A)
+        ),
+      ChallengeLocation.throne => (
+          const Color(0xFF1C1430),
+          const Color(0xFF5B3F7A)
+        ),
     };
 
 /// Builds the guest of a quest as an [Actor].
@@ -46,6 +72,13 @@ Actor actorFor(Character character) => switch (character) {
           ),
         ),
       Character.carlos => GorillaActor(),
+      Character.zip => Gecko(const Color(0xFF4FB35A)),
+      Character.skitter => Gecko(const Color(0xFFF2B630), skinny: true),
+      Character.frostbite => Iguana(const Color(0xFF4F9BE0)),
+      Character.snap => Croc(const Color(0xFF2F8443)),
+      Character.shifty => Chameleon(const Color(0xFF8B5FD9)),
+      Character.hiss => Snake(const Color(0xFFC2457A)),
+      Character.komo => KingKomo(),
     };
 
 /// A quest location in 3D: its scenery, Carlos and the quest's guest.
@@ -69,6 +102,12 @@ class LocationWorld {
           ChallengeLocation.moonBeach => _moonBeach(),
           ChallengeLocation.temple => _temple(),
           ChallengeLocation.skyIsland => _skyIsland(),
+          ChallengeLocation.fernTrail => _fernTrail(),
+          ChallengeLocation.canopy => _canopy(),
+          ChallengeLocation.swamp => _swamp(),
+          ChallengeLocation.lake => _lake(),
+          ChallengeLocation.gorge => _gorge(),
+          ChallengeLocation.throne => _throne(),
         },
       )
       ..add(_mat..visible = false)
@@ -89,6 +128,13 @@ class LocationWorld {
 
   /// How far the challenge has got, 0 to 1.
   double progress = 0;
+
+  /// The height of the floor under Carlos over time, for places where it
+  /// moves (the raft on the lake).
+  double Function(double time)? _floor;
+
+  /// The height enemies stand at: below the waterline on the lake.
+  double get enemyFloor => location == ChallengeLocation.lake ? -0.12 : 0;
 
   /// Where Carlos and the guest stand in the cutscene.
   static final carlosMark = vm.Vector3(-0.55, 0, 0.25);
@@ -124,6 +170,25 @@ class LocationWorld {
       ..root.rotation = yaw(-0.5);
   }
 
+  /// Carlos on his mat facing the enemies (towards -Z), with the guest at
+  /// his side, for a Jungle Trek battle.
+  void stageBattle() {
+    _challenge = true;
+    _mat
+      ..visible = true
+      ..position = vm.Vector3(0, 0, 0.7)
+      ..rotation = yaw(math.pi);
+    carlos
+      ..talking = false
+      ..root.position = vm.Vector3(0, 0, 0.6)
+      ..root.rotation = yaw(math.pi);
+    carlos.rig.activity = GorillaActivity.idle;
+    guest
+      ..talking = false
+      ..root.position = vm.Vector3(-1.05, 0, 1.2)
+      ..root.rotation = yaw(math.pi * 0.85);
+  }
+
   /// Carlos holds a plank while the set is tracked; the guest cheers.
   bool get tracking => guest.cheering;
   set tracking(bool value) {
@@ -150,6 +215,18 @@ class LocationWorld {
       carlos.update(deltaSeconds);
     }
     guest.update(deltaSeconds);
+    final floor = _floor;
+    if (floor != null) {
+      final y = floor(_time);
+      final roll = math.sin(_time * 0.9) * 0.03;
+      for (final node in [carlos.root, _mat]) {
+        node.position = vm.Vector3(node.position.x, y, node.position.z);
+      }
+      if (_challenge) {
+        carlos.root.rotation =
+            yaw(math.pi) * vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), roll);
+      }
+    }
     for (final animate in _animations) {
       animate(_time, deltaSeconds);
     }
@@ -733,6 +810,601 @@ class LocationWorld {
         stripe.visible = i < shown;
       }
     });
+
+    return scene;
+  }
+
+  /// A sunny jungle clearing with a dirt trail running into the trees.
+  Node _fernTrail() {
+    final scene = Node(name: 'fern-trail')
+      ..add(
+        meshNode(
+          plateau(
+            radius: (a) => 16,
+            top: -0.02,
+            bottom: -0.6,
+            bottomScale: 1,
+            segments: 48,
+          ),
+          matte(const Color(0xFF5DA84E), roughness: 0.95),
+        ),
+      )
+      ..add(
+        meshNode(
+          RibbonGeometry(
+            CatmullRomPath([
+              vm.Vector3(0, 0.005, 6),
+              vm.Vector3(0.4, 0.005, 1),
+              vm.Vector3(-0.3, 0.005, -4),
+              vm.Vector3(0.6, 0.005, -12),
+            ]),
+            width: 1.8,
+            stations: 40,
+          ),
+          matte(const Color(0xFFC79A64), roughness: 0.95),
+        ),
+      )
+      ..add(
+        JunglePatch(radius: 7.5, clearing: true, seed: 3).root
+          ..position = vm.Vector3(0, -0.14, -2),
+      );
+
+    return scene;
+  }
+
+  /// A rope bridge high in the canopy, gently swaying, between giant trees.
+  Node _canopy() {
+    final wood = matte(const Color(0xFF9A6B47), roughness: 0.8);
+    final rope = matte(const Color(0xFFD9B98A), roughness: 0.9);
+    final bridge = Node(name: 'bridge');
+    for (var z = 5.0; z > -14; z -= 0.42) {
+      bridge.add(
+        meshNode(
+          reshaped(
+            CuboidGeometry(vm.Vector3.all(1)),
+            vm.Vector3(2.2, 0.08, 0.36),
+          ),
+          wood,
+          position: vm.Vector3(0, -0.04, z),
+          rotation: yaw(math.sin(z * 3.1) * 0.04),
+        ),
+      );
+    }
+    for (final x in [-1.15, 1.15]) {
+      for (final y in [0.45, 0.9]) {
+        bridge.add(
+          meshNode(
+            TubeGeometry(
+              CatmullRomPath([
+                for (var z = 5.0; z >= -14; z -= 2)
+                  vm.Vector3(
+                    x,
+                    y - math.sin((z + 14) / 19 * math.pi) * 0.15,
+                    z,
+                  ),
+              ]),
+              radius: 0.03,
+              radialSegments: 6,
+              stations: 60,
+            ),
+            rope,
+          ),
+        );
+      }
+      for (var z = 4.0; z > -14; z -= 3) {
+        bridge.add(
+          meshNode(
+            CylinderGeometry(bottomRadius: 0.05, topRadius: 0.05),
+            wood,
+            position: vm.Vector3(x, 0.45, z),
+          ),
+        );
+      }
+    }
+    _animations.add((time, _) {
+      bridge.rotation =
+          vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), math.sin(time) * 0.012);
+    });
+    final scene = Node(name: 'canopy')..add(bridge);
+    // Giant trunks rising from far below, crowned with leaves.
+    final random = math.Random(8);
+    for (final (x, z) in [
+      (-4.5, 2.0),
+      (4.5, 0.0),
+      (-5.5, -6.0),
+      (5.0, -8.0),
+      (-3.5, -13.0),
+      (3.5, -15.0),
+    ]) {
+      scene
+        ..add(
+          meshNode(
+            CylinderGeometry(
+              bottomRadius: 1.1,
+              topRadius: 0.8,
+              height: 22,
+              radialSegments: 20,
+            ),
+            matte(const Color(0xFF7A5238), roughness: 0.9),
+            position: vm.Vector3(x, -8, z),
+          ),
+        )
+        ..addAll([
+          for (var i = 0; i < 4; i++)
+            meshNode(
+              IcosphereGeometry(
+                radius: 1.6 + random.nextDouble(),
+                subdivisions: 1,
+              ),
+              matte(leafGreens[random.nextInt(leafGreens.length)]),
+              position: vm.Vector3(
+                x + (random.nextDouble() - 0.5) * 2.4,
+                3 + random.nextDouble() * 1.5,
+                z + (random.nextDouble() - 0.5) * 2.4,
+              ),
+            ),
+        ]);
+    }
+    // A floor of treetops far below.
+    for (var i = 0; i < 24; i++) {
+      scene.add(
+        meshNode(
+          IcosphereGeometry(
+            radius: 2 + random.nextDouble() * 1.5,
+            subdivisions: 1,
+          ),
+          matte(leafGreens[random.nextInt(leafGreens.length)]),
+          position: vm.Vector3(
+            (random.nextDouble() - 0.5) * 30,
+            -9 - random.nextDouble() * 2,
+            -random.nextDouble() * 30 + 6,
+          ),
+        ),
+      );
+    }
+
+    return scene;
+  }
+
+  /// A misty swamp: black water, lily pads, dead trees and drifting fog.
+  Node _swamp() {
+    final scene = Node(name: 'swamp')
+      ..add(
+        meshNode(
+          DiscGeometry(radius: 60, segments: 48),
+          matte(const Color(0xFF29473F), roughness: 0.08),
+          position: vm.Vector3(0, -0.06, 0),
+        ),
+      )
+      ..add(
+        meshNode(
+          plateau(
+            radius: (a) => 3.2 * (1 + 0.12 * math.sin(3 * a + 1)),
+            top: 0,
+            bottom: -0.3,
+            bottomScale: 1.2,
+          ),
+          matte(const Color(0xFF5A5038), roughness: 0.95),
+          position: vm.Vector3(0, 0, -0.6),
+        ),
+      );
+    final random = math.Random(4);
+    final pad = matte(const Color(0xFF4E9A48), roughness: 0.6);
+    for (var i = 0; i < 18; i++) {
+      final a = random.nextDouble() * math.pi * 2;
+      final r = 4 + random.nextDouble() * 6;
+      final at = vm.Vector3(math.cos(a) * r, -0.04, math.sin(a) * r - 2);
+      scene.add(
+        meshNode(
+          CylinderGeometry(
+            bottomRadius: 0.3 + random.nextDouble() * 0.2,
+            topRadius: 0.3 + random.nextDouble() * 0.2,
+            height: 0.02,
+            radialSegments: 16,
+          ),
+          pad,
+          position: at,
+        ),
+      );
+      if (i % 3 == 0) {
+        scene.add(
+          meshNode(
+            IcosphereGeometry(radius: 0.08, subdivisions: 1),
+            matte(const Color(0xFFF7A8C8)),
+            position: at + vm.Vector3(0.1, 0.06, 0),
+          ),
+        );
+      }
+    }
+    // Dead trees with crooked branches.
+    final bark = matte(const Color(0xFF4A3A30), roughness: 0.95);
+    for (final (x, z, h) in [
+      (-4.0, -3.0, 4.0),
+      (4.5, -5.0, 5.0),
+      (-6.0, -9.0, 5.5),
+      (6.5, -1.0, 3.5),
+    ]) {
+      scene
+        ..add(
+          meshNode(
+            TubeGeometry(
+              CatmullRomPath([
+                vm.Vector3(x, -0.1, z),
+                vm.Vector3(x + 0.3, h * 0.5, z),
+                vm.Vector3(x - 0.2, h, z + 0.2),
+              ]),
+              radius: 0.22,
+              radialSegments: 10,
+              stations: 20,
+            ),
+            bark,
+          ),
+        )
+        ..addAll([
+          for (final side in [-1.0, 1.0])
+            meshNode(
+              TubeGeometry(
+                CatmullRomPath([
+                  vm.Vector3(x, h * 0.6, z),
+                  vm.Vector3(x + side * 0.9, h * 0.75, z),
+                  vm.Vector3(x + side * 1.3, h * 0.95, z + 0.2),
+                ]),
+                radius: 0.07,
+                radialSegments: 6,
+                stations: 12,
+              ),
+              bark,
+            ),
+        ]);
+    }
+    // Fog banks drifting over the water.
+    final fog = matte(const Color(0xFFC9DCD2), roughness: 1);
+    for (var i = 0; i < 10; i++) {
+      final puff = meshNode(
+        reshaped(
+          IcosphereGeometry(radius: 1.4),
+          vm.Vector3(2.2, 0.35, 1),
+        ),
+        fog,
+      );
+      final home = vm.Vector3(
+        (random.nextDouble() - 0.5) * 24,
+        0.1 + random.nextDouble() * 0.4,
+        -4 - random.nextDouble() * 14,
+      );
+      final speed = 0.2 + random.nextDouble() * 0.3;
+      scene.add(puff);
+      _animations.add((time, _) {
+        puff.position = home + vm.Vector3((time * speed + 12) % 24 - 12, 0, 0);
+      });
+    }
+
+    return scene;
+  }
+
+  /// Lake Snapjaw: wide water, far shores, and Carlos on a bobbing raft.
+  Node _lake() {
+    final wood = matte(const Color(0xFFA77B4F), roughness: 0.8);
+    final raft = Node(name: 'raft');
+    for (var i = -3; i <= 3; i++) {
+      raft.add(
+        meshNode(
+          CylinderGeometry(
+            bottomRadius: 0.16,
+            topRadius: 0.16,
+            height: 2.4,
+            radialSegments: 12,
+          ),
+          wood,
+          position: vm.Vector3(i * 0.32, -0.16, 0),
+          rotation: vm.Quaternion.axisAngle(vm.Vector3(1, 0, 0), math.pi / 2),
+        ),
+      );
+    }
+    for (final z in [-0.9, 0.9]) {
+      raft.add(
+        meshNode(
+          reshaped(
+            CuboidGeometry(vm.Vector3.all(1)),
+            vm.Vector3(2.4, 0.06, 0.18),
+          ),
+          matte(const Color(0xFF7A5238)),
+          position: vm.Vector3(0, 0, z),
+        ),
+      );
+    }
+    // A little mast with a banana flag.
+    raft
+      ..add(
+        meshNode(
+          CylinderGeometry(bottomRadius: 0.04, topRadius: 0.04, height: 2.2),
+          wood,
+          position: vm.Vector3(-1, 1.1, 0.9),
+        ),
+      )
+      ..add(
+        meshNode(
+          reshaped(
+            CuboidGeometry(vm.Vector3.all(1)),
+            vm.Vector3(0.6, 0.4, 0.02),
+          ),
+          matte(const Color(0xFFF5C343)),
+          position: vm.Vector3(-0.7, 1.95, 0.9),
+        ),
+      );
+    final scene = Node(name: 'lake')
+      ..add(
+        meshNode(
+          DiscGeometry(radius: 90, segments: 64),
+          matte(const Color(0xFF3F8FC4), roughness: 0.06),
+          position: vm.Vector3(0, -0.02, 0),
+        ),
+      )
+      ..add(raft);
+    _floor = (time) => 0.05 + math.sin(time * 1.3) * 0.05;
+    _animations.add((time, _) {
+      raft
+        ..position = vm.Vector3(0, _floor!(time), 0.7)
+        ..rotation = vm.Quaternion.axisAngle(
+          vm.Vector3(0, 0, 1),
+          math.sin(time * 0.9) * 0.03,
+        );
+    });
+    // Ripples around the raft.
+    final ripple = matte(const Color(0xFF8CCBE8), roughness: 0.3);
+    for (var i = 0; i < 3; i++) {
+      final ring = meshNode(
+        RingGeometry(innerRadius: 1.6, outerRadius: 1.7, segments: 48),
+        ripple,
+        position: vm.Vector3(0, 0, 0.7),
+      );
+      scene.add(ring);
+      _animations.add((time, _) {
+        final t = (time * 0.4 + i / 3) % 1;
+        ring.scale = vm.Vector3.all(1 + t * 1.5);
+      });
+    }
+    // Far shores with palms, and mountains beyond.
+    for (final (x, z, r) in [
+      (-14.0, -22.0, 6.0),
+      (12.0, -26.0, 7.0),
+      (0.0, -40.0, 10.0),
+    ]) {
+      scene.add(
+        meshNode(
+          plateau(
+            radius: (a) => r * (1 + 0.1 * math.sin(3 * a)),
+            top: 0.3,
+            bottom: -0.3,
+            bottomScale: 1.1,
+            segments: 32,
+          ),
+          matte(const Color(0xFF6FB05A)),
+          position: vm.Vector3(x, 0, z),
+        ),
+      );
+      for (var i = 0; i < 3; i++) {
+        scene.add(
+          palmTree(lean: i * 2.0, height: 2.2 + i * 0.3)
+            ..position = vm.Vector3(x + (i - 1) * r * 0.4, 0.3, z + r * 0.3),
+        );
+      }
+    }
+    for (final (x, z, h) in [(-20.0, -55.0, 14.0), (18.0, -60.0, 18.0)]) {
+      scene.add(
+        meshNode(
+          CylinderGeometry(
+            bottomRadius: h * 0.8,
+            height: h,
+            radialSegments: 24,
+          ),
+          matte(const Color(0xFF7C8FA8), roughness: 1),
+          position: vm.Vector3(x, h / 2, z),
+        ),
+      );
+    }
+
+    return scene;
+  }
+
+  /// Serpent Gorge: red rock walls, dry ground, bones and vines.
+  Node _gorge() {
+    final rockMaterial = matte(const Color(0xFFB4654A), roughness: 0.95);
+    final scene = Node(name: 'gorge')
+      ..add(
+        meshNode(
+          plateau(
+            radius: (a) => 18,
+            top: -0.02,
+            bottom: -0.6,
+            bottomScale: 1,
+            segments: 48,
+          ),
+          matte(const Color(0xFFD9A36A), roughness: 0.95),
+        ),
+      );
+    final random = math.Random(6);
+    for (final side in [-1.0, 1.0]) {
+      for (var z = 6.0; z > -26; z -= 2.6) {
+        final w = 2.5 + random.nextDouble() * 1.5;
+        final h = 5 + random.nextDouble() * 5;
+        scene.add(
+          meshNode(
+            reshaped(
+              IcosphereGeometry(radius: 1, subdivisions: 1),
+              vm.Vector3(w, h, 2.2),
+              rotation: yaw(random.nextDouble()),
+            ),
+            rockMaterial,
+            position:
+                vm.Vector3(side * (4.6 + random.nextDouble()), h * 0.4, z),
+          ),
+        );
+      }
+    }
+    for (var i = 0; i < 8; i++) {
+      scene.add(
+        rock(
+          0.2 + random.nextDouble() * 0.3,
+          turn: i.toDouble(),
+          color: const Color(0xFF9C5A42),
+        )..position = vm.Vector3(
+            (random.nextDouble() - 0.5) * 6,
+            0,
+            -random.nextDouble() * 9 + 2.5,
+          ),
+      );
+    }
+    // Bones of those who failed (cartoon ones).
+    final bone = matte(const Color(0xFFF4EDE1));
+    for (final (x, z, a) in [(-2.2, -1.5, 0.4), (2.5, -3.5, 2.0)]) {
+      scene.add(
+        Node()
+          ..position = vm.Vector3(x, 0.05, z)
+          ..rotation = yaw(a)
+          ..add(
+            meshNode(
+              CapsuleGeometry(radius: 0.04, height: 0.4),
+              bone,
+              rotation:
+                  vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), math.pi / 2),
+            ),
+          )
+          ..addAll([
+            for (final s in [-1.0, 1.0])
+              meshNode(
+                SphereGeometry(radius: 0.06),
+                bone,
+                position: vm.Vector3(s * 0.22, 0, 0),
+              ),
+          ]),
+      );
+    }
+    return scene;
+  }
+
+  /// The Throne of Scales: a stone hall, braziers, banners, a red carpet
+  /// up to the King's throne.
+  Node _throne() {
+    final stone = matte(const Color(0xFF5E6672), roughness: 0.9);
+    final darkStone = matte(const Color(0xFF474E59), roughness: 0.9);
+    final gold = matte(const Color(0xFFE8B83A), roughness: 0.3)
+      ..metallicFactor = 0.85;
+    final scene = Node(name: 'throne');
+    for (var x = -4; x <= 4; x++) {
+      for (var z = -12; z <= 4; z++) {
+        scene.add(
+          meshNode(
+            reshaped(
+              CuboidGeometry(vm.Vector3.all(1)),
+              vm.Vector3(0.96, 0.1, 0.96),
+            ),
+            (x + z).isEven ? stone : darkStone,
+            position: vm.Vector3(x.toDouble(), -0.05, z.toDouble()),
+          ),
+        );
+      }
+    }
+    scene
+      ..add(
+        meshNode(
+          reshaped(
+            CuboidGeometry(vm.Vector3.all(1)),
+            vm.Vector3(1.6, 0.02, 16),
+          ),
+          matte(const Color(0xFFB0303A), roughness: 0.9),
+          position: vm.Vector3(0, 0.01, -4),
+        ),
+      )
+      // The throne itself, up some steps.
+      ..add(
+        meshNode(
+          reshaped(CuboidGeometry(vm.Vector3.all(1)), vm.Vector3(3, 0.5, 2)),
+          stone,
+          position: vm.Vector3(0, 0.25, -10.5),
+        ),
+      )
+      ..add(
+        meshNode(
+          reshaped(
+            CuboidGeometry(vm.Vector3.all(1)),
+            vm.Vector3(1.4, 0.6, 1),
+          ),
+          matte(const Color(0xFF2F8443), roughness: 0.6),
+          position: vm.Vector3(0, 0.8, -10.6),
+        ),
+      )
+      ..add(
+        meshNode(
+          reshaped(
+            CuboidGeometry(vm.Vector3.all(1)),
+            vm.Vector3(1.6, 2.6, 0.3),
+          ),
+          gold,
+          position: vm.Vector3(0, 1.8, -11.1),
+        ),
+      )
+      ..add(
+        meshNode(
+          starPrism(0.4, 0.08),
+          matte(const Color(0xFF2FA37A), roughness: 0.3),
+          position: vm.Vector3(0, 2.6, -10.92),
+        ),
+      );
+    // Pillars with braziers and green banners down both sides.
+    for (final x in [-3.6, 3.6]) {
+      for (var z = 2.0; z > -12; z -= 4) {
+        final flame = _unlit(
+          IcosphereGeometry(radius: 0.2, subdivisions: 1),
+          const Color(0xFFFF9F43),
+          at: vm.Vector3(x, 3.35, z),
+        );
+        scene
+          ..add(
+            meshNode(
+              CylinderGeometry(
+                bottomRadius: 0.38,
+                topRadius: 0.33,
+                height: 3,
+                radialSegments: 16,
+              ),
+              stone,
+              position: vm.Vector3(x, 1.5, z),
+            ),
+          )
+          ..add(
+            meshNode(
+              CylinderGeometry(
+                bottomRadius: 0.15,
+                topRadius: 0.32,
+                height: 0.25,
+                radialSegments: 16,
+              ),
+              gold,
+              position: vm.Vector3(x, 3.12, z),
+            ),
+          )
+          ..add(flame)
+          ..add(
+            meshNode(
+              reshaped(
+                CuboidGeometry(vm.Vector3.all(1)),
+                vm.Vector3(0.7, 1.6, 0.04),
+              ),
+              matte(const Color(0xFF2F8443)),
+              position: vm.Vector3(x - x.sign * 0.42, 2, z),
+              rotation: yaw(math.pi / 2),
+            ),
+          );
+        _animations.add((time, _) {
+          flame.scale = vm.Vector3(
+            1 + math.sin(time * 9 + z) * 0.1,
+            1.2 + math.sin(time * 13 + z) * 0.3,
+            1,
+          );
+        });
+      }
+    }
 
     return scene;
   }

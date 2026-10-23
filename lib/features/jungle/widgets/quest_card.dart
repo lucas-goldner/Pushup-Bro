@@ -1,5 +1,6 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
@@ -73,7 +74,9 @@ class QuestCard extends StatelessWidget {
                     Row(
                       children: [
                         _Pill(
-                          done ? '✓ DONE TODAY' : '✨ DAILY QUEST',
+                          done
+                              ? '✓ ${context.l10n.questDoneToday}'
+                              : '✨ ${context.l10n.questDaily}',
                           color: Colors.white.withValues(alpha: 0.22),
                         ),
                         const Spacer(),
@@ -86,7 +89,7 @@ class QuestCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      quest.title,
+                      quest.title(context.l10n),
                       style: pageTitleTextStyle.copyWith(
                         color: Colors.white,
                         fontSize: 26,
@@ -95,7 +98,8 @@ class QuestCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${quest.location.emoji}  ${quest.location.displayName}',
+                      '${quest.location.emoji}  '
+                      '${quest.location.name(context.l10n)}',
                       style: buttonTextStyle.copyWith(
                         color: Colors.white.withValues(alpha: 0.9),
                         fontWeight: FontWeight.w600,
@@ -117,7 +121,7 @@ class QuestCard extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            quest.teaser,
+                            quest.teaser(context.l10n),
                             style: defaultTextStyle.copyWith(
                               color: background2,
                               fontSize: 15,
@@ -133,7 +137,7 @@ class QuestCard extends StatelessWidget {
                       runSpacing: 8,
                       children: [
                         SheetTag(
-                          quest.rule.summary,
+                          quest.rule.summary(context.l10n),
                           icon: switch (quest.rule) {
                             TimedRule() => CarbonIcons.timer,
                             HoldRule() => CarbonIcons.pause_filled,
@@ -142,11 +146,14 @@ class QuestCard extends StatelessWidget {
                         ),
                         SheetTag(
                           done
-                              ? 'Replay for fun'
+                              ? context.l10n.questReplay
                               : quest.bananaMultiplier > 1
-                                  ? '🍌 ×${quest.bananaMultiplier} + '
-                                      '${quest.bonus}'
-                                  : '🍌 +${quest.bonus} bonus',
+                                  ? '🍌 ${context.l10n.questDoubleBonus(
+                                      quest.bananaMultiplier,
+                                      quest.bonus,
+                                    )}'
+                                  : '🍌 '
+                                      '${context.l10n.questBonus(quest.bonus)}',
                           color: const Color(0xFFD08A28),
                         ),
                       ],
@@ -154,7 +161,9 @@ class QuestCard extends StatelessWidget {
                     const SizedBox(height: 18),
                     Center(
                       child: PillButton(
-                        label: done ? 'Play again' : "Let's go!",
+                        label: done
+                            ? context.l10n.questPlayAgain
+                            : context.l10n.questLetsGo,
                         icon: CarbonIcons.play_filled_alt,
                         color: done ? background2 : _questColor,
                         onPressed: onPlay,

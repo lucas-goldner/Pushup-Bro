@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 
 /// The island's quest sheets. The jungle's daily quests live in
 /// `features/jungle/model/jungle_quest.dart`.
@@ -12,8 +13,8 @@ enum QuestType {
   final bool dismissable;
 
   String getLocalizedTitle(BuildContext context) => switch (this) {
-        intro => 'Welcome to the island',
-        community => 'Coming together',
-        dailyLogin => 'Daily bananas',
+        intro => context.l10n.questIntroTitle,
+        community => context.l10n.questCommunityTitle,
+        dailyLogin => context.l10n.questDailyTitle,
       };
 }

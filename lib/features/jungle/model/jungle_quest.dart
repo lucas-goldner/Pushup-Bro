@@ -1,33 +1,73 @@
 import 'dart:ui' show Color;
 
 import 'package:pushup_bro/core/model/quest_log.dart';
+import 'package:pushup_bro/generated/l10n.dart';
 
 /// Who talks in the jungle's stories.
 enum Character {
-  carlos('Carlos', '🦍', Color(0xFF3B3A45)),
-  coco('Coco', '🦜', Color(0xFFE5534B)),
-  shelldon('Sir Shelldon', '🐢', Color(0xFF2FA37A)),
-  jag('Jag', '🐆', Color(0xFFE8A33D)),
-  stranger('???', '🕶️', Color(0xFF5B3FB5));
+  carlos('🦍', Color(0xFF3B3A45)),
+  coco('🦜', Color(0xFFE5534B)),
+  shelldon('🐢', Color(0xFF2FA37A)),
+  jag('🐆', Color(0xFFE8A33D)),
+  stranger('🕶️', Color(0xFF5B3FB5)),
+  zip('🦎', Color(0xFF4FB35A)),
+  skitter('🦎', Color(0xFFE0A21F)),
+  frostbite('🦎', Color(0xFF4F9BE0)),
+  snap('🐊', Color(0xFF2F8443)),
+  shifty('🦎', Color(0xFF8B5FD9)),
+  hiss('🐍', Color(0xFFC2457A)),
+  komo('👑', Color(0xFF2FA37A));
 
-  const Character(this.displayName, this.emoji, this.color);
+  const Character(this.emoji, this.color);
 
-  final String displayName;
   final String emoji;
   final Color color;
+
+  String name(S l) => switch (this) {
+        carlos => l.charCarlos,
+        coco => l.charCoco,
+        shelldon => l.charShelldon,
+        jag => l.charJag,
+        stranger => l.charStranger,
+        zip => l.charZip,
+        skitter => l.charSkitter,
+        frostbite => l.charFrostbite,
+        snap => l.charSnap,
+        shifty => l.charShifty,
+        hiss => l.charHiss,
+        komo => l.charKomo,
+      };
 }
 
-/// Where a quest's challenge happens.
+/// Where a quest's challenge or a Trek stage happens.
 enum ChallengeLocation {
-  volcano('Mount Burpee', '🌋'),
-  moonBeach('Moonlit Beach', '🌕'),
-  temple('Temple of the Golden Banana', '🛕'),
-  skyIsland('Cloud Island', '☁️');
+  volcano('🌋'),
+  moonBeach('🌕'),
+  temple('🛕'),
+  skyIsland('☁️'),
+  fernTrail('🌿'),
+  canopy('🌉'),
+  swamp('🌫️'),
+  lake('⛵'),
+  gorge('🐍'),
+  throne('👑');
 
-  const ChallengeLocation(this.displayName, this.emoji);
+  const ChallengeLocation(this.emoji);
 
-  final String displayName;
   final String emoji;
+
+  String name(S l) => switch (this) {
+        volcano => l.locVolcano,
+        moonBeach => l.locMoonBeach,
+        temple => l.locTemple,
+        skyIsland => l.locSkyIsland,
+        fernTrail => l.locFernTrail,
+        canopy => l.locCanopy,
+        swamp => l.locSwamp,
+        lake => l.locLake,
+        gorge => l.locGorge,
+        throne => l.locThrone,
+      };
 }
 
 /// How a challenge is won.
@@ -37,7 +77,7 @@ sealed class ChallengeRule {
   /// Pushups (or held pushups) needed to win.
   final int goal;
 
-  String get summary;
+  String summary(S l);
 }
 
 /// As many pushups as possible before the clock runs out.
@@ -47,7 +87,7 @@ class TimedRule extends ChallengeRule {
   final int seconds;
 
   @override
-  String get summary => '$goal pushups in $seconds seconds';
+  String summary(S l) => l.ruleTimed(goal, seconds);
 }
 
 /// Pushups only count when held at the bottom for [seconds].
@@ -57,8 +97,7 @@ class HoldRule extends ChallengeRule {
   final double seconds;
 
   @override
-  String get summary =>
-      '$goal pushups, holding each for ${seconds.toStringAsFixed(0)} seconds';
+  String summary(S l) => l.ruleHold(goal, seconds.round());
 }
 
 /// Reach [goal] pushups; the set ends there.
@@ -66,16 +105,16 @@ class TargetRule extends ChallengeRule {
   const TargetRule({required int goal}) : super(goal);
 
   @override
-  String get summary => 'Reach $goal pushups';
+  String summary(S l) => l.ruleTarget(goal);
 }
 
 /// A line of a story: who says what.
-typedef Line = (Character speaker, String text);
+typedef Line = (Character speaker, String Function(S l) text);
 
 /// A daily jungle quest: a little story played as a cutscene, then a
 /// pushup challenge at [location], then an ending depending on the result.
 class JungleQuest {
-  const JungleQuest({
+  JungleQuest({
     required this.id,
     required this.title,
     required this.teaser,
@@ -90,10 +129,10 @@ class JungleQuest {
   });
 
   final String id;
-  final String title;
+  final String Function(S l) title;
 
   /// A sentence or two for the quest card.
-  final String teaser;
+  final String Function(S l) teaser;
   final ChallengeLocation location;
 
   /// Who Carlos meets.
@@ -124,221 +163,117 @@ class JungleQuest {
     return null;
   }
 
-  static const all = <JungleQuest>[
+  static final all = <JungleQuest>[
     JungleQuest(
       id: 'volcano-hiccups',
-      title: "Mount Burpee's Hiccups",
-      teaser: 'The volcano has the hiccups and is sneezing lava on '
-          "Coco's nest. Only super fast pushups can scare them away.",
+      title: (l) => l.q1Title,
+      teaser: (l) => l.q1Teaser,
       location: ChallengeLocation.volcano,
       guest: Character.coco,
-      rule: TimedRule(goal: 10, seconds: 30),
+      rule: const TimedRule(goal: 10, seconds: 30),
       bonus: 40,
       intro: [
-        (Character.coco, 'CARLOS! Code red! Mount Burpee has the hiccups!'),
-        (Character.carlos, 'Volcanoes get hiccups?!'),
-        (
-          Character.coco,
-          'Every time it hics, it sneezes lava on my nest. Rude.',
-        ),
-        (
-          Character.coco,
-          'Legend says only a gorilla doing super fast pushups can scare '
-              'hiccups away.',
-        ),
-        (Character.carlos, 'Fast pushups? I was BORN for this.'),
-        (
-          Character.coco,
-          'Ten pushups in thirty seconds. Go fast. Go furious. Go… banana.',
-        ),
+        (Character.coco, (l) => l.q1i1),
+        (Character.carlos, (l) => l.q1i2),
+        (Character.coco, (l) => l.q1i3),
+        (Character.coco, (l) => l.q1i4),
+        (Character.carlos, (l) => l.q1i5),
+        (Character.coco, (l) => l.q1i6),
       ],
       win: [
-        (
-          Character.coco,
-          'It worked! The volcano burped out… a message in a bottle?!',
-        ),
-        (
-          Character.carlos,
-          '"We\'re out there. Keep growing the island. — The Banana '
-              'Brigade." My friends are alive!',
-        ),
+        (Character.coco, (l) => l.q1w1),
+        (Character.carlos, (l) => l.q1w2),
       ],
       lose: [
-        (Character.coco, '…hic. Still hiccuping. My poor nest.'),
-        (Character.carlos, "I'll be back tomorrow, faster than ever!"),
+        (Character.coco, (l) => l.q1l1),
+        (Character.carlos, (l) => l.q1l2),
       ],
     ),
     JungleQuest(
       id: 'wishing-moon',
-      title: 'The Wishing Moon',
-      teaser: 'Sir Shelldon says the full moon grants a wish to whoever '
-          'holds their pushups slow and strong.',
+      title: (l) => l.q2Title,
+      teaser: (l) => l.q2Teaser,
       location: ChallengeLocation.moonBeach,
       guest: Character.shelldon,
-      rule: HoldRule(goal: 5, seconds: 3),
+      rule: const HoldRule(goal: 5, seconds: 3),
       bonus: 50,
       intro: [
-        (
-          Character.shelldon,
-          'Ahh… young Carlos… tonight… is the night… of the Wishing Moon…',
-        ),
-        (Character.carlos, 'Sir Shelldon! Are you… awake?'),
-        (Character.shelldon, 'I have been awake… since 1824.'),
-        (
-          Character.shelldon,
-          'The moon grants one wish… to whoever holds their pushups… slow… '
-              'and strong… like a tortoise.',
-        ),
-        (Character.carlos, 'Then I wish to find my monkey friends!'),
-        (
-          Character.shelldon,
-          'Hold each pushup at the bottom… three seconds. Five times. The '
-              'moon… is watching.',
-        ),
+        (Character.shelldon, (l) => l.q2i1),
+        (Character.carlos, (l) => l.q2i2),
+        (Character.shelldon, (l) => l.q2i3),
+        (Character.shelldon, (l) => l.q2i4),
+        (Character.carlos, (l) => l.q2i5),
+        (Character.shelldon, (l) => l.q2i6),
       ],
       win: [
-        (
-          Character.shelldon,
-          'The moon smiles… Look… its reflection draws a map… east… beyond '
-              'the reef.',
-        ),
-        (
-          Character.carlos,
-          "A map to my friends! I'll need a bigger island to get there…",
-        ),
+        (Character.shelldon, (l) => l.q2w1),
+        (Character.carlos, (l) => l.q2w2),
       ],
-      lose: [
-        (
-          Character.shelldon,
-          'Patience… even the moon… took four billion years… Return '
-              'tomorrow.',
-        ),
-      ],
+      lose: [(Character.shelldon, (l) => l.q2l1)],
     ),
     JungleQuest(
       id: 'jag-bet',
-      title: "Jag's Banana Bet",
-      teaser: 'A show-off jaguar guards the Golden Banana and bets you '
-          "can't do 20 pushups on his temple steps. Double bananas if you do.",
+      title: (l) => l.q3Title,
+      teaser: (l) => l.q3Teaser,
       location: ChallengeLocation.temple,
       guest: Character.jag,
-      rule: TargetRule(goal: 20),
+      rule: const TargetRule(goal: 20),
       bonus: 20,
       bananaMultiplier: 2,
       intro: [
-        (
-          Character.jag,
-          'Well, well. The famous Carlos. I hear you do… pushups.',
-        ),
-        (Character.carlos, 'And who are you supposed to be?'),
-        (
-          Character.jag,
-          'Jag. Fastest cat, biggest biceps, guardian of the Golden Banana.',
-        ),
-        (
-          Character.jag,
-          "I bet you can't do 20 pushups on my temple steps. Win, and I "
-              'double your bananas.',
-        ),
-        (Character.carlos, 'Deal. Prepare to be out-pushed, kitty.'),
+        (Character.jag, (l) => l.q3i1),
+        (Character.carlos, (l) => l.q3i2),
+        (Character.jag, (l) => l.q3i3),
+        (Character.jag, (l) => l.q3i4),
+        (Character.carlos, (l) => l.q3i5),
       ],
       win: [
-        (
-          Character.jag,
-          '…Twenty. Fine. FINE. Take your double bananas.',
-        ),
-        (
-          Character.jag,
-          'Also… a monkey in a cape came through last week. Said she was '
-              'looking for a gorilla.',
-        ),
-        (Character.carlos, 'A monkey in a cape?! That has to be Lulu!'),
+        (Character.jag, (l) => l.q3w1),
+        (Character.jag, (l) => l.q3w2),
+        (Character.carlos, (l) => l.q3w3),
       ],
-      lose: [
-        (
-          Character.jag,
-          'Ha! The Golden Banana stays with me. Come back when you have '
-              'muscles.',
-        ),
-      ],
+      lose: [(Character.jag, (l) => l.q3l1)],
     ),
     JungleQuest(
       id: 'rainbow-bridge',
-      title: 'The Rainbow Bridge',
-      teaser: 'An island is floating in the sky! The rainbow bridge up '
-          'runs on muscle power: every pushup paints a stripe.',
+      title: (l) => l.q4Title,
+      teaser: (l) => l.q4Teaser,
       location: ChallengeLocation.skyIsland,
       guest: Character.coco,
-      rule: TargetRule(goal: 15),
+      rule: const TargetRule(goal: 15),
       bonus: 40,
       intro: [
-        (Character.coco, 'Carlos, look up! An island… IN THE SKY!'),
-        (Character.carlos, "How do we get up there? I can't fly!"),
-        (
-          Character.coco,
-          'The rainbow bridge runs on muscle power. Every pushup paints a '
-              'stripe.',
-        ),
-        (
-          Character.carlos,
-          "Fifteen pushups, fifteen stripes. Let's paint the sky!",
-        ),
+        (Character.coco, (l) => l.q4i1),
+        (Character.carlos, (l) => l.q4i2),
+        (Character.coco, (l) => l.q4i3),
+        (Character.carlos, (l) => l.q4i4),
       ],
       win: [
-        (
-          Character.coco,
-          "We made it! Whoa, there's a tiny footprint up here… with a banana "
-              'sticker on it.',
-        ),
-        (Character.carlos, "That's Lulu's sticker! She was HERE!"),
+        (Character.coco, (l) => l.q4w1),
+        (Character.carlos, (l) => l.q4w2),
       ],
-      lose: [
-        (
-          Character.coco,
-          'The bridge faded… We need more stripes. Same time tomorrow?',
-        ),
-      ],
+      lose: [(Character.coco, (l) => l.q4l1)],
     ),
     JungleQuest(
       id: 'masked-monkey',
-      title: 'The Masked Monkey',
-      teaser: 'Someone in sunglasses is waiting on the beach at night. '
-          'They say they know where your friends are.',
+      title: (l) => l.q5Title,
+      teaser: (l) => l.q5Teaser,
       location: ChallengeLocation.moonBeach,
       guest: Character.stranger,
-      rule: TimedRule(goal: 12, seconds: 45),
+      rule: const TimedRule(goal: 12, seconds: 45),
       bananaMultiplier: 2,
       intro: [
-        (Character.stranger, 'Psst. Gorilla. Over here.'),
-        (
-          Character.carlos,
-          "Who's there? And why are you wearing sunglasses at night?",
-        ),
-        (
-          Character.stranger,
-          "Because I'm cool. And undercover. The Banana Brigade sent me.",
-        ),
-        (
-          Character.stranger,
-          "They can't come back until the island is ready for everyone. "
-              'Keep building. Keep pushing.',
-        ),
-        (
-          Character.stranger,
-          "Twelve pushups before the tide comes in, and I'll double today's "
-              'bananas.',
-        ),
+        (Character.stranger, (l) => l.q5i1),
+        (Character.carlos, (l) => l.q5i2),
+        (Character.stranger, (l) => l.q5i3),
+        (Character.stranger, (l) => l.q5i4),
+        (Character.stranger, (l) => l.q5i5),
       ],
       win: [
-        (
-          Character.stranger,
-          "Not bad, big guy. I'll tell them you're getting swole.",
-        ),
-        (Character.carlos, "Wait! Lulu, is that you?! …She's gone."),
+        (Character.stranger, (l) => l.q5w1),
+        (Character.carlos, (l) => l.q5w2),
       ],
-      lose: [
-        (Character.stranger, 'Too slow, big guy. The tide waits for no one.'),
-      ],
+      lose: [(Character.stranger, (l) => l.q5l1)],
     ),
   ];
 }

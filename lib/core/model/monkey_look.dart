@@ -13,6 +13,7 @@ class MonkeyLook extends Equatable {
     this.outfit = 'outfit.none',
     this.matColor = 'mat.blue',
     this.matPattern = 'pattern.solid',
+    this.species = gorilla,
   });
 
   factory MonkeyLook.fromJson(Map<String, dynamic> json) {
@@ -30,8 +31,23 @@ class MonkeyLook extends Equatable {
       outfit: pick('outfit', fallback.outfit),
       matColor: pick('matColor', fallback.matColor),
       matPattern: pick('matPattern', fallback.matPattern),
+      species: json['species'] == lizard ? lizard : gorilla,
     );
   }
+
+  static const gorilla = 'gorilla';
+  static const lizard = 'lizard';
+
+  /// King Komo's royal look, once he joins the island.
+  static const kingKomo = MonkeyLook(
+    fur: 'fur.jade',
+    face: 'face.sand',
+    hat: 'hat.lizardcrown',
+    outfit: 'outfit.cape',
+    matColor: 'mat.lime',
+    matPattern: 'pattern.scales',
+    species: lizard,
+  );
 
   /// The cosmetics every monkey starts with.
   static final List<String> defaults = const MonkeyLook().ids;
@@ -43,6 +59,9 @@ class MonkeyLook extends Equatable {
   final String outfit;
   final String matColor;
   final String matPattern;
+
+  /// [gorilla] or [lizard]: whose body wears the look.
+  final String species;
 
   List<String> get ids =>
       [fur, face, hat, eyewear, outfit, matColor, matPattern];
@@ -68,6 +87,7 @@ class MonkeyLook extends Equatable {
             cosmetic.slot == CosmeticSlot.matColor ? cosmetic.id : matColor,
         matPattern:
             cosmetic.slot == CosmeticSlot.matPattern ? cosmetic.id : matPattern,
+        species: species,
       );
 
   Color get furColor => Cosmetic.byId(fur)!.color!;
@@ -82,8 +102,9 @@ class MonkeyLook extends Equatable {
         'outfit': outfit,
         'matColor': matColor,
         'matPattern': matPattern,
+        'species': species,
       };
 
   @override
-  List<Object?> get props => ids;
+  List<Object?> get props => [...ids, species];
 }

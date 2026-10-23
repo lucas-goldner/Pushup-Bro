@@ -17,7 +17,6 @@ const _grass = Color(0xFF8CCB6E);
 const _white = Color(0xFFFAF8F4);
 const _navy = Color(0xFF17203A);
 const _glass = Color(0xFF7FC4E8);
-const _banana = Color(0xFFF5C343);
 
 const sandTop = 0.22;
 const grassTop = 0.36;
@@ -469,19 +468,10 @@ class IslandWorld {
       ])
       // A giant banana on the roof.
       ..add(
-        meshNode(
-          TubeGeometry(
-            CatmullRomPath([
-              vm.Vector3(-0.42, 0.78, 0),
-              vm.Vector3(-0.2, 0.84, 0),
-              vm.Vector3(0.05, 0.86, 0),
-              vm.Vector3(0.28, 0.98, 0),
-            ]),
-            radius: 0.075,
-            stations: 20,
-          ),
-          matte(_banana, roughness: 0.55),
-        ),
+        banana()
+          ..scale = vm.Vector3.all(1.2)
+          ..position = vm.Vector3(-0.05, 0.74, 0)
+          ..rotation = vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), 0.12),
       );
   }
 
