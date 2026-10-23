@@ -1,5 +1,6 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
@@ -58,7 +59,7 @@ class ChallengeHud extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          quest.title,
+                          quest.title(context.l10n),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: buttonTextStyle.copyWith(
@@ -67,7 +68,7 @@ class ChallengeHud extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          rule.summary,
+                          rule.summary(context.l10n),
                           style: defaultTextStyle.copyWith(
                             fontSize: 13,
                             color: background2.withValues(alpha: 0.6),
@@ -113,14 +114,14 @@ class ChallengeHud extends StatelessWidget {
           const Spacer(),
           if (started)
             PillButton(
-              label: 'Finish',
+              label: context.l10n.questFinish,
               icon: CarbonIcons.checkmark,
               color: accentColor,
               onPressed: onFinish,
             )
           else
             PillButton(
-              label: 'Start challenge',
+              label: context.l10n.questStartChallenge,
               icon: CarbonIcons.play_filled_alt,
               onPressed: onStart,
             ),
@@ -185,7 +186,7 @@ class _ScoreRing extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'of $goal',
+                  context.l10n.questOfGoal(goal),
                   style: defaultTextStyle.copyWith(
                     fontSize: 14,
                     color: background2.withValues(alpha: 0.55),
@@ -217,7 +218,7 @@ class _HoldMeter extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              full ? 'Held! Push up!' : 'Hold at the bottom',
+              full ? context.l10n.questHeld : context.l10n.questHoldBottom,
               style: buttonTextStyle.copyWith(
                 color: full ? const Color(0xFF2FA37A) : background2,
                 fontWeight: FontWeight.w700,

@@ -5,13 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/quest_log.dart';
+import 'package:pushup_bro/core/model/trek_progress.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/jungle/widgets/jungle_scene.dart';
 import 'package:pushup_bro/features/jungle/widgets/quest_card.dart';
 import 'package:pushup_bro/features/quest/quest_page.dart';
+import 'package:pushup_bro/features/trek/trek_map_page.dart';
+import 'package:pushup_bro/features/trek/widgets/trek_card.dart';
 
 /// Deep inside the island's jungle: Carlos in a clearing, and today's
 /// quest popping up.
@@ -48,6 +52,14 @@ class _JungleState extends State<Jungle> {
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _trek() async {
+    setState(() => _white = true);
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+    if (!mounted) return;
+    await Navigator.of(context).pushNamed(TrekMapPage.routeName);
+    if (mounted) setState(() => _white = false);
   }
 
   Future<void> _play(JungleQuest quest, {required bool replay}) async {
@@ -110,7 +122,7 @@ class _JungleState extends State<Jungle> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Jungle',
+                      context.l10n.islandJungle,
                       style: pageTitleTextStyle.copyWith(
                         fontSize: 30,
                         color: Colors.white,
@@ -130,16 +142,39 @@ class _JungleState extends State<Jungle> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: BlocSelector<GameInventoryCubit, GameInventoryState,
-                        QuestLog>(
-                      selector: (state) => state.inventory.quests,
-                      builder: (context, log) {
+                        (QuestLog, TrekProgress)>(
+                      selector: (state) =>
+                          (state.inventory.quests, state.inventory.trek),
+                      builder: (context, progress) {
+                        final (log, trek) = progress;
                         final done = log.completedOn(DateTime.now());
+                        final trekCard = TrekCard(
+                          trek: trek,
+                          big: done,
+                          onPlay: _trek,
+                        );
 
-                        return QuestCard(
-                          quest: quest,
-                          done: done,
-                          completedQuests: log.total,
-                          onPlay: () => _play(quest, replay: done),
+                        // Today's quest first; once it's done, the Trek.
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: done
+                              ? [
+                                  _DonePill(
+                                    onTap: () => _play(quest, replay: true),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  trekCard,
+                                ]
+                              : [
+                                  trekCard,
+                                  const SizedBox(height: 10),
+                                  QuestCard(
+                                    quest: quest,
+                                    done: done,
+                                    completedQuests: log.total,
+                                    onPlay: () => _play(quest, replay: done),
+                                  ),
+                                ],
                         );
                       },
                     ),
@@ -161,4 +196,31 @@ class _JungleState extends State<Jungle> {
       ),
     );
   }
+}
+
+/// Today's quest, done: a pill to play it again.
+class _DonePill extends StatelessWidget {
+  const _DonePill({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: Colors.white.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Text(
+              '✅ ${context.l10n.trekDailyDone}',
+              style: buttonTextStyle.copyWith(
+                color: background2,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      );
 }

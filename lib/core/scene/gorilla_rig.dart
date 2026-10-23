@@ -99,11 +99,34 @@ class GorillaRig {
       );
     }
 
-    _head = Node(name: 'head')
+    final gorillaEyes = _buildEyes(
+      openAt: (side) => vm.Vector3(0.088 * side, 0.045, 0.372),
+      radius: 0.058,
+    );
+    final lizardEyes = _buildEyes(
+      openAt: (side) => vm.Vector3(0.15 * side, 0.14, 0.3),
+      radius: 0.07,
+    );
+    _eyesOpen = [...gorillaEyes.open, ...lizardEyes.open];
+    _eyesClosed = [...gorillaEyes.closed, ...lizardEyes.closed];
+    _gorillaHead
       ..addAll(_buildHead(fur, face))
+      ..addAll(gorillaEyes.open)
+      ..addAll(gorillaEyes.closed);
+    _lizardHead
+      ..addAll(_buildLizardHead(fur, face))
+      ..addAll(lizardEyes.open)
+      ..addAll(lizardEyes.closed)
+      ..visible = false;
+    _tail = _buildTail(fur)..visible = false;
+    _head = Node(name: 'head')
+      ..add(_gorillaHead)
+      ..add(_lizardHead)
       ..add(_hatSlot)
       ..add(_eyewearSlot);
-    _torso.add(_outfitSlot);
+    _torso
+      ..add(_outfitSlot)
+      ..add(_tail);
     for (final (i, forearm) in _forearms.indexed) {
       forearm.add(_forearmSlots[i]);
     }
@@ -155,6 +178,15 @@ class GorillaRig {
     _look = value;
     _furMaterial.baseColorFactor = linearColor(value.furColor);
     _faceMaterial.baseColorFactor = linearColor(value.faceColor);
+    final lizard = value.species == MonkeyLook.lizard;
+    _gorillaHead.visible = !lizard;
+    _lizardHead.visible = lizard;
+    _tail.visible = lizard;
+    // The lizard's eyes sit wider and higher; its head is flatter.
+    _eyewearSlot
+      ..position = lizard ? vm.Vector3(0, 0.095, -0.075) : vm.Vector3.zero()
+      ..scale = lizard ? vm.Vector3(1.6, 1, 1) : vm.Vector3.all(1);
+    _hatSlot.position = lizard ? vm.Vector3(0, -0.035, 0) : vm.Vector3.zero();
     _dress(_hatSlot, [buildHat(value.hat)].nonNulls.toList());
     _dress(
       _eyewearSlot,
@@ -182,6 +214,9 @@ class GorillaRig {
 
   late final Node _torso;
   late final Node _head;
+  final Node _gorillaHead = Node(name: 'gorilla-head');
+  final Node _lizardHead = Node(name: 'lizard-head');
+  late final Node _tail;
   late final List<Node> _eyesOpen;
   late final List<Node> _eyesClosed;
   final _upperArms = <Node>[];
@@ -199,42 +234,53 @@ class GorillaRig {
       activity: activity == GorillaActivity.idle ? 1 : 0,
   };
 
-  List<Node> _buildHead(Material fur, Material face) {
+  /// Eyes at [openAt] (by side), with happy "^ ^" arcs for blinking.
+  ({List<Node> open, List<Node> closed}) _buildEyes({
+    required vm.Vector3 Function(double side) openAt,
+    required double radius,
+  }) {
     final eye = matte(_eye, roughness: 0.08);
     final sparkle = UnlitMaterial()..baseColorFactor = linearColor(_sparkle);
     final dark = matte(_eye, roughness: 0.4);
 
-    _eyesOpen = [
-      for (final side in [-1.0, 1.0]) ...[
-        meshNode(
-          SphereGeometry(radius: 0.058, segments: 24),
-          eye,
-          position: vm.Vector3(0.088 * side, 0.045, 0.372),
-        ),
-        meshNode(
-          SphereGeometry(radius: 0.019, segments: 12, rings: 8),
-          sparkle,
-          position: vm.Vector3(0.088 * side + 0.02, 0.07, 0.42),
-        ),
-      ],
-    ];
-    // Happy "^ ^" arcs shown while blinking.
-    _eyesClosed = [
-      for (final side in [-1.0, 1.0])
-        meshNode(
-          TubeGeometry(
-            CatmullRomPath([
-              vm.Vector3(0.088 * side - 0.045, 0.03, 0.4),
-              vm.Vector3(0.088 * side, 0.06, 0.41),
-              vm.Vector3(0.088 * side + 0.045, 0.03, 0.4),
-            ]),
-            radius: 0.011,
-            radialSegments: 8,
-            stations: 12,
+    return (
+      open: [
+        for (final side in [-1.0, 1.0]) ...[
+          meshNode(
+            SphereGeometry(radius: radius, segments: 24),
+            eye,
+            position: openAt(side),
           ),
-          dark,
-        )..visible = false,
-    ];
+          meshNode(
+            SphereGeometry(radius: radius * 0.33, segments: 12, rings: 8),
+            sparkle,
+            position: openAt(side) +
+                vm.Vector3(radius * 0.35, radius * 0.43, radius * 0.83),
+          ),
+        ],
+      ],
+      closed: [
+        for (final side in [-1.0, 1.0])
+          meshNode(
+            TubeGeometry(
+              CatmullRomPath([
+                openAt(side) +
+                    vm.Vector3(-radius * 0.78, -radius * 0.26, 0.028),
+                openAt(side) + vm.Vector3(0, radius * 0.26, 0.038),
+                openAt(side) + vm.Vector3(radius * 0.78, -radius * 0.26, 0.028),
+              ]),
+              radius: 0.011,
+              radialSegments: 8,
+              stations: 12,
+            ),
+            dark,
+          )..visible = false,
+      ],
+    );
+  }
+
+  List<Node> _buildHead(Material fur, Material face) {
+    final dark = matte(_eye, roughness: 0.4);
 
     return [
       meshNode(
@@ -306,9 +352,125 @@ class GorillaRig {
         fur,
         position: vm.Vector3(0.07, 0.36, 0),
       ),
-      ..._eyesOpen,
-      ..._eyesClosed,
     ];
+  }
+
+  /// A cute komodo head: a round skull, a long smiling snout, big eyes on
+  /// top and a little crest. Coloured by the fur (scales) and face (belly)
+  /// materials like the gorilla's.
+  List<Node> _buildLizardHead(Material scales, Material belly) {
+    final dark = matte(_eye, roughness: 0.4);
+    final crest = matte(const Color(0xFFF5A623), roughness: 0.6);
+
+    return [
+      meshNode(
+        reshaped(
+          SphereGeometry(radius: _headRadius, segments: 40, rings: 24),
+          vm.Vector3(1, 0.86, 1),
+        ),
+        scales,
+      ),
+      // The snout, with a pale jaw underneath.
+      meshNode(
+        reshaped(
+          SphereGeometry(radius: 0.24, rings: 18),
+          vm.Vector3(1.05, 0.62, 1.15),
+        ),
+        scales,
+        position: vm.Vector3(0, -0.06, 0.24),
+      ),
+      meshNode(
+        reshaped(
+          SphereGeometry(radius: 0.22, segments: 28),
+          vm.Vector3(1, 0.42, 1.08),
+        ),
+        belly,
+        position: vm.Vector3(0, -0.13, 0.25),
+      ),
+      for (final side in [-1.0, 1.0]) ...[
+        // Bumps the big eyes sit in.
+        meshNode(
+          SphereGeometry(radius: 0.105),
+          scales,
+          position: vm.Vector3(0.15 * side, 0.12, 0.24),
+        ),
+        // Nostrils.
+        meshNode(
+          SphereGeometry(radius: 0.018, segments: 10, rings: 8),
+          dark,
+          position: vm.Vector3(0.055 * side, 0.03, 0.495),
+        ),
+        meshNode(
+          reshaped(SphereGeometry(radius: 0.05), vm.Vector3(1.3, 0.7, 0.5)),
+          matte(_blush, roughness: 0.7),
+          position: vm.Vector3(0.21 * side, -0.07, 0.31),
+          rotation: vm.Quaternion.fromTwoVectors(
+            vm.Vector3(0, 0, 1),
+            vm.Vector3(0.6 * side, 0, 1),
+          ),
+        ),
+      ],
+      // A wide, happy smile along the snout.
+      meshNode(
+        TubeGeometry(
+          CatmullRomPath([
+            vm.Vector3(-0.18, -0.08, 0.36),
+            vm.Vector3(-0.08, -0.11, 0.46),
+            vm.Vector3(0, -0.115, 0.48),
+            vm.Vector3(0.08, -0.11, 0.46),
+            vm.Vector3(0.18, -0.08, 0.36),
+          ]),
+          radius: 0.009,
+          radialSegments: 8,
+          stations: 20,
+        ),
+        dark,
+      ),
+      // A crest of soft spikes from the brow to the back of the head.
+      for (final (i, (y, z, size)) in [
+        (0.3, 0.12, 0.06),
+        (0.33, 0.0, 0.075),
+        (0.29, -0.13, 0.065),
+        (0.2, -0.24, 0.05),
+      ].indexed)
+        meshNode(
+          CylinderGeometry(
+            bottomRadius: size * 0.7,
+            topRadius: 0,
+            height: size * 1.6,
+            radialSegments: 10,
+          ),
+          crest,
+          position: vm.Vector3(0, y, z),
+          rotation: vm.Quaternion.axisAngle(
+            vm.Vector3(1, 0, 0),
+            -0.3 - i * 0.25,
+          ),
+        ),
+    ];
+  }
+
+  /// A chunky, segmented tail out of the back of the torso, curling along
+  /// the ground.
+  Node _buildTail(Material scales) {
+    final tail = Node(name: 'tail');
+    const segments = 7;
+    for (var i = 0; i < segments; i++) {
+      final t = i / (segments - 1);
+      tail.add(
+        meshNode(
+          SphereGeometry(radius: 0.13 * (1 - t * 0.75), segments: 20),
+          scales,
+          position: vm.Vector3(
+            math.sin(t * 2.2) * 0.12,
+            -0.2 - t * 0.12,
+            -0.16 - t * 0.5,
+          ),
+        ),
+      );
+    }
+
+    return tail;
   }
 
   static void _dress(Node slot, List<Node> parts) {

@@ -131,6 +131,8 @@ Node? buildHat(String id) => switch (id) {
       'hat.viking' => _vikingHelmet(),
       'hat.crown' => _crown(),
       'hat.halo' => _halo(),
+      'hat.gecko' => _geckoBuddy(),
+      'hat.lizardcrown' => _lizardCrown(),
       _ => null,
     };
 
@@ -629,6 +631,102 @@ Node _halo() => Node(name: 'spin')
     ),
   );
 
+/// A little gecko napping on top of the head.
+Node _geckoBuddy() {
+  final skin = matte(const Color(0xFF5DBB63), roughness: 0.6);
+
+  return Node(name: 'gecko-buddy')
+    ..position = vm.Vector3(0, 0.36, -0.02)
+    ..add(
+      _part(
+        reshaped(SphereGeometry(radius: 0.1), vm.Vector3(0.8, 0.55, 1.5)),
+        skin,
+      ),
+    )
+    ..add(
+      _part(
+        reshaped(SphereGeometry(radius: 0.075), vm.Vector3(1, 0.75, 1.15)),
+        skin,
+        at: vm.Vector3(0, 0.03, 0.16),
+      ),
+    )
+    ..addAll([
+      for (final side in [-1.0, 1.0]) ...[
+        _part(
+          SphereGeometry(radius: 0.022, segments: 12, rings: 8),
+          _glossy(const Color(0xFF15141B)),
+          at: vm.Vector3(side * 0.045, 0.07, 0.2),
+        ),
+        for (final z in [-0.08, 0.08])
+          _part(
+            reshaped(SphereGeometry(radius: 0.03), vm.Vector3(1.6, 0.5, 0.9)),
+            skin,
+            at: vm.Vector3(side * 0.08, -0.03, z),
+          ),
+      ],
+    ])
+    ..add(
+      _part(
+        TubeGeometry(
+          CatmullRomPath([
+            vm.Vector3(0, 0, -0.13),
+            vm.Vector3(0.06, -0.03, -0.24),
+            vm.Vector3(0, -0.08, -0.32),
+            vm.Vector3(-0.06, -0.08, -0.36),
+          ]),
+          radius: 0.025,
+          radialSegments: 8,
+          stations: 16,
+        ),
+        skin,
+      ),
+    );
+}
+
+/// The Lizard King's crown: tall gold spikes and emeralds.
+Node _lizardCrown() {
+  final gold = _gold();
+  final crown = Node(name: 'lizard-crown')
+    ..add(
+      _part(
+        CylinderGeometry(
+          bottomRadius: 0.25,
+          topRadius: 0.27,
+          height: 0.12,
+          topCap: false,
+          bottomCap: false,
+        ),
+        gold..doubleSided = true,
+        at: vm.Vector3(0, 0.34, 0),
+      ),
+    );
+  for (var i = 0; i < 7; i++) {
+    final a = i / 7 * math.pi * 2;
+    final tall = i == 0 ? 0.24 : 0.16;
+    crown
+      ..add(
+        _part(
+          CylinderGeometry(bottomRadius: 0.055, topRadius: 0, height: tall),
+          gold,
+          at: vm.Vector3(
+            math.sin(a) * 0.255,
+            0.4 + tall / 2,
+            math.cos(a) * 0.255,
+          ),
+        ),
+      )
+      ..add(
+        _part(
+          IcosphereGeometry(radius: i == 0 ? 0.04 : 0.024, subdivisions: 1),
+          _glossy(const Color(0xFF2FA37A)),
+          at: vm.Vector3(math.sin(a) * 0.272, 0.34, math.cos(a) * 0.272),
+        ),
+      );
+  }
+
+  return crown;
+}
+
 /// The eyewear for cosmetic [id], or null for none.
 Node? buildEyewear(String id) => switch (id) {
       'eyes.shades' => _glasses(
@@ -660,6 +758,7 @@ Node? buildEyewear(String id) => switch (id) {
       'eyes.mustache' => _mustache(),
       'eyes.monocle' => _monocle(),
       'eyes.visor' => _visor(),
+      'eyes.chameleon' => _chameleonEyes(),
       _ => null,
     };
 
@@ -795,6 +894,95 @@ Node _visor() => Node(name: 'visor')
     ),
   );
 
+/// Chameleon eyes: two swivelling cone turrets.
+Node _chameleonEyes() {
+  final skin = matte(const Color(0xFF8B5FD9), roughness: 0.6);
+
+  return Node(name: 'chameleon-eyes')
+    ..addAll([
+      for (final side in [-1.0, 1.0]) ...[
+        _part(
+          CylinderGeometry(
+            bottomRadius: 0.075,
+            topRadius: 0.05,
+            height: 0.09,
+            radialSegments: 16,
+          ),
+          skin,
+          at: vm.Vector3(side * 0.092, 0.05, 0.41),
+          rotation: vm.Quaternion.fromTwoVectors(
+            _yAxis,
+            vm.Vector3(side * 0.3, 0.1, 1),
+          ),
+        ),
+        _part(
+          SphereGeometry(radius: 0.04, segments: 16, rings: 10),
+          _glossy(_yellow),
+          at: vm.Vector3(side * 0.106, 0.055, 0.455),
+        ),
+        _part(
+          SphereGeometry(radius: 0.02, segments: 12, rings: 8),
+          _glossy(const Color(0xFF15141B)),
+          at: vm.Vector3(side * 0.11, 0.057, 0.488),
+        ),
+      ],
+    ]);
+}
+
+/// A cord with crocodile teeth around the neck.
+Node _toothNecklace() {
+  final cord = matte(const Color(0xFF6B4A2F), roughness: 0.9);
+  final tooth = matte(const Color(0xFFF4EDE1), roughness: 0.4);
+  final necklace = Node(name: 'tooth-necklace')
+    ..position = vm.Vector3(0, 0.22, 0.03)
+    ..rotation = vm.Quaternion.axisAngle(vm.Vector3(1, 0, 0), 0.4)
+    ..add(
+      _part(
+        TorusGeometry(radius: 0.19, tubeRadius: 0.01, tubularSegments: 8),
+        cord,
+      ),
+    );
+  for (var i = -3; i <= 3; i++) {
+    final a = i * 0.32;
+    necklace.add(
+      _part(
+        CylinderGeometry(
+          bottomRadius: 0,
+          topRadius: 0.024,
+          height: i == 0 ? 0.09 : 0.065,
+          radialSegments: 8,
+        ),
+        tooth,
+        at: vm.Vector3(math.sin(a) * 0.19, -0.03, math.cos(a) * 0.19),
+      ),
+    );
+  }
+
+  return necklace;
+}
+
+/// A costume lizard tail, curling out behind.
+Node _lizardTail() {
+  final scales = matte(const Color(0xFF3FAE6A), roughness: 0.7);
+  final tail = Node(name: 'costume-tail');
+  for (var i = 0; i < 7; i++) {
+    final t = i / 6;
+    tail.add(
+      _part(
+        SphereGeometry(radius: 0.12 * (1 - t * 0.75), segments: 18),
+        scales,
+        at: vm.Vector3(
+          math.sin(t * 2.2) * 0.12,
+          -0.2 - t * 0.12,
+          -0.16 - t * 0.5,
+        ),
+      ),
+    );
+  }
+
+  return tail;
+}
+
 /// The parts of outfit [id]: on the torso, and on each forearm (the right,
 /// on -X, first).
 ({List<Node> torso, List<Node> forearms}) buildOutfit(String id) =>
@@ -810,6 +998,8 @@ Node _visor() => Node(name: 'visor')
       'outfit.tutu' => (torso: [_tutu()], forearms: const <Node>[]),
       'outfit.cape' => (torso: [_cape()], forearms: const <Node>[]),
       'outfit.chain' => (torso: [_chain()], forearms: const <Node>[]),
+      'outfit.tooth' => (torso: [_toothNecklace()], forearms: const <Node>[]),
+      'outfit.tail' => (torso: [_lizardTail()], forearms: const <Node>[]),
       _ => (torso: const <Node>[], forearms: const <Node>[]),
     };
 

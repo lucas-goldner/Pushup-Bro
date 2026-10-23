@@ -2,6 +2,7 @@ import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
@@ -36,7 +37,7 @@ class DailyLogin extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Come back every day for free bananas!',
+          context.l10n.dailyInfo,
           style: defaultTextStyle.copyWith(
             color: background2.withValues(alpha: 0.65),
           ),
@@ -48,8 +49,9 @@ class DailyLogin extends StatelessWidget {
               if (i > 0) const SizedBox(width: 8),
               Expanded(
                 child: _Day(
-                  label:
-                      i == 0 ? 'Today' : '${today.add(Duration(days: i)).day}',
+                  label: i == 0
+                      ? context.l10n.dailyToday
+                      : '${today.add(Duration(days: i)).day}',
                   today: i == 0,
                 ),
               ),
@@ -59,7 +61,7 @@ class DailyLogin extends StatelessWidget {
         const SizedBox(height: 20),
         Center(
           child: PillButton(
-            label: 'Claim 10 bananas',
+            label: context.l10n.dailyClaim,
             icon: CarbonIcons.gift,
             color: const Color(0xFFF5A623),
             onPressed: () => takeBananas(context),

@@ -28,6 +28,7 @@ class Cosmetic {
     this.price = 0,
     this.color,
     this.emoji = '',
+    this.exclusive = false,
   });
 
   final String id;
@@ -37,7 +38,10 @@ class Cosmetic {
   final Color? color;
   final String emoji;
 
-  bool get free => price == 0;
+  /// Not for sale: won in the Jungle Trek.
+  final bool exclusive;
+
+  bool get free => price == 0 && !exclusive;
 
   static Cosmetic? byId(String id) => _byId[id];
 
@@ -133,6 +137,13 @@ class Cosmetic {
       'Lava',
       price: 120,
       color: Color(0xFFD9443A),
+    ),
+    Cosmetic(
+      'fur.jade',
+      CosmeticSlot.fur,
+      'Jade',
+      color: Color(0xFF3FAE6A),
+      exclusive: true,
     ),
     // Face and paws.
     Cosmetic(
@@ -266,6 +277,20 @@ class Cosmetic {
     ),
     Cosmetic('hat.crown', CosmeticSlot.hat, 'Crown', price: 400, emoji: '👑'),
     Cosmetic('hat.halo', CosmeticSlot.hat, 'Halo', price: 500, emoji: '😇'),
+    Cosmetic(
+      'hat.gecko',
+      CosmeticSlot.hat,
+      'Gecko Buddy',
+      emoji: '🦎',
+      exclusive: true,
+    ),
+    Cosmetic(
+      'hat.lizardcrown',
+      CosmeticSlot.hat,
+      'Lizard Crown',
+      emoji: '👑',
+      exclusive: true,
+    ),
     // Eyewear.
     Cosmetic('eyes.none', CosmeticSlot.eyewear, 'Nothing', emoji: '🚫'),
     Cosmetic(
@@ -316,6 +341,13 @@ class Cosmetic {
       'Cyber Visor',
       price: 200,
       emoji: '🥽',
+    ),
+    Cosmetic(
+      'eyes.chameleon',
+      CosmeticSlot.eyewear,
+      'Chameleon Eyes',
+      emoji: '👀',
+      exclusive: true,
     ),
     // Outfits.
     Cosmetic('outfit.none', CosmeticSlot.outfit, 'Nothing', emoji: '🚫'),
@@ -374,6 +406,20 @@ class Cosmetic {
       'Gold Chain',
       price: 300,
       emoji: '📿',
+    ),
+    Cosmetic(
+      'outfit.tooth',
+      CosmeticSlot.outfit,
+      'Croc Tooth Necklace',
+      emoji: '🐊',
+      exclusive: true,
+    ),
+    Cosmetic(
+      'outfit.tail',
+      CosmeticSlot.outfit,
+      'Lizard Tail',
+      emoji: '🦖',
+      exclusive: true,
     ),
     // Mat colours.
     Cosmetic(
@@ -491,6 +537,12 @@ class Cosmetic {
       'Rainbow',
       price: 150,
     ),
+    Cosmetic(
+      'pattern.scales',
+      CosmeticSlot.matPattern,
+      'Dragon Scales',
+      exclusive: true,
+    ),
   ];
 }
 
@@ -528,6 +580,14 @@ Color? matPatternColor(String pattern, Color base, double x, double z) {
       if (n > 0.8) return _shade(base, 0.6);
       if (n < -0.9) return _shade(base, 1.35);
       return null;
+    case 'pattern.scales':
+      // Rows of overlapping scales, like a dragon's back.
+      final row = (z / 0.09).floor();
+      final u = ((x / 0.12 + (row.isEven ? 0 : 0.5)) % 1) * 2 - 1;
+      final v = (z / 0.09) % 1;
+      final rim = u * u + (v - 0.05) * (v - 0.05) * 4;
+      if (rim > 0.75 && rim < 1.05) return _shade(base, 0.62);
+      return rim < 0.75 && v < 0.35 ? _shade(base, 1.18) : null;
     case 'pattern.rainbow':
       const bands = [
         Color(0xFFF26B5B),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 enum ShopBuyables {
@@ -23,11 +24,11 @@ enum ShopBuyables {
       ];
 
   String getLocalizedName(BuildContext context) => switch (this) {
-        ShopBuyables.accessories => 'Accessories Shop',
-        ShopBuyables.airport => 'Airport',
-        ShopBuyables.gym => 'Gym',
-        ShopBuyables.monkeyAdoption => 'Monkey Adoption',
-        ShopBuyables.accessoryPartyHat => 'Party Hat',
+        ShopBuyables.accessories => context.l10n.buildingAccessories,
+        ShopBuyables.airport => context.l10n.buildingAirport,
+        ShopBuyables.gym => context.l10n.buildingGym,
+        ShopBuyables.monkeyAdoption => context.l10n.buildingAdoption,
+        ShopBuyables.accessoryPartyHat => context.l10n.itemPartyHat,
         ShopBuyables.none => throw UnimplementedError(),
       };
 

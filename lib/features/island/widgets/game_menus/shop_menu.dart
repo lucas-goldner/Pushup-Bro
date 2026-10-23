@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
@@ -85,7 +86,7 @@ class _ShopMenuState extends State<ShopMenu> {
   Widget _action(ShopBuyables building, GameInventory inventory) {
     if (inventory.boughtItems.contains(building)) {
       return SheetTag(
-        '${building.getLocalizedName(context)} is already on your island',
+        context.l10n.shopAlreadyBuilt(building.getLocalizedName(context)),
         icon: CarbonIcons.checkmark_filled,
         color: const Color(0xFF2FA37A),
       );
@@ -93,14 +94,14 @@ class _ShopMenuState extends State<ShopMenu> {
     final missing = building.price - inventory.bananas;
     if (missing > 0) {
       return SheetTag(
-        '$missing more bananas needed',
+        context.l10n.shopNeedMore(missing),
         icon: CarbonIcons.warning_alt,
         color: const Color(0xFFE5534B),
       );
     }
 
     return PillButton(
-      label: 'Build for ${building.price}',
+      label: context.l10n.shopBuild(building.price),
       icon: CarbonIcons.construction,
       onPressed: () => _build(building),
     );
@@ -148,10 +149,10 @@ class _BuildingCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             if (built)
-              const SheetTag(
-                'Built',
+              SheetTag(
+                context.l10n.shopBuilt,
                 icon: CarbonIcons.checkmark,
-                color: Color(0xFF2FA37A),
+                color: const Color(0xFF2FA37A),
               )
             else
               BananaPrice(building.price, affordable: affordable),

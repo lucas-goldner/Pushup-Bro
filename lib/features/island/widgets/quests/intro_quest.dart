@@ -1,5 +1,6 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
@@ -39,28 +40,21 @@ class _IntroQuestState extends State<IntroQuest> {
           controller: _pageController,
           children: [
             _buildPage(
-              text: '''
-Welcome to your new island!
-It used to be home to lots of monkeys.
-''',
+              text: context.l10n.intro1,
               image: Assets.images.island.quests.intro.part1.image(
                 width: 160,
                 height: 160,
               ),
             ),
             _buildPage(
-              text: '''
-Then a mysterious storm swept all the monkeys away.
-''',
+              text: context.l10n.intro2,
               image: Assets.images.island.quests.intro.part2.image(
                 width: 160,
                 height: 160,
               ),
             ),
             _buildPage(
-              text: '''
-Carlos the gorilla feels lonely. Help him rebuild his island by earning bananas with pushups, so his friends can find their way home.
-''',
+              text: context.l10n.intro3,
               image: Assets.images.island.quests.intro.part3.image(
                 width: 160,
                 height: 160,
@@ -95,7 +89,7 @@ Carlos the gorilla feels lonely. Help him rebuild his island by earning bananas 
             ),
             if (showArrow)
               PillButton(
-                label: 'Next',
+                label: context.l10n.introNext,
                 icon: CarbonIcons.arrow_right,
                 onPressed: () => _pageController.nextPage(
                   duration: const Duration(milliseconds: 300),
@@ -104,7 +98,7 @@ Carlos the gorilla feels lonely. Help him rebuild his island by earning bananas 
               )
             else
               PillButton(
-                label: 'Help Carlos!',
+                label: context.l10n.introHelp,
                 icon: CarbonIcons.favorite_filled,
                 onPressed: widget.onClose,
               ),

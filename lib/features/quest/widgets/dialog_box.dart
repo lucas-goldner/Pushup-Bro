@@ -1,8 +1,10 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
+import 'package:pushup_bro/generated/l10n.dart';
 
 /// A story line at the bottom of the screen: the speaker's avatar and name
 /// tag over a card that types the text out. Tap to finish typing; tap again
@@ -34,7 +36,7 @@ class _DialogBoxState extends State<DialogBox>
     super.initState();
     _typing = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 22 * widget.line.$2.length + 200),
+      duration: _typingTime,
     )..forward();
   }
 
@@ -43,7 +45,7 @@ class _DialogBoxState extends State<DialogBox>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.line != widget.line) {
       _typing
-        ..duration = Duration(milliseconds: 22 * widget.line.$2.length + 200)
+        ..duration = _typingTime
         ..forward(from: 0);
     }
   }
@@ -53,6 +55,11 @@ class _DialogBoxState extends State<DialogBox>
     _typing.dispose();
     super.dispose();
   }
+
+  /// About 22 ms a character, for the longest a line could be.
+  Duration get _typingTime => Duration(
+        milliseconds: 22 * widget.line.$2(S.current).length + 200,
+      );
 
   void _tap() {
     if (_typing.isAnimating) {
@@ -64,7 +71,8 @@ class _DialogBoxState extends State<DialogBox>
 
   @override
   Widget build(BuildContext context) {
-    final (speaker, text) = widget.line;
+    final (speaker, lineText) = widget.line;
+    final text = lineText(context.l10n);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -170,7 +178,7 @@ class _DialogBoxState extends State<DialogBox>
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
-                    speaker.displayName,
+                    speaker.name(context.l10n),
                     style: buttonTextStyle.copyWith(
                       fontWeight: FontWeight.w700,
                       fontSize: 15,

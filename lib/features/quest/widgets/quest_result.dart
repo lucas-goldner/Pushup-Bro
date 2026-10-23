@@ -1,5 +1,6 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
@@ -54,14 +55,16 @@ class QuestResult extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    won ? 'Quest complete!' : 'So close!',
+                    won
+                        ? context.l10n.questComplete
+                        : context.l10n.questSoClose,
                     style: pageTitleTextStyle.copyWith(color: background2),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     won
-                        ? quest.title
-                        : 'A new adventure waits in the jungle tomorrow.',
+                        ? quest.title(context.l10n)
+                        : context.l10n.questTomorrow,
                     textAlign: TextAlign.center,
                     style: defaultTextStyle.copyWith(
                       color: background2.withValues(alpha: 0.6),
@@ -73,7 +76,7 @@ class QuestResult extends StatelessWidget {
                       Expanded(
                         child: _Stat(
                           value: '$pushups',
-                          label: 'pushups',
+                          label: context.l10n.questPushups,
                           icon: const Icon(
                             CarbonIcons.chart_line,
                             color: accentColor,
@@ -85,8 +88,8 @@ class QuestResult extends StatelessWidget {
                         child: _Stat(
                           value: '+$bananas',
                           label: won && quest.bananaMultiplier > 1
-                              ? 'bananas, doubled!'
-                              : 'bananas',
+                              ? context.l10n.questBananasDoubled
+                              : context.l10n.questBananas,
                           icon: Assets.images.island.banana.image(width: 30),
                           color: const Color(0xFFFFF4D6),
                         ),
@@ -95,7 +98,7 @@ class QuestResult extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   PillButton(
-                    label: 'Back to the jungle',
+                    label: context.l10n.questBackToJungle,
                     icon: CarbonIcons.tree,
                     onPressed: onDone,
                   ),

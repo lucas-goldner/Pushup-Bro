@@ -165,5 +165,500 @@
   "islandShop": "Shop",
   "islandAccessories": "Accessories",
   "islandCarlos": "Carlos",
-  "islandJungle": "Jungle"
+  "islandJungle": "Jungle",
+  "charCoco": "Coco",
+  "charCarlos": "Carlos",
+  "charShelldon": "Sir Shelldon",
+  "charJag": "Jag",
+  "charStranger": "???",
+  "charZip": "Scout Zip",
+  "charSkitter": "Skitter",
+  "charFrostbite": "Frostbite",
+  "charSnap": "Captain Snap",
+  "charShifty": "High Priest Shifty",
+  "charHiss": "Hiss",
+  "charKomo": "King Komo",
+  "enemyGecko": "Gecko Scout",
+  "enemySkink": "Speedy Skink",
+  "enemyIguana": "Frost Iguana",
+  "enemyCroc": "Snapjaw Croc",
+  "enemyChameleon": "Shifty Chameleon",
+  "enemySnake": "Gorge Serpent",
+  "enemyKing": "King Komo",
+  "weakGreen": "Weak to steady pushups",
+  "weakBlue": "Weak to holding at the bottom",
+  "weakYellow": "Weak to quick pushups",
+  "weakShifting": "Keeps changing colour!",
+  "repNormal": "Pushup",
+  "repHeld": "Held pushup",
+  "repQuick": "Quick pushup",
+  "superEffective": "Super effective!",
+  "notEffective": "Not very effective…",
+  "criticalHit": "Critical!",
+  "comboCount": "Combo ×{count}",
+  "@comboCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "holdMeter": "Hold",
+  "enemyColourChanges": "It changed colour!",
+  "statPower": "Power",
+  "statVitality": "Vitality",
+  "statGrip": "Grip",
+  "statAgility": "Agility",
+  "statPowerInfo": "More damage with every pushup",
+  "statVitalityInfo": "More health to take hits",
+  "statGripInfo": "Held pushups hit harder",
+  "statAgilityInfo": "Quick pushups hit harder and chain longer",
+  "trekTitle": "Jungle Trek",
+  "trekTagline": "Fight through the reptiles' jungle, one pushup at a time.",
+  "trekPlay": "Play",
+  "trekLevel": "Level {level}",
+  "@trekLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "trekXp": "{xp} / {next} XP",
+  "@trekXp": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      },
+      "next": {
+        "type": "int"
+      }
+    }
+  },
+  "trekStageNumber": "Stage {number}",
+  "@trekStageNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "trekStart": "Start stage",
+  "trekReplay": "Play again",
+  "trekLocked": "Clear the stage before to unlock",
+  "trekEnemies": "Enemies",
+  "trekReward": "Reward",
+  "trekRewardClaimed": "Reward collected",
+  "trekWave": "Wave {wave} of {waves}",
+  "@trekWave": {
+    "placeholders": {
+      "wave": {
+        "type": "int"
+      },
+      "waves": {
+        "type": "int"
+      }
+    }
+  },
+  "trekRest": "Rest",
+  "trekRestInfo": "Breathe, shake out your arms. Health is coming back.",
+  "trekNextWave": "Next up",
+  "trekSkipRest": "I'm ready",
+  "trekStartFight": "Fight!",
+  "trekVictory": "Victory!",
+  "trekKnockedOut": "Knocked out!",
+  "trekKnockedOutInfo": "Rest up and try again. Your XP is kept.",
+  "trekTryAgain": "Try again",
+  "trekBackToMap": "Back to the map",
+  "trekNewItem": "New item!",
+  "trekLevelUp": "Level up!",
+  "trekPointsToSpend": "{count} points to spend",
+  "@trekPointsToSpend": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trekSpendPoints": "Spend points",
+  "trekStats": "Stats",
+  "trekXpEarned": "XP",
+  "trekRepsDone": "Pushups",
+  "trekHealth": "Health",
+  "trekStars": "Stars",
+  "trekDailyDone": "Today's quest is done!",
+  "trekAdoptTitle": "King Komo joined your island!",
+  "trekAdoptInfo": "Play as the Lizard King from the wardrobe.",
+  "trekExclusive": "Jungle Trek reward",
+  "trekExclusiveInfo": "Win it in the Jungle Trek",
+  "playAs": "Play as",
+  "stage1Title": "The Fern Trail",
+  "stage1Blurb": "Gecko scouts guard the way into the deep jungle.",
+  "stage2Title": "Canopy Bridge",
+  "stage2Blurb": "A wobbly rope bridge high in the treetops, and the fastest skinks on the island.",
+  "stage3Title": "Misty Swamp",
+  "stage3Blurb": "Cold fog, black water and iguanas with icy scales.",
+  "stage4Title": "Lake Snapjaw",
+  "stage4Blurb": "Cross the lake on a raft while crocodiles circle below.",
+  "stage5Title": "Temple of Scales",
+  "stage5Blurb": "Chameleon priests who change colour mid-fight.",
+  "stage6Title": "Serpent Gorge",
+  "stage6Blurb": "A canyon full of snakes in every colour.",
+  "stage7Title": "Throne of Scales",
+  "stage7Blurb": "King Komo awaits. A pushup duel for the jungle's respect.",
+  "s1i1": "Welcome to the deep jungle, Carlos! Stay close. This is lizard country.",
+  "s1i2": "HALT! No apes past the ferns. King Komo's orders!",
+  "s1i3": "I just want to find my friends…",
+  "s1i4": "Then you'll have to get through us! Geckos, ATTACK!",
+  "s1i5": "Green lizards hate steady, honest pushups. Show them your form!",
+  "s1o1": "Ow… okay, okay! You're stronger than you look, ape.",
+  "s1o2": "But the King will never let you cross his jungle!",
+  "s2i1": "This rope bridge is the only way through the treetops.",
+  "s2i2": "Hehe, too slow, big guy! Nobody's faster than the Skink Squad!",
+  "s2i3": "Yellow skinks dodge slow moves. Do your pushups quickly, one after another!",
+  "s2i4": "Fast hands. Here we go!",
+  "s2o1": "Whoa… you're actually fast! A gecko buddy wants to ride along with you.",
+  "s3i1": "Brrr… this swamp is cold enough to freeze my feathers.",
+  "s3i2": "Ssslow down, ape. Our icy scales crack only under patient strength.",
+  "s3i3": "Blue lizards! Hold each pushup at the bottom for two seconds!",
+  "s3o1": "Impressive patience… Take this. Jade suits a hero of the jungle.",
+  "s4i1": "The King's throne lies across Lake Snapjaw. Hop on the raft!",
+  "s4i2": "Pushups… on a boat? Sure, why not.",
+  "s4i3": "Ahoy, hairy! These are MY waters. Nobody crosses without a fight!",
+  "s4i4": "Watch their colours, Carlos. Every croc needs a different move!",
+  "s4o1": "Arr… you rowed us all into submission. Keep this tooth, sailor.",
+  "s5i1": "The Temple of Scales! The lizards worship the Great Shed Skin here.",
+  "s5i2": "Welcome, pilgrim… or should I say, VICTIM?",
+  "s5i3": "Chameleons change colour! Watch closely and switch your pushups to match.",
+  "s5i4": "Steady, hold, quick… got it. I think.",
+  "s5o1": "You see through every disguise. Wear these eyes, and see like we do.",
+  "s6i1": "Sssso… the ape made it to my gorge. Nobody passesss.",
+  "s6i2": "Snakes of every colour… This is the last stop before the throne!",
+  "s6i3": "For the Banana Brigade!",
+  "s6o1": "Sssplendid fighting. Take my spare tail… you'll need it where you're going.",
+  "s7i1": "So. The famous ape who out-pushed my whole kingdom.",
+  "s7i2": "My people lived here a thousand years before the first banana grew. Why should I share it with you?",
+  "s7i3": "I'm not here to take it. I just want my friends back… and a home for all of us.",
+  "s7i4": "Words are cheap. In this kingdom, respect is earned one pushup at a time.",
+  "s7i5": "A pushup duel. Rep for rep. Win, and you'll have my respect.",
+  "s7p2": "Not bad! But can you HOLD your ground?",
+  "s7p3": "Enough! Let's see how FAST you really are!",
+  "s7o1": "…I yield. You fight with honour, Carlos.",
+  "s7o2": "The jungle is yours to share. And if you'll have me… I'd love to see that island of yours.",
+  "s7o3": "Welcome to the team, Your Majesty!",
+  "s7o4": "A gorilla and a lizard king, best friends. Now I've seen everything!",
+  "locVolcano": "Mount Burpee",
+  "locMoonBeach": "Moonlit Beach",
+  "locTemple": "Temple of the Golden Banana",
+  "locSkyIsland": "Cloud Island",
+  "locFernTrail": "Fern Trail",
+  "locCanopy": "Canopy Bridge",
+  "locSwamp": "Misty Swamp",
+  "locLake": "Lake Snapjaw",
+  "locGorge": "Serpent Gorge",
+  "locThrone": "Throne of Scales",
+  "ruleTimed": "{goal} pushups in {seconds} seconds",
+  "@ruleTimed": {
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "ruleHold": "{goal} pushups, holding each for {seconds} seconds",
+  "@ruleHold": {
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "ruleTarget": "Reach {goal} pushups",
+  "@ruleTarget": {
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "q1Title": "Mount Burpee's Hiccups",
+  "q1Teaser": "The volcano has the hiccups and is sneezing lava on Coco's nest. Only super fast pushups can scare them away.",
+  "q1i1": "CARLOS! Code red! Mount Burpee has the hiccups!",
+  "q1i2": "Volcanoes get hiccups?!",
+  "q1i3": "Every time it hics, it sneezes lava on my nest. Rude.",
+  "q1i4": "Legend says only a gorilla doing super fast pushups can scare hiccups away.",
+  "q1i5": "Fast pushups? I was BORN for this.",
+  "q1i6": "Ten pushups in thirty seconds. Go fast. Go furious. Go… banana.",
+  "q1w1": "It worked! The volcano burped out… a message in a bottle?!",
+  "q1w2": "\"We're out there. Keep growing the island. — The Banana Brigade.\" My friends are alive!",
+  "q1l1": "…hic. Still hiccuping. My poor nest.",
+  "q1l2": "I'll be back tomorrow, faster than ever!",
+  "q2Title": "The Wishing Moon",
+  "q2Teaser": "Sir Shelldon says the full moon grants a wish to whoever holds their pushups slow and strong.",
+  "q2i1": "Ahh… young Carlos… tonight… is the night… of the Wishing Moon…",
+  "q2i2": "Sir Shelldon! Are you… awake?",
+  "q2i3": "I have been awake… since 1824.",
+  "q2i4": "The moon grants one wish… to whoever holds their pushups… slow… and strong… like a tortoise.",
+  "q2i5": "Then I wish to find my monkey friends!",
+  "q2i6": "Hold each pushup at the bottom… three seconds. Five times. The moon… is watching.",
+  "q2w1": "The moon smiles… Look… its reflection draws a map… east… beyond the reef.",
+  "q2w2": "A map to my friends! I'll need a bigger island to get there…",
+  "q2l1": "Patience… even the moon… took four billion years… Return tomorrow.",
+  "q3Title": "Jag's Banana Bet",
+  "q3Teaser": "A show-off jaguar guards the Golden Banana and bets you can't do 20 pushups on his temple steps. Double bananas if you do.",
+  "q3i1": "Well, well. The famous Carlos. I hear you do… pushups.",
+  "q3i2": "And who are you supposed to be?",
+  "q3i3": "Jag. Fastest cat, biggest biceps, guardian of the Golden Banana.",
+  "q3i4": "I bet you can't do 20 pushups on my temple steps. Win, and I double your bananas.",
+  "q3i5": "Deal. Prepare to be out-pushed, kitty.",
+  "q3w1": "…Twenty. Fine. FINE. Take your double bananas.",
+  "q3w2": "Also… a monkey in a cape came through last week. Said she was looking for a gorilla.",
+  "q3w3": "A monkey in a cape?! That has to be Lulu!",
+  "q3l1": "Ha! The Golden Banana stays with me. Come back when you have muscles.",
+  "q4Title": "The Rainbow Bridge",
+  "q4Teaser": "An island is floating in the sky! The rainbow bridge up runs on muscle power: every pushup paints a stripe.",
+  "q4i1": "Carlos, look up! An island… IN THE SKY!",
+  "q4i2": "How do we get up there? I can't fly!",
+  "q4i3": "The rainbow bridge runs on muscle power. Every pushup paints a stripe.",
+  "q4i4": "Fifteen pushups, fifteen stripes. Let's paint the sky!",
+  "q4w1": "We made it! Whoa, there's a tiny footprint up here… with a banana sticker on it.",
+  "q4w2": "That's Lulu's sticker! She was HERE!",
+  "q4l1": "The bridge faded… We need more stripes. Same time tomorrow?",
+  "q5Title": "The Masked Monkey",
+  "q5Teaser": "Someone in sunglasses is waiting on the beach at night. They say they know where your friends are.",
+  "q5i1": "Psst. Gorilla. Over here.",
+  "q5i2": "Who's there? And why are you wearing sunglasses at night?",
+  "q5i3": "Because I'm cool. And undercover. The Banana Brigade sent me.",
+  "q5i4": "They can't come back until the island is ready for everyone. Keep building. Keep pushing.",
+  "q5i5": "Twelve pushups before the tide comes in, and I'll double today's bananas.",
+  "q5w1": "Not bad, big guy. I'll tell them you're getting swole.",
+  "q5w2": "Wait! Lulu, is that you?! …She's gone.",
+  "q5l1": "Too slow, big guy. The tide waits for no one.",
+  "cheerCoco1": "SQUAWK! Faster!",
+  "cheerCoco2": "You got this!",
+  "cheerCoco3": "Pump it, Carlos!",
+  "cheerShelldon1": "Sloooow… and strong…",
+  "cheerShelldon2": "Breathe… young one…",
+  "cheerJag1": "Is that all?",
+  "cheerJag2": "Pfft. Lucky rep.",
+  "cheerJag3": "…Not bad.",
+  "cheerStranger1": "Keep it up, big guy.",
+  "cheerStranger2": "The Brigade is watching.",
+  "cheerReptile1": "Get off our island!",
+  "cheerReptile2": "Hisss!",
+  "cheerReptile3": "Is that all you've got, ape?",
+  "questSkip": "Skip",
+  "questLetsDoThis": "Let's do this!",
+  "questStartChallenge": "Start challenge",
+  "questFinish": "Finish",
+  "questHeld": "Held! Push up!",
+  "questHoldBottom": "Hold at the bottom",
+  "questOfGoal": "of {goal}",
+  "@questOfGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "questComplete": "Quest complete!",
+  "questSoClose": "So close!",
+  "questTomorrow": "A new adventure waits in the jungle tomorrow.",
+  "questPushups": "pushups",
+  "questBananas": "bananas",
+  "questBananasDoubled": "bananas, doubled!",
+  "questBackToJungle": "Back to the jungle",
+  "questDaily": "DAILY QUEST",
+  "questDoneToday": "DONE TODAY",
+  "questReplay": "Replay for fun",
+  "questBonus": "+{bonus} bonus",
+  "@questBonus": {
+    "placeholders": {
+      "bonus": {
+        "type": "int"
+      }
+    }
+  },
+  "questDoubleBonus": "×{multiplier} + {bonus}",
+  "@questDoubleBonus": {
+    "placeholders": {
+      "multiplier": {
+        "type": "int"
+      },
+      "bonus": {
+        "type": "int"
+      }
+    }
+  },
+  "questLetsGo": "Let's go!",
+  "questPlayAgain": "Play again",
+  "greet1": "Hey you! 👋",
+  "greet2": "Ready for some pushups? 💪",
+  "greet3": "Banana break? 🍌",
+  "greet4": "I miss my monkey friends… 🥺",
+  "greet5": "Look how big our island got! 🏝️",
+  "greet6": "Ooh ooh ah ah! 🦍",
+  "greet7": "Did you see my new look? ✨",
+  "wardrobeTitle": "Wardrobe",
+  "slotFur": "Fur",
+  "slotFace": "Face",
+  "slotHats": "Hats",
+  "slotEyes": "Eyes",
+  "slotOutfits": "Outfits",
+  "slotMat": "Mat",
+  "slotPattern": "Pattern",
+  "wardrobeOwned": "Owned",
+  "wardrobeWearing": "Wearing",
+  "wardrobeLocked": "Build the Accessories Shop to unlock",
+  "wardrobeNeedMore": "{count} more bananas for {name}",
+  "@wardrobeNeedMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "wardrobeBuy": "Buy {name} · {price}",
+  "@wardrobeBuy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "shopTitle": "Shop",
+  "shopSubtitle": "Grow your island, one building at a time",
+  "shopAlreadyBuilt": "{name} is already on your island",
+  "@shopAlreadyBuilt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shopNeedMore": "{count} more bananas needed",
+  "@shopNeedMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shopBuild": "Build for {price}",
+  "@shopBuild": {
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "shopBuilt": "Built",
+  "questIntroTitle": "Welcome to the island",
+  "questCommunityTitle": "Coming together",
+  "questDailyTitle": "Daily bananas",
+  "dailyInfo": "Come back every day for free bananas!",
+  "dailyToday": "Today",
+  "dailyClaim": "Claim 10 bananas",
+  "intro1": "Welcome to your new island! It used to be home to lots of monkeys.",
+  "intro2": "Then a mysterious storm swept all the monkeys away.",
+  "intro3": "Carlos the gorilla feels lonely. Help him rebuild his island by earning bananas with pushups, so his friends can find their way home.",
+  "introNext": "Next",
+  "introHelp": "Help Carlos!",
+  "communityText": "Let's work together to reach 10,000 bananas! If we reach the goal, a new area of the island unlocks.",
+  "buildingAccessories": "Accessories Shop",
+  "buildingAirport": "Airport",
+  "buildingGym": "Gym",
+  "buildingAdoption": "Monkey Adoption",
+  "itemPartyHat": "Party Hat",
+  "cosFurCharcoal": "Charcoal",
+  "cosFurCocoa": "Cocoa",
+  "cosFurGolden": "Golden",
+  "cosFurGinger": "Ginger",
+  "cosFurSnow": "Snow",
+  "cosFurMidnight": "Midnight",
+  "cosFurSlate": "Slate",
+  "cosFurBubblegum": "Bubblegum",
+  "cosFurMint": "Mint",
+  "cosFurLavender": "Lavender",
+  "cosFurSky": "Sky",
+  "cosFurLava": "Lava",
+  "cosFurJade": "Jade",
+  "cosFaceLilac": "Lilac",
+  "cosFacePeach": "Peach",
+  "cosFaceSand": "Sand",
+  "cosFaceBlush": "Blush",
+  "cosFaceCream": "Cream",
+  "cosFaceMocha": "Mocha",
+  "cosFaceFrost": "Frost",
+  "cosHatNone": "No hat",
+  "cosHatParty": "Party Hat",
+  "cosHatSweatband": "Sweatband",
+  "cosHatCap": "Gym Cap",
+  "cosHatBeanie": "Beanie",
+  "cosHatBanana": "Banana Hat",
+  "cosHatFlowers": "Flower Crown",
+  "cosHatChef": "Chef Hat",
+  "cosHatPropeller": "Propeller Cap",
+  "cosHatTop": "Top Hat",
+  "cosHatCowboy": "Cowboy Hat",
+  "cosHatPirate": "Pirate Hat",
+  "cosHatWizard": "Wizard Hat",
+  "cosHatViking": "Viking Helmet",
+  "cosHatCrown": "Crown",
+  "cosHatHalo": "Halo",
+  "cosHatGecko": "Gecko Buddy",
+  "cosHatLizardcrown": "Lizard Crown",
+  "cosEyesNone": "Nothing",
+  "cosEyesShades": "Shades",
+  "cosEyesNerd": "Round Glasses",
+  "cosEyesMustache": "Mustache",
+  "cosEyesHearts": "Heart Glasses",
+  "cosEyesStars": "Star Glasses",
+  "cosEyesMonocle": "Monocle",
+  "cosEyesVisor": "Cyber Visor",
+  "cosEyesChameleon": "Chameleon Eyes",
+  "cosOutfitNone": "Nothing",
+  "cosOutfitWristbands": "Wristbands",
+  "cosOutfitBowtie": "Bow Tie",
+  "cosOutfitTank": "Tank Top",
+  "cosOutfitScarf": "Scarf",
+  "cosOutfitLei": "Flower Lei",
+  "cosOutfitTutu": "Tutu",
+  "cosOutfitCape": "Hero Cape",
+  "cosOutfitChain": "Gold Chain",
+  "cosOutfitTooth": "Croc Tooth Necklace",
+  "cosOutfitTail": "Lizard Tail",
+  "cosMatBlue": "Blue",
+  "cosMatPink": "Pink",
+  "cosMatMint": "Mint",
+  "cosMatSunny": "Sunny",
+  "cosMatLilac": "Lilac",
+  "cosMatCoral": "Coral",
+  "cosMatLime": "Lime",
+  "cosMatNavy": "Navy",
+  "cosMatCharcoal": "Charcoal",
+  "cosMatCloud": "Cloud",
+  "cosPatternSolid": "Plain",
+  "cosPatternStripes": "Stripes",
+  "cosPatternDots": "Polka Dots",
+  "cosPatternChecker": "Checkers",
+  "cosPatternZigzag": "Zigzag",
+  "cosPatternStars": "Stars",
+  "cosPatternHearts": "Hearts",
+  "cosPatternBananas": "Bananas",
+  "cosPatternCamo": "Camo",
+  "cosPatternRainbow": "Rainbow",
+  "cosPatternScales": "Dragon Scales"
 }

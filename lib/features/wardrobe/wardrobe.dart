@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/extensions/shop_buyables.dart';
+import 'package:pushup_bro/core/model/cosmetic_names.dart';
 import 'package:pushup_bro/core/model/cosmetics.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
@@ -16,6 +18,7 @@ import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/widgets/banana_counter.dart';
 import 'package:pushup_bro/features/wardrobe/widgets/cosmetic_tile.dart';
 import 'package:pushup_bro/features/wardrobe/widgets/wardrobe_stage.dart';
+import 'package:pushup_bro/generated/l10n.dart';
 
 /// Carlos's wardrobe: try on fur and face colours, hats, eyewear, outfits
 /// and mats on a turntable, buy them with bananas and wear them.
@@ -61,6 +64,25 @@ class _WardrobeState extends State<Wardrobe> {
             ],
           ),
         );
+  }
+
+  /// Plays as the monkey at [index]: the first one is the one shown
+  /// everywhere.
+  void _switchTo(GameInventory inventory, int index) {
+    if (index == 0) return;
+    setState(() => _tryingOn = null);
+    final picked = inventory.monkeys[index];
+    unawaited(
+      context.read<GameInventoryCubit>().updateInventory(
+            inventory.copyWith(
+              monkeys: [
+                picked,
+                for (final (i, monkey) in inventory.monkeys.indexed)
+                  if (i != index) monkey,
+              ],
+            ),
+          ),
+    );
   }
 
   void _tap(GameInventory inventory, Cosmetic cosmetic) {
@@ -125,7 +147,7 @@ class _WardrobeState extends State<Wardrobe> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Wardrobe',
+                          context.l10n.wardrobeTitle,
                           style: pageTitleTextStyle.copyWith(
                             color: background2,
                           ),
@@ -136,6 +158,16 @@ class _WardrobeState extends State<Wardrobe> {
                     ),
                   ),
                 ),
+                if (inventory.monkeys.length > 1)
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    top: MediaQuery.paddingOf(context).top + 66,
+                    child: _CharacterSwitch(
+                      inventory: inventory,
+                      onPick: (index) => _switchTo(inventory, index),
+                    ),
+                  ),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: _Drawer(
@@ -177,14 +209,14 @@ class _Drawer extends StatelessWidget {
   final ValueChanged<Cosmetic> onTap;
   final ValueChanged<Cosmetic> onBuy;
 
-  static const Map<CosmeticSlot, (String, String)> _slotLabels = {
-    CosmeticSlot.fur: ('Fur', '🦍'),
-    CosmeticSlot.face: ('Face', '😊'),
-    CosmeticSlot.hat: ('Hats', '🎩'),
-    CosmeticSlot.eyewear: ('Eyes', '🕶️'),
-    CosmeticSlot.outfit: ('Outfits', '🎽'),
-    CosmeticSlot.matColor: ('Mat', '🟦'),
-    CosmeticSlot.matPattern: ('Pattern', '🏁'),
+  static const Map<CosmeticSlot, (String Function(S), String)> _slotLabels = {
+    CosmeticSlot.fur: (_furLabel, '🦍'),
+    CosmeticSlot.face: (_faceLabel, '😊'),
+    CosmeticSlot.hat: (_hatsLabel, '🎩'),
+    CosmeticSlot.eyewear: (_eyesLabel, '🕶️'),
+    CosmeticSlot.outfit: (_outfitsLabel, '🎽'),
+    CosmeticSlot.matColor: (_matLabel, '🟦'),
+    CosmeticSlot.matPattern: (_patternLabel, '🏁'),
   };
 
   @override
@@ -220,7 +252,7 @@ class _Drawer extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: _SlotChip(
-                      label: label,
+                      label: label(context.l10n),
                       emoji: emoji,
                       selected: each == slot,
                       onTap: () => onSlot(each),
@@ -262,7 +294,7 @@ class _Drawer extends StatelessWidget {
                   left: 16,
                   right: 16,
                   bottom: media.padding.bottom + 16,
-                  child: Center(child: _action(locked)),
+                  child: Center(child: _action(context, locked)),
                 ),
               ],
             ),
@@ -272,27 +304,36 @@ class _Drawer extends StatelessWidget {
     );
   }
 
-  Widget _action(bool locked) {
+  Widget _action(BuildContext context, bool locked) {
     final cosmetic = tryingOn;
     if (cosmetic == null) return const SizedBox.shrink();
+    if (cosmetic.exclusive) {
+      return SheetTag(
+        '🦎 ${context.l10n.trekExclusiveInfo}',
+        color: const Color(0xFF2FA37A),
+      );
+    }
     if (locked) {
-      return const SheetTag(
-        'Build the Accessories Shop to unlock',
+      return SheetTag(
+        context.l10n.wardrobeLocked,
         icon: CarbonIcons.locked,
-        color: Color(0xFFF5A623),
+        color: const Color(0xFFF5A623),
       );
     }
     final missing = cosmetic.price - inventory.bananas;
     if (missing > 0) {
       return SheetTag(
-        '$missing more bananas for ${cosmetic.name}',
+        context.l10n.wardrobeNeedMore(missing, cosmetic.label(context.l10n)),
         icon: CarbonIcons.warning_alt,
         color: const Color(0xFFE5534B),
       );
     }
 
     return PillButton(
-      label: 'Buy ${cosmetic.name} · ${cosmetic.price}',
+      label: context.l10n.wardrobeBuy(
+        cosmetic.label(context.l10n),
+        cosmetic.price,
+      ),
       icon: CarbonIcons.shopping_bag,
       onPressed: () => onBuy(cosmetic),
     );
@@ -360,5 +401,61 @@ class _RoundButton extends StatelessWidget {
             child: Icon(icon, color: background2),
           ),
         ),
+      );
+}
+
+String _furLabel(S l) => l.slotFur;
+String _faceLabel(S l) => l.slotFace;
+String _hatsLabel(S l) => l.slotHats;
+String _eyesLabel(S l) => l.slotEyes;
+String _outfitsLabel(S l) => l.slotOutfits;
+String _matLabel(S l) => l.slotMat;
+String _patternLabel(S l) => l.slotPattern;
+
+/// Who to play as, once King Komo has joined.
+class _CharacterSwitch extends StatelessWidget {
+  const _CharacterSwitch({required this.inventory, required this.onPick});
+
+  final GameInventory inventory;
+  final ValueChanged<int> onPick;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        children: [
+          Text(
+            context.l10n.playAs,
+            style: buttonTextStyle.copyWith(
+              color: background2.withValues(alpha: 0.6),
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(width: 8),
+          for (final (i, monkey) in inventory.monkeys.indexed)
+            Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: Material(
+                color: i == 0 ? background2 : Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () => onPick(i),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Text(
+                      '${monkey.look.species == MonkeyLook.lizard //
+                          ? '👑' : '🦍'} ${monkey.name}',
+                      style: buttonTextStyle.copyWith(
+                        color: i == 0 ? Colors.white : background2,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       );
 }

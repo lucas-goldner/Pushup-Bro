@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/model/quest_log.dart';
+import 'package:pushup_bro/core/model/trek_progress.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 
@@ -11,6 +12,7 @@ class GameInventory extends Equatable {
     required this.monkeys,
     this.ownedCosmetics = const [],
     this.quests = const QuestLog(),
+    this.trek = const TrekProgress(),
   });
 
   factory GameInventory.empty() => GameInventory(
@@ -27,6 +29,7 @@ class GameInventory extends Equatable {
         .whereType<ShopBuyables>()
         .toList();
     final quests = json['quests'];
+    final trek = json['trek'];
 
     return GameInventory(
       bananas: json['bananas'] as int? ?? 0,
@@ -44,6 +47,9 @@ class GameInventory extends Equatable {
       quests: quests is Map<String, dynamic>
           ? QuestLog.fromJson(quests)
           : const QuestLog(),
+      trek: trek is Map<String, dynamic>
+          ? TrekProgress.fromJson(trek)
+          : const TrekProgress(),
     );
   }
 
@@ -57,6 +63,9 @@ class GameInventory extends Equatable {
   /// Progress through the jungle's daily quests.
   final QuestLog quests;
 
+  /// Progress through the Jungle Trek.
+  final TrekProgress trek;
+
   bool owns(String cosmeticId) =>
       MonkeyLook.defaults.contains(cosmeticId) ||
       ownedCosmetics.contains(cosmeticId);
@@ -67,6 +76,7 @@ class GameInventory extends Equatable {
     List<AdoptableMonkey>? monkeys,
     List<String>? ownedCosmetics,
     QuestLog? quests,
+    TrekProgress? trek,
   }) =>
       GameInventory(
         bananas: bananas ?? this.bananas,
@@ -74,6 +84,7 @@ class GameInventory extends Equatable {
         monkeys: monkeys ?? this.monkeys,
         ownedCosmetics: ownedCosmetics ?? this.ownedCosmetics,
         quests: quests ?? this.quests,
+        trek: trek ?? this.trek,
       );
 
   Map<String, dynamic> toJson() => {
@@ -82,9 +93,10 @@ class GameInventory extends Equatable {
         'monkeys': monkeys.map((monkey) => monkey.toJson()).toList(),
         'ownedCosmetics': ownedCosmetics,
         'quests': quests.toJson(),
+        'trek': trek.toJson(),
       };
 
   @override
   List<Object?> get props =>
-      [bananas, boughtItems, monkeys, ownedCosmetics, quests];
+      [bananas, boughtItems, monkeys, ownedCosmetics, quests, trek];
 }

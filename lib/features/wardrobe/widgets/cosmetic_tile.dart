@@ -1,5 +1,7 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/model/cosmetic_names.dart';
 import 'package:pushup_bro/core/model/cosmetics.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
@@ -18,6 +20,7 @@ class CosmeticTile extends StatelessWidget {
     required this.tryingOn,
     required this.locked,
     required this.onTap,
+    this.compact = false,
     super.key,
   });
 
@@ -30,6 +33,9 @@ class CosmeticTile extends StatelessWidget {
   final bool tryingOn;
   final bool locked;
   final VoidCallback onTap;
+
+  /// Just the picture, without the name and price.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -87,43 +93,59 @@ class CosmeticTile extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            cosmetic.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: defaultTextStyle.copyWith(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: background2,
-            ),
-          ),
-          const SizedBox(height: 2),
-          if (owned)
+          if (!compact) ...[
+            const SizedBox(height: 4),
             Text(
-              worn ? 'Wearing' : 'Owned',
+              cosmetic.label(context.l10n),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: defaultTextStyle.copyWith(
-                fontSize: 11,
-                color: worn ? accentColor : background2.withValues(alpha: 0.45),
-                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: background2,
               ),
-            )
-          else
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Assets.images.island.banana.image(width: 16),
-                const SizedBox(width: 2),
-                Text(
-                  '${cosmetic.price}',
-                  style: defaultTextStyle.copyWith(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: background2,
-                  ),
-                ),
-              ],
             ),
+            const SizedBox(height: 2),
+            if (owned)
+              Text(
+                worn
+                    ? context.l10n.wardrobeWearing
+                    : context.l10n.wardrobeOwned,
+                style: defaultTextStyle.copyWith(
+                  fontSize: 11,
+                  color:
+                      worn ? accentColor : background2.withValues(alpha: 0.45),
+                  fontWeight: FontWeight.w600,
+                ),
+              )
+            else if (cosmetic.exclusive)
+              Text(
+                '🦎 ${context.l10n.trekTitle}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: defaultTextStyle.copyWith(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF2FA37A),
+                ),
+              )
+            else
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Assets.images.island.banana.image(width: 16),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${cosmetic.price}',
+                    style: defaultTextStyle.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: background2,
+                    ),
+                  ),
+                ],
+              ),
+          ],
         ],
       ),
     );

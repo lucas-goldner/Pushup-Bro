@@ -6,12 +6,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/features/island/scene/island_world.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
+import 'package:pushup_bro/generated/l10n.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 /// Matches the bottom of the island screen's sky gradient, so the fogged
@@ -19,15 +21,8 @@ import 'package:vector_math/vector_math.dart' as vm;
 const islandHorizon = Color(0xFFDDF1FA);
 
 /// Things Carlos says when he's tapped.
-const _greetings = [
-  'Hey you! 👋',
-  'Ready for some pushups? 💪',
-  'Banana break? 🍌',
-  'I miss my monkey friends… 🥺',
-  'Look how big our island got! 🏝️',
-  'Ooh ooh ah ah! 🦍',
-  'Did you see my new look? ✨',
-];
+List<String> _greetings(S l) =>
+    [l.greet1, l.greet2, l.greet3, l.greet4, l.greet5, l.greet6, l.greet7];
 
 /// The 3D island. Drag sideways to turn it. Tap Carlos and the camera
 /// closes in while he waves and says hi; tap the jungle (or call
@@ -112,7 +107,7 @@ class IslandSceneState extends State<IslandScene> {
     if (nearCarlos || (hit != null && world.isCarlos(hit.node))) {
       world.greet(camera.position - world.gorilla.root.position);
       setState(
-        () => _bubble = _greetings[_greetingCount++ % _greetings.length],
+        () => _bubble = _greetings(context.l10n)[_greetingCount++ % 7],
       );
     } else if (hit != null && world.isJungle(hit.node)) {
       goToJungle();

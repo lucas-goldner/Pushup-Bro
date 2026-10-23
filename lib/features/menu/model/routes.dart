@@ -14,6 +14,9 @@ import 'package:pushup_bro/features/quest/quest_page.dart';
 import 'package:pushup_bro/features/settings/settings.dart';
 import 'package:pushup_bro/features/settings/view/settings_language.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
+import 'package:pushup_bro/features/trek/model/trek.dart';
+import 'package:pushup_bro/features/trek/trek_map_page.dart';
+import 'package:pushup_bro/features/trek/trek_stage_page.dart';
 import 'package:pushup_bro/features/wardrobe/wardrobe.dart';
 
 Route<CupertinoPageRoute<Widget>> generateRoutes(
@@ -87,6 +90,19 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
 
             return QuestPage(quest: quest, replay: replay);
           },
+        ),
+      TrekMapPage.routeName => PageRouteBuilder(
+          settings: settings,
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+          pageBuilder: (context, _, __) => const TrekMapPage(),
+        ),
+      TrekStagePage.routeName => PageRouteBuilder(
+          settings: settings,
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+          pageBuilder: (context, _, __) =>
+              TrekStagePage(stage: settings.arguments! as TrekStage),
         ),
       Wardrobe.routeName => CupertinoPageRoute(
           settings: settings,

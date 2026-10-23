@@ -8,6 +8,7 @@ import 'package:flutter_scene/scene.dart' hide Material;
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
@@ -23,16 +24,17 @@ import 'package:pushup_bro/features/quest/scene/location_world.dart';
 import 'package:pushup_bro/features/quest/widgets/challenge_hud.dart';
 import 'package:pushup_bro/features/quest/widgets/dialog_box.dart';
 import 'package:pushup_bro/features/quest/widgets/quest_result.dart';
+import 'package:pushup_bro/generated/l10n.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 /// What the guests shout while Carlos does pushups.
-const Map<Character, List<String>> _cheers = {
-  Character.coco: ['SQUAWK! Faster!', 'You got this!', 'Pump it, Carlos!'],
-  Character.shelldon: ['Sloooow… and strong…', 'Breathe… young one…'],
-  Character.jag: ['Is that all?', 'Pfft. Lucky rep.', '…Not bad.'],
-  Character.stranger: ['Keep it up, big guy.', 'The Brigade is watching.'],
-  Character.carlos: ['Go!'],
-};
+List<String> _cheersOf(Character guest, S l) => switch (guest) {
+      Character.coco => [l.cheerCoco1, l.cheerCoco2, l.cheerCoco3],
+      Character.shelldon => [l.cheerShelldon1, l.cheerShelldon2],
+      Character.jag => [l.cheerJag1, l.cheerJag2, l.cheerJag3],
+      Character.stranger => [l.cheerStranger1, l.cheerStranger2],
+      _ => [l.cheerReptile1, l.cheerReptile2, l.cheerReptile3],
+    };
 
 enum _Phase { title, intro, challenge, outro, results }
 
@@ -297,7 +299,7 @@ class _QuestPageState extends State<QuestPage> {
     } else {
       _cheerTime -= deltaSeconds;
       if (_cheerTime <= -2.5) {
-        final cheers = _cheers[_quest.guest]!;
+        final cheers = _cheersOf(_quest.guest, context.l10n);
         setState(() => _cheer = cheers[_cheerCount++ % cheers.length]);
         _cheerTime = 2.2;
       }
@@ -477,7 +479,7 @@ class _QuestPageState extends State<QuestPage> {
             right: 16,
             child: _GlassButton(
               icon: CarbonIcons.skip_forward,
-              label: 'Skip',
+              label: context.l10n.questSkip,
               onPressed: () {
                 if (_phase == _Phase.intro) {
                   _toChallenge();
@@ -496,7 +498,7 @@ class _QuestPageState extends State<QuestPage> {
               onNext: _next,
               trailing: last && _phase == _Phase.intro
                   ? PillButton(
-                      label: "Let's do this!",
+                      label: context.l10n.questLetsDoThis,
                       icon: CarbonIcons.play_filled_alt,
                       onPressed: _toChallenge,
                     )
@@ -560,7 +562,7 @@ class _TitleCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                '${quest.location.emoji}  ${quest.location.displayName}',
+                '${quest.location.emoji}  ${quest.location.name(context.l10n)}',
                 style: buttonTextStyle.copyWith(
                   color: background2,
                   fontWeight: FontWeight.w700,
@@ -572,7 +574,7 @@ class _TitleCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Text(
-                quest.title,
+                quest.title(context.l10n),
                 textAlign: TextAlign.center,
                 style: pageTitleTextStyle.copyWith(
                   fontSize: 38,
