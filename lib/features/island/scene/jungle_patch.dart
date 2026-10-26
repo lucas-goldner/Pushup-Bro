@@ -4,6 +4,7 @@ import 'dart:ui' show Color;
 import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/scene/nature_kit.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
+import 'package:pushup_bro/core/scene/static_batch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 const _jungleFloor = Color(0xFF4E9B4A);
@@ -25,8 +26,12 @@ const jungleFloorTop = 0.16;
 /// middle is left open (for Carlos to stand in) and the plants crowd the rim
 /// instead, for the jungle screen's close-up.
 class JunglePatch {
-  JunglePatch({this.radius = 2.1, this.clearing = false, int seed = 7})
-      : _random = math.Random(seed) {
+  JunglePatch({
+    this.radius = 2.1,
+    this.clearing = false,
+    int seed = 7,
+    bool fixed = false,
+  }) : _random = math.Random(seed) {
     root
       ..add(_hill())
       ..add(_waterfall())
@@ -34,6 +39,11 @@ class JunglePatch {
       ..addAll(_wildlife());
     // A clearing is seen from its gate, which would only block the view.
     if (!clearing) root.add(_gate());
+    // Merge everything that doesn't sway, fly or ripple into a few meshes.
+    final moving = findMoving(root, (step) => update(0.37));
+    _time = 0;
+    update(0);
+    bakeStatic(root, moving: moving, shadowStatic: fixed);
   }
 
   final double radius;

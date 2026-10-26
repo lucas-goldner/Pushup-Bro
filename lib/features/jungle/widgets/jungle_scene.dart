@@ -30,7 +30,12 @@ class _JungleSceneState extends State<JungleScene> {
   double _time = 0;
 
   void _populate(Scene scene) {
-    final jungle = _jungle = JunglePatch(radius: 4.2, clearing: true, seed: 11);
+    final jungle = _jungle = JunglePatch(
+      radius: 4.2,
+      clearing: true,
+      seed: 11,
+      fixed: true,
+    );
     final inventory = context.read<GameInventoryCubit>().state.inventory;
     _carlos.look = inventory.monkeys.first.look;
     scene

@@ -5,6 +5,7 @@ import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/nature_kit.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
+import 'package:pushup_bro/core/scene/static_batch.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
@@ -59,6 +60,9 @@ class IslandWorld {
       ..add(jungle.root);
     for (final prop in _props()) {
       _scenery.add(prop);
+      // Each prop and building is moved as a whole when the island grows,
+      // so each is merged into a few meshes of its own.
+      bakeStatic(prop.node);
       root.add(prop.node);
     }
 
@@ -70,6 +74,7 @@ class IslandWorld {
       ShopBuyables.monkeyAdoption: _adoptionHut(),
     };
     for (final building in _buildings.values) {
+      bakeStatic(building);
       root.add(building..visible = false);
     }
     _buildings[ShopBuyables.none]!.visible = true;

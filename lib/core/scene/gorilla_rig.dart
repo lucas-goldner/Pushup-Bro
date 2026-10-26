@@ -5,6 +5,7 @@ import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/scene/costumes.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
+import 'package:pushup_bro/core/scene/static_batch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 const _fur = Color(0xFF3B3A45);
@@ -129,6 +130,16 @@ class GorillaRig {
       ..add(_tail);
     for (final (i, forearm) in _forearms.indexed) {
       forearm.add(_forearmSlots[i]);
+    }
+    // Merge each head's parts (all but the blinking eyes) and the tail into
+    // a few meshes; they keep their materials so the look can recolour
+    // them.
+    for (final part in [_gorillaHead, _lizardHead, _tail]) {
+      bakeStatic(
+        part,
+        moving: {..._eyesOpen, ..._eyesClosed},
+        keepMaterials: true,
+      );
     }
 
     root

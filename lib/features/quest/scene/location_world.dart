@@ -9,6 +9,7 @@ import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/nature_kit.dart';
 import 'package:pushup_bro/core/scene/reptiles.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
+import 'package:pushup_bro/core/scene/static_batch.dart';
 import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:vector_math/vector_math.dart' as vm;
@@ -95,21 +96,36 @@ class LocationWorld {
   })  : carlos = GorillaActor(look: look),
         guest = actorFor(guest),
         _mat = buildMat(look) {
+    final scenery = switch (location) {
+      ChallengeLocation.volcano => _volcano(),
+      ChallengeLocation.moonBeach => _moonBeach(),
+      ChallengeLocation.temple => _temple(),
+      ChallengeLocation.skyIsland => _skyIsland(),
+      ChallengeLocation.fernTrail => _fernTrail(),
+      ChallengeLocation.canopy => _canopy(),
+      ChallengeLocation.swamp => _swamp(),
+      ChallengeLocation.lake => _lake(),
+      ChallengeLocation.gorge => _gorge(),
+      ChallengeLocation.throne => _throne(),
+    };
+    // Merge the scenery that stays put into a few meshes; whatever the
+    // animations move, light up or reveal as the challenge goes on stays
+    // live.
+    final moving = findMoving(scenery, (step) {
+      _challenge = step.isEven;
+      progress = step / 8;
+      for (final animate in _animations) {
+        animate(step * 0.73, 0.1);
+      }
+    });
+    _challenge = false;
+    progress = 0;
+    for (final animate in _animations) {
+      animate(0, 0);
+    }
+    bakeStatic(scenery, moving: moving, shadowStatic: true);
     root
-      ..add(
-        switch (location) {
-          ChallengeLocation.volcano => _volcano(),
-          ChallengeLocation.moonBeach => _moonBeach(),
-          ChallengeLocation.temple => _temple(),
-          ChallengeLocation.skyIsland => _skyIsland(),
-          ChallengeLocation.fernTrail => _fernTrail(),
-          ChallengeLocation.canopy => _canopy(),
-          ChallengeLocation.swamp => _swamp(),
-          ChallengeLocation.lake => _lake(),
-          ChallengeLocation.gorge => _gorge(),
-          ChallengeLocation.throne => _throne(),
-        },
-      )
+      ..add(scenery)
       ..add(_mat..visible = false)
       ..add(carlos.root)
       ..add(this.guest.root);

@@ -7,6 +7,7 @@ import 'package:pushup_bro/core/scene/costumes.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/nature_kit.dart' show yaw;
 import 'package:pushup_bro/core/scene/scene_kit.dart';
+import 'package:pushup_bro/core/scene/static_batch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 const _wall = Color(0xFFEEF1F7);
@@ -171,6 +172,20 @@ class GymWorld {
         ),
       );
     }
+    // The room and the stations never move: merge them into a few meshes,
+    // leaving the buddies, their weights and their mats live.
+    bakeStatic(
+      _view,
+      keep: {
+        for (final buddy in _crew) ...[
+          buddy.rig.root,
+          buddy.roll,
+          buddy.mat,
+          for (final weight in buddy.weights) weight.node,
+        ],
+      },
+      shadowStatic: true,
+    );
   }
 
   final Node root = Node(name: 'gym');
