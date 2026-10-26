@@ -172,6 +172,12 @@ class GymWorld {
         ),
       );
     }
+    // Each weight is lifted as a whole: merge its parts together.
+    for (final buddy in _crew) {
+      for (final weight in buddy.weights) {
+        bakeStatic(weight.node);
+      }
+    }
     // The room and the stations never move: merge them into a few meshes,
     // leaving the buddies, their weights and their mats live.
     bakeStatic(

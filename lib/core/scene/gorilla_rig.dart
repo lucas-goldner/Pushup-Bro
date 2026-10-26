@@ -5,10 +5,15 @@ import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/scene/costumes.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
+import 'package:pushup_bro/core/scene/skinned_batch.dart';
 import 'package:pushup_bro/core/scene/static_batch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 const _fur = Color(0xFF3B3A45);
+
+/// A skinned part's scale when shown, and when hidden.
+final _open = vm.Vector3.all(1);
+final _shut = vm.Vector3.all(1e-4);
 const _face = Color(0xFFC9C4DD);
 const _eye = Color(0xFF15141B);
 const _sparkle = Color(0xFFFFFFFF);
@@ -141,7 +146,6 @@ class GorillaRig {
         keepMaterials: true,
       );
     }
-
     root
       ..add(_torso)
       ..add(_head)
@@ -151,6 +155,21 @@ class GorillaRig {
       ..addAll(_thighs)
       ..addAll(_shins)
       ..addAll(_feet);
+    // Then draw the whole figure as a few skinned meshes, one per material:
+    // every part stays a node the poses move, but the GPU places them. The
+    // heads and the tail are toggled with the species, so each is its own
+    // group; costume slots are dressed and undressed, so stay separate.
+    for (final eye in _eyesClosed) {
+      eye
+        ..visible = true
+        ..scale = _shut;
+    }
+    final slots = {_hatSlot, _eyewearSlot, _outfitSlot, ..._forearmSlots};
+    final groups = [_gorillaHead, _lizardHead, _tail];
+    skinMeshes(root, skip: {...slots, ...groups});
+    for (final group in groups) {
+      skinMeshes(group, skip: slots);
+    }
 
     if (look != null) this.look = look;
     update(0);
@@ -486,6 +505,11 @@ class GorillaRig {
 
   static void _dress(Node slot, List<Node> parts) {
     [...slot.children].forEach(slot.remove);
+    // A costume is many small parts; merge each into a few meshes, all but
+    // what spins (a propeller).
+    for (final part in parts) {
+      bakeStatic(part, moving: _findSpinners(part).toSet());
+    }
     slot.addAll(parts);
   }
 
@@ -604,11 +628,12 @@ class GorillaRig {
   void _blink() {
     // A quick blink every ~3.4 seconds.
     final closed = (_time % 3.4) < 0.14;
+    // Eyes are skinned parts, so they're hidden by shrinking them away.
     for (final eye in _eyesOpen) {
-      eye.visible = !closed;
+      eye.scale = closed ? _shut : _open;
     }
     for (final eye in _eyesClosed) {
-      eye.visible = closed;
+      eye.scale = closed ? _open : _shut;
     }
   }
 }
