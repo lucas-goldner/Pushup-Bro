@@ -286,7 +286,6 @@
   "trekRepsDone": "Pushups",
   "trekHealth": "Health",
   "trekStars": "Stars",
-  "trekDailyDone": "Today's quest is done!",
   "trekAdoptTitle": "King Komo joined your island!",
   "trekAdoptInfo": "Play as the Lizard King from the wardrobe.",
   "trekExclusive": "Jungle Trek reward",
@@ -663,5 +662,17 @@
   "cosPatternScales": "Dragon Scales",
   "trekComingSoon": "Coming soon",
   "trekComingSoonTitle": "The Misty Peaks",
-  "trekComingSoonInfo": "Beyond King Komo's throne the trail climbs into the clouds. New stages are on their way!"
+  "trekComingSoonInfo": "Beyond King Komo's throne the trail climbs into the clouds. New stages are on their way!",
+  "jungleTabDaily": "Daily challenge",
+  "jungleTabStory": "Story",
+  "trekContinue": "Continue",
+  "trekNextUp": "Next: {stage}",
+  "@trekNextUp": {
+    "placeholders": {
+      "stage": {
+        "type": "String"
+      }
+    }
+  },
+  "trekAllCleared": "Every stage cleared. More coming soon!"
 }

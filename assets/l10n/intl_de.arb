@@ -238,7 +238,6 @@
   "trekRepsDone": "Liegestütze",
   "trekHealth": "Leben",
   "trekStars": "Sterne",
-  "trekDailyDone": "Heutige Quest erledigt!",
   "trekAdoptTitle": "König Komo wohnt jetzt auf deiner Insel!",
   "trekAdoptInfo": "Spiel als Echsenkönig über die Garderobe.",
   "trekExclusive": "Trek-Belohnung",
@@ -523,5 +522,10 @@
   "cosPatternScales": "Drachenschuppen",
   "trekComingSoon": "Bald verfügbar",
   "trekComingSoonTitle": "Die Nebelgipfel",
-  "trekComingSoonInfo": "Hinter König Komos Thron führt der Pfad hinauf in die Wolken. Neue Etappen sind unterwegs!"
+  "trekComingSoonInfo": "Hinter König Komos Thron führt der Pfad hinauf in die Wolken. Neue Etappen sind unterwegs!",
+  "jungleTabDaily": "Tagesquest",
+  "jungleTabStory": "Geschichte",
+  "trekContinue": "Weiter",
+  "trekNextUp": "Als Nächstes: {stage}",
+  "trekAllCleared": "Alle Etappen geschafft. Bald geht's weiter!"
 }

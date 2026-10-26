@@ -34,6 +34,10 @@ class _JungleState extends State<Jungle> {
   bool _white = true;
   bool _questShown = false;
 
+  /// Whether the story is picked over today's challenge; until the player
+  /// picks, the story once today's challenge is done.
+  bool? _story;
+
   @override
   void initState() {
     super.initState();
@@ -148,33 +152,35 @@ class _JungleState extends State<Jungle> {
                       builder: (context, progress) {
                         final (log, trek) = progress;
                         final done = log.completedOn(DateTime.now());
-                        final trekCard = TrekCard(
-                          trek: trek,
-                          big: done,
-                          onPlay: _trek,
-                        );
+                        final story = _story ?? done;
 
-                        // Today's quest first; once it's done, the Trek.
                         return Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: done
-                              ? [
-                                  _DonePill(
-                                    onTap: () => _play(quest, replay: true),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  trekCard,
-                                ]
-                              : [
-                                  trekCard,
-                                  const SizedBox(height: 10),
-                                  QuestCard(
-                                    quest: quest,
-                                    done: done,
-                                    completedQuests: log.total,
-                                    onPlay: () => _play(quest, replay: done),
-                                  ),
-                                ],
+                          children: [
+                            _ModePicker(
+                              story: story,
+                              dailyDone: done,
+                              stage: currentStage(trek).number,
+                              onPick: (value) => setState(() => _story = value),
+                            ),
+                            const SizedBox(height: 10),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              child: story
+                                  ? TrekCard(
+                                      key: const ValueKey('story'),
+                                      trek: trek,
+                                      onPlay: _trek,
+                                    )
+                                  : QuestCard(
+                                      key: const ValueKey('daily'),
+                                      quest: quest,
+                                      done: done,
+                                      completedQuests: log.total,
+                                      onPlay: () => _play(quest, replay: done),
+                                    ),
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -198,29 +204,137 @@ class _JungleState extends State<Jungle> {
   }
 }
 
-/// Today's quest, done: a pill to play it again.
-class _DonePill extends StatelessWidget {
-  const _DonePill({required this.onTap});
+/// Picks what to play in the jungle: today's challenge or the story.
+class _ModePicker extends StatelessWidget {
+  const _ModePicker({
+    required this.story,
+    required this.dailyDone,
+    required this.stage,
+    required this.onPick,
+  });
 
-  final VoidCallback onTap;
+  final bool story;
+  final bool dailyDone;
+
+  /// The story's next stage, shown on its tab.
+  final int stage;
+  final ValueChanged<bool> onPick;
 
   @override
-  Widget build(BuildContext context) => Material(
-        color: Colors.white.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Text(
-              '✅ ${context.l10n.trekDailyDone}',
-              style: buttonTextStyle.copyWith(
-                color: background2,
-                fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 520),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _ModeTab(
+            emoji: dailyDone ? '✅' : '☀️',
+            label: l.jungleTabDaily,
+            selected: !story,
+            color: const Color(0xFF2FA37A),
+            onTap: () => onPick(false),
+          ),
+          _ModeTab(
+            emoji: '🦎',
+            label: l.jungleTabStory,
+            badge: '$stage',
+            selected: story,
+            color: const Color(0xFF1F5A3C),
+            onTap: () => onPick(true),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeTab extends StatelessWidget {
+  const _ModeTab({
+    required this.emoji,
+    required this.label,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+    this.badge,
+  });
+
+  final String emoji;
+  final String label;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+  final String? badge;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = selected ? Colors.white : background2;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? color : Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: buttonTextStyle.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                ),
               ),
-            ),
+              if (badge != null) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? Colors.white.withValues(alpha: 0.25)
+                        : color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    badge!,
+                    style: buttonTextStyle.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
-      );
+      ),
+    );
+  }
 }

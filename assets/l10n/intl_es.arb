@@ -238,7 +238,6 @@
   "trekRepsDone": "Flexiones",
   "trekHealth": "Salud",
   "trekStars": "Estrellas",
-  "trekDailyDone": "¡Misión de hoy completada!",
   "trekAdoptTitle": "¡El Rey Komo se unió a tu isla!",
   "trekAdoptInfo": "Juega como el Rey Lagarto desde el armario.",
   "trekExclusive": "Premio de la Ruta",
@@ -523,5 +522,10 @@
   "cosPatternScales": "Escamas de Dragón",
   "trekComingSoon": "Próximamente",
   "trekComingSoonTitle": "Los Picos Brumosos",
-  "trekComingSoonInfo": "Más allá del trono del Rey Komo, el sendero sube hasta las nubes. ¡Nuevas etapas en camino!"
+  "trekComingSoonInfo": "Más allá del trono del Rey Komo, el sendero sube hasta las nubes. ¡Nuevas etapas en camino!",
+  "jungleTabDaily": "Reto diario",
+  "jungleTabStory": "Historia",
+  "trekContinue": "Continuar",
+  "trekNextUp": "Siguiente: {stage}",
+  "trekAllCleared": "¡Todas las etapas superadas! Pronto habrá más."
 }

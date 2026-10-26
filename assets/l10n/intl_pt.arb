@@ -238,7 +238,6 @@
   "trekRepsDone": "Flexões",
   "trekHealth": "Vida",
   "trekStars": "Estrelas",
-  "trekDailyDone": "A missão de hoje está feita!",
   "trekAdoptTitle": "O Rei Komo entrou para a sua ilha!",
   "trekAdoptInfo": "Jogue como o Rei Lagarto pelo guarda-roupa.",
   "trekExclusive": "Prêmio da Trilha",
@@ -523,5 +522,10 @@
   "cosPatternScales": "Escamas de Dragão",
   "trekComingSoon": "Em breve",
   "trekComingSoonTitle": "Os Picos Nebulosos",
-  "trekComingSoonInfo": "Depois do trono do Rei Komo, a trilha sobe até as nuvens. Novas etapas estão a caminho!"
+  "trekComingSoonInfo": "Depois do trono do Rei Komo, a trilha sobe até as nuvens. Novas etapas estão a caminho!",
+  "jungleTabDaily": "Desafio diário",
+  "jungleTabStory": "História",
+  "trekContinue": "Continuar",
+  "trekNextUp": "Próxima: {stage}",
+  "trekAllCleared": "Todas as etapas concluídas. Mais em breve!"
 }

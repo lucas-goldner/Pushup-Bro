@@ -238,7 +238,6 @@
   "trekRepsDone": "腕立て伏せ",
   "trekHealth": "HP",
   "trekStars": "スター",
-  "trekDailyDone": "今日のクエストは完了！",
   "trekAdoptTitle": "コモ王が島の仲間になった！",
   "trekAdoptInfo": "衣装部屋からトカゲの王でプレイできるよ。",
   "trekExclusive": "ジャングル探検のごほうび",
@@ -523,5 +522,10 @@
   "cosPatternScales": "ドラゴンのウロコ",
   "trekComingSoon": "近日公開",
   "trekComingSoonTitle": "霧の山々",
-  "trekComingSoonInfo": "コモ王の玉座の先、道は雲の上へと続いている。新しいステージを準備中！"
+  "trekComingSoonInfo": "コモ王の玉座の先、道は雲の上へと続いている。新しいステージを準備中！",
+  "jungleTabDaily": "デイリー",
+  "jungleTabStory": "ストーリー",
+  "trekContinue": "つづける",
+  "trekNextUp": "次：{stage}",
+  "trekAllCleared": "全ステージクリア！続きは近日公開！"
 }
