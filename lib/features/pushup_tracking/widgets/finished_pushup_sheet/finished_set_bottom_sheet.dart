@@ -18,8 +18,7 @@ import 'package:pushup_bro/core/model/active_effects.dart';
 import 'package:pushup_bro/core/model/feature_variants.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/model/user.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/progress/model/level_scalings.dart';
@@ -246,15 +245,12 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
                   children: <Widget>[
                     Row(
                       children: [
-                        const SheetBadge('🏆', color: Color(0xFFF5A623)),
+                        SheetBadge('🏆', color: context.gameColors.orange),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Text(
                             localized.congrats,
-                            style: pageTitleTextStyle.copyWith(
-                              fontSize: 26,
-                              color: background2,
-                            ),
+                            style: context.textTheme.headlineMedium,
                           ),
                         ),
                         SheetCloseButton(onPressed: closeModal),
@@ -287,11 +283,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
                     const SizedBox(height: 22),
                     Text(
                       localized.difficulty,
-                      style: headerTextStyle.copyWith(
-                        color: background2,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                      ),
+                      style: context.textTheme.titleMedium,
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -324,10 +316,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
                         ])
                           Text(
                             label,
-                            style: defaultTextStyle.copyWith(
-                              fontSize: 13,
-                              color: background2.withValues(alpha: 0.55),
-                            ),
+                            style: context.textTheme.bodySmall,
                           ),
                       ],
                     ),
@@ -358,34 +347,26 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
   Widget _hero(int pushups) => Container(
         padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF5E9EFF), Color(0xFF7C6CF2)],
+          gradient: LinearGradient(
+            colors: [context.colorScheme.secondary, context.gameColors.purple],
           ),
-          borderRadius: BorderRadius.circular(26),
-          boxShadow: [
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.35),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(PBRadius.lg),
+          boxShadow: context.glow(context.colorScheme.secondary),
         ),
         child: Column(
           children: [
             Text(
               '$pushups',
-              style: pushupTextStyle.copyWith(
+              style: context.textTheme.displayLarge?.copyWith(
                 fontSize: 64,
-                color: Colors.white,
-                height: 1,
+                color: context.gameColors.onGame,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               context.l10n.madeXPushups(pushups.toString()),
-              style: buttonTextStyle.copyWith(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontWeight: FontWeight.w600,
+              style: context.textTheme.labelLarge?.copyWith(
+                color: context.gameColors.onGame.withValues(alpha: 0.85),
               ),
             ),
           ],
@@ -393,7 +374,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
       );
 
   Widget _bananas(int pushups) => SheetCard(
-        color: const Color(0xFFFFF4D6),
+        color: context.gameColors.cream,
         child: Row(
           children: [
             Assets.images.island.banana.image(height: 44),
@@ -401,18 +382,14 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
             Expanded(
               child: Text(
                 context.l10n.bananasEarned(pushups),
-                style: headerTextStyle.copyWith(
-                  color: background2,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 17,
-                ),
+                style: context.textTheme.titleMedium,
               ),
             ),
             Text(
               '+$pushups',
-              style: pushupTextStyle.copyWith(
+              style: context.textTheme.displaySmall?.copyWith(
                 fontSize: 26,
-                color: const Color(0xFFD08A28),
+                color: context.gameColors.orange,
               ),
             ),
           ],
@@ -420,7 +397,6 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
       );
 
   Widget _levelProgress() => SheetCard(
-        color: Colors.white,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -428,11 +404,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
               children: [
                 Text(
                   context.l10n.progress,
-                  style: headerTextStyle.copyWith(
-                    color: background2,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 17,
-                  ),
+                  style: context.textTheme.titleMedium,
                 ),
                 const Spacer(),
                 SheetTag(context.l10n.level(level), icon: CarbonIcons.trophy),
@@ -440,12 +412,14 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
             ),
             const SizedBox(height: 12),
             ClipRRect(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(PBRadius.pill),
               child: LinearProgressIndicator(
                 value: _animation.value,
                 minHeight: 12,
-                backgroundColor: background,
-                valueColor: const AlwaysStoppedAnimation<Color>(accentColor),
+                backgroundColor: context.colorScheme.surfaceContainerHigh,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  context.colorScheme.secondary,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -453,7 +427,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
               alignment: Alignment.centerRight,
               child: Text(
                 context.l10n.pointsReceived(amountOfXP),
-                style: defaultTextStyle.copyWith(fontWeight: FontWeight.w600),
+                style: context.textTheme.titleSmall,
               ),
             ),
             BlocBuilder<ActiveEffectsCubit, ActiveEffectsState>(
@@ -464,7 +438,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
                         for (final effect in state.effects)
                           Text(
                             effect.getLocalizedWithFactor(context),
-                            style: defaultTextStyle,
+                            style: context.textTheme.bodySmall,
                           ),
                       ],
                     )
@@ -482,27 +456,19 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
               margin: const EdgeInsets.all(32),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: [
-                  BoxShadow(
-                    color: background2.withValues(alpha: 0.2),
-                    blurRadius: 40,
-                  ),
-                ],
+                color: context.colorScheme.surface,
+                borderRadius: BorderRadius.circular(PBRadius.sheet),
+                boxShadow: context.cardShadow,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SheetBadge('🎉', size: 72, color: Color(0xFFF5A623)),
+                  SheetBadge('🎉', size: 72, color: context.gameColors.orange),
                   const SizedBox(height: 16),
                   Text(
                     context.l10n.levelReached(level),
                     textAlign: TextAlign.center,
-                    style: pageTitleTextStyle.copyWith(
-                      fontSize: 24,
-                      color: background2,
-                    ),
+                    style: context.textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 20),
                   PillButton(
@@ -533,13 +499,15 @@ class _EffortChip extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         height: 52,
         decoration: BoxDecoration(
-          color: selected ? background2 : Colors.white,
-          borderRadius: BorderRadius.circular(18),
+          color: selected
+              ? context.colorScheme.primary
+              : context.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(PBRadius.md),
         ),
         child: Material(
           type: MaterialType.transparency,
           child: InkWell(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(PBRadius.md),
             onTap: onTap,
             child: Center(
               child: AnimatedScale(

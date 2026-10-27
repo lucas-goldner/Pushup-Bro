@@ -4,8 +4,7 @@ import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/cosmetic_names.dart';
 import 'package:pushup_bro/core/model/cosmetics.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
@@ -66,11 +65,16 @@ class _TrekResultState extends State<TrekResult> {
     final l = context.l10n;
     final reward = widget.reward;
     final loot = reward?.loot == null ? null : Cosmetic.byId(reward!.loot!);
+    final scheme = context.colorScheme;
+    final game = context.gameColors;
+    final text = context.textTheme;
+    Color tinted(Color color) =>
+        Color.alphaBlend(context.tint(color), scheme.surface);
 
     return Stack(
       children: [
         ColoredBox(
-          color: background2.withValues(alpha: 0.4),
+          color: scheme.scrim.withValues(alpha: context.isDark ? 0.55 : 0.4),
           child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -86,29 +90,27 @@ class _TrekResultState extends State<TrekResult> {
                   padding: const EdgeInsets.all(22),
                   constraints: const BoxConstraints(maxWidth: 440),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: scheme.surface,
                     borderRadius: BorderRadius.circular(32),
+                    boxShadow: context.cardShadow,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         l.trekVictory,
-                        style: pageTitleTextStyle.copyWith(
-                          color: background2,
-                          fontSize: 32,
-                        ),
+                        style: text.headlineLarge?.copyWith(fontSize: 32),
                       ),
                       Text(
                         widget.stage.title(l),
                         textAlign: TextAlign.center,
-                        style: defaultTextStyle.copyWith(
-                          color: background2.withValues(alpha: 0.6),
+                        style: text.bodyMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: PBSpace.md),
                       _Stars(stars: reward?.stars ?? 1),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: PBSpace.lg),
                       if (reward != null)
                         Row(
                           children: [
@@ -116,9 +118,9 @@ class _TrekResultState extends State<TrekResult> {
                               child: _Stat(
                                 value: '+${reward.xp}',
                                 label: l.trekXpEarned,
-                                icon: const Icon(
+                                icon: Icon(
                                   CarbonIcons.star_filled,
-                                  color: accentColor,
+                                  color: scheme.secondary,
                                 ),
                               ),
                             ),
@@ -129,15 +131,15 @@ class _TrekResultState extends State<TrekResult> {
                                 label: l.questBananas,
                                 icon: Assets.images.island.banana
                                     .image(width: 28),
-                                color: const Color(0xFFFFF4D6),
+                                color: game.cream,
                               ),
                             ),
                           ],
                         ),
                       if (reward != null && reward.levelsGained > 0) ...[
-                        const SizedBox(height: 12),
+                        const SizedBox(height: PBSpace.md),
                         SheetCard(
-                          color: const Color(0xFFFFE9E7),
+                          color: tinted(game.red),
                           onTap: () => setState(() => _stats = true),
                           child: Row(
                             children: [
@@ -146,8 +148,7 @@ class _TrekResultState extends State<TrekResult> {
                               Expanded(
                                 child: Text(
                                   l.trekLevelUp,
-                                  style: headerTextStyle.copyWith(
-                                    color: background2,
+                                  style: text.titleLarge?.copyWith(
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -155,23 +156,23 @@ class _TrekResultState extends State<TrekResult> {
                               SheetTag(
                                 l.trekSpendPoints,
                                 icon: CarbonIcons.add,
-                                color: const Color(0xFFE5534B),
+                                color: game.red,
                               ),
                             ],
                           ),
                         ),
                       ],
                       if (loot != null) ...[
-                        const SizedBox(height: 12),
+                        const SizedBox(height: PBSpace.md),
                         SheetCard(
-                          color: const Color(0xFFEAF7EE),
+                          color: tinted(game.jungle),
                           child: Row(
                             children: [
                               SizedBox(
                                 width: 64,
                                 child: CosmeticTile(
                                   cosmetic: loot,
-                                  matColor: const Color(0xFF3FAE6A),
+                                  matColor: game.jungle,
                                   owned: true,
                                   worn: false,
                                   tryingOn: false,
@@ -186,15 +187,14 @@ class _TrekResultState extends State<TrekResult> {
                                   children: [
                                     Text(
                                       '🎁 ${l.trekNewItem}',
-                                      style: buttonTextStyle.copyWith(
-                                        color: const Color(0xFF2FA37A),
+                                      style: text.titleSmall?.copyWith(
+                                        color: game.jungle,
                                         fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                     Text(
                                       loot.label(l),
-                                      style: headerTextStyle.copyWith(
-                                        color: background2,
+                                      style: text.titleMedium?.copyWith(
                                         fontWeight: FontWeight.w800,
                                         fontSize: 18,
                                       ),
@@ -207,9 +207,9 @@ class _TrekResultState extends State<TrekResult> {
                         ),
                       ],
                       if (reward?.adopted ?? false) ...[
-                        const SizedBox(height: 12),
+                        const SizedBox(height: PBSpace.md),
                         SheetCard(
-                          color: const Color(0xFFFFF4D6),
+                          color: game.cream,
                           child: Row(
                             children: [
                               const Text('👑', style: TextStyle(fontSize: 34)),
@@ -220,18 +220,13 @@ class _TrekResultState extends State<TrekResult> {
                                   children: [
                                     Text(
                                       l.trekAdoptTitle,
-                                      style: buttonTextStyle.copyWith(
-                                        color: background2,
+                                      style: text.titleSmall?.copyWith(
                                         fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                     Text(
                                       l.trekAdoptInfo,
-                                      style: defaultTextStyle.copyWith(
-                                        fontSize: 13,
-                                        color:
-                                            background2.withValues(alpha: 0.65),
-                                      ),
+                                      style: text.bodySmall,
                                     ),
                                   ],
                                 ),
@@ -281,8 +276,8 @@ class _Stars extends StatelessWidget {
                     CarbonIcons.star_filled,
                     size: i == 1 ? 52 : 42,
                     color: i < stars
-                        ? const Color(0xFFF5C343)
-                        : background2.withValues(alpha: 0.12),
+                        ? context.gameColors.banana
+                        : context.colorScheme.surfaceContainerHigh,
                   ),
                 ),
               ),
@@ -296,35 +291,31 @@ class _Stat extends StatelessWidget {
     required this.value,
     required this.label,
     required this.icon,
-    this.color = background,
+    this.color,
   });
 
   final String value;
   final String label;
   final Widget icon;
-  final Color color;
+
+  /// The tile's fill; the page background colour when null.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(PBSpace.md),
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
+          color: color ?? context.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(PBRadius.md),
         ),
         child: Column(
           children: [
             SizedBox(height: 28, child: Center(child: icon)),
             Text(
               value,
-              style: pushupTextStyle.copyWith(fontSize: 26, color: background2),
+              style: context.textTheme.displaySmall?.copyWith(fontSize: 28),
             ),
-            Text(
-              label,
-              style: defaultTextStyle.copyWith(
-                fontSize: 13,
-                color: background2.withValues(alpha: 0.6),
-              ),
-            ),
+            Text(label, style: context.textTheme.bodySmall),
           ],
         ),
       );

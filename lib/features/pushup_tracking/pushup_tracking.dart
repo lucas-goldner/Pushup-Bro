@@ -11,7 +11,7 @@ import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
@@ -109,13 +109,16 @@ class _PushupTrackingState extends State<PushupTracking> {
         future: BlocProvider.of<SharedPreferencesCubit>(context).getVolume(),
         builder: (context, future) => Stack(
           children: [
-            const Positioned.fill(
+            Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFFDDE6FF), background],
+                    colors: [
+                      context.colorScheme.secondaryContainer,
+                      context.colorScheme.surfaceContainerLow,
+                    ],
                   ),
                 ),
               ),
@@ -169,16 +172,35 @@ class _PushupTrackingState extends State<PushupTracking> {
                           );
                         }
 
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 48),
-                          child: Text(
-                            started
-                                ? context.l10n.lookingForAirpods
-                                : context.l10n.readyCaption,
-                            textAlign: TextAlign.center,
-                            style: context.textTheme.bodyMedium?.copyWith(
-                              color: primaryColor.withValues(alpha: 0.6),
-                              height: 1.4,
+                        return Align(
+                          alignment: Alignment.topCenter,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: PBSpace.xxl,
+                            ),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: context.colorScheme.surface,
+                                borderRadius:
+                                    BorderRadius.circular(PBRadius.lg),
+                                boxShadow: context.cardShadow,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: PBSpace.xl,
+                                  vertical: PBSpace.lg,
+                                ),
+                                child: Text(
+                                  started
+                                      ? context.l10n.lookingForAirpods
+                                      : context.l10n.readyCaption,
+                                  textAlign: TextAlign.center,
+                                  style: context.textTheme.bodyMedium?.copyWith(
+                                    color: context.colorScheme.onSurfaceVariant,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         );

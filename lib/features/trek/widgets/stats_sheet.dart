@@ -5,8 +5,7 @@ import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/trek_progress.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 
 /// Carlos's Trek stats, with buttons to spend his level-up points.
@@ -29,6 +28,8 @@ class StatsSheet extends StatelessWidget {
         selector: (state) => state.inventory.trek,
         builder: (context, trek) {
           final l = context.l10n;
+          final red = context.gameColors.red;
+          final text = context.textTheme;
 
           return IslandSheet(
             title: l.trekStats,
@@ -36,7 +37,7 @@ class StatsSheet extends StatelessWidget {
                 ? l.trekPointsToSpend(trek.points)
                 : l.trekLevel(trek.level),
             badge: '💪',
-            accent: const Color(0xFFE5534B),
+            accent: red,
             onClose: onClose,
             child: Column(
               children: [
@@ -85,39 +86,29 @@ class StatsSheet extends StatelessWidget {
                               children: [
                                 Text(
                                   name,
-                                  style: buttonTextStyle.copyWith(
-                                    color: background2,
-                                    fontWeight: FontWeight.w800,
+                                  style: text.titleSmall?.copyWith(
+                                    fontSize: 16,
                                   ),
                                 ),
-                                Text(
-                                  info,
-                                  style: defaultTextStyle.copyWith(
-                                    fontSize: 13,
-                                    color: background2.withValues(alpha: 0.6),
-                                  ),
-                                ),
+                                Text(info, style: text.bodySmall),
                               ],
                             ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             value,
-                            style: pushupTextStyle.copyWith(
-                              fontSize: 20,
-                              color: background2,
-                            ),
+                            style: text.headlineSmall,
                           ),
                           if (trek.points > 0) ...[
                             const SizedBox(width: 8),
                             IconButton.filled(
                               onPressed: () => _spend(context, stat),
                               style: IconButton.styleFrom(
-                                backgroundColor: const Color(0xFFE5534B),
+                                backgroundColor: red,
                               ),
-                              icon: const Icon(
+                              icon: Icon(
                                 CarbonIcons.add,
-                                color: Colors.white,
+                                color: context.gameColors.onGame,
                               ),
                             ),
                           ],
@@ -151,18 +142,18 @@ class _XpBar extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: trek.xp / trek.nextLevelXp,
                 minHeight: 10,
-                backgroundColor: background,
-                valueColor: const AlwaysStoppedAnimation(accentColor),
+                backgroundColor: context.colorScheme.surfaceContainerHigh,
+                valueColor:
+                    AlwaysStoppedAnimation(context.colorScheme.secondary),
               ),
             ),
           ),
           const SizedBox(width: 10),
           Text(
             context.l10n.trekXp(trek.xp, trek.nextLevelXp),
-            style: defaultTextStyle.copyWith(
+            style: context.textTheme.labelMedium?.copyWith(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: background2.withValues(alpha: 0.6),
+              color: context.colorScheme.onSurfaceVariant,
             ),
           ),
         ],

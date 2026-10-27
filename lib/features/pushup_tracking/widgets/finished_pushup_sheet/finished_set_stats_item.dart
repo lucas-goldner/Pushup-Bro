@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 
-/// A small white card with an icon and a stat about the set.
+/// A soft inner card with a tinted icon tile and a stat about the set.
 class FinishedSetStatsItem extends StatelessWidget {
   const FinishedSetStatsItem({
     required this.icon,
@@ -13,35 +13,32 @@ class FinishedSetStatsItem extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: accentColor.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, size: 20, color: accentColor),
+  Widget build(BuildContext context) {
+    final accent = context.colorScheme.secondary;
+
+    return Container(
+      padding: const EdgeInsets.all(PBSpace.md),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(PBRadius.md),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: context.tint(accent),
+              borderRadius: BorderRadius.circular(PBRadius.sm),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                text,
-                style: defaultTextStyle.copyWith(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: background2,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+            child: Icon(icon, size: 20, color: accent),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(text, style: context.textTheme.titleSmall),
+          ),
+        ],
+      ),
+    );
+  }
 }

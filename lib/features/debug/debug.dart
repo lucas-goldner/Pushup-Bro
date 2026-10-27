@@ -13,6 +13,7 @@ import 'package:pushup_bro/core/model/booster_items.dart';
 import 'package:pushup_bro/core/model/feature_variants.dart';
 import 'package:pushup_bro/core/model/pushup.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pb_button.dart';
 
 class Debug extends StatefulWidget {
@@ -90,20 +91,21 @@ class _DebugState extends State<Debug> {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: 16,
+            horizontal: PBSpace.lg,
           ),
-          child: Column(
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: PBSpace.xxl),
             children: [
               const SizedBox(height: 64),
               Text(
                 'General App Debug',
-                style: context.textTheme.titleLarge,
+                style: context.textTheme.headlineSmall,
               ),
               const SizedBox(height: 12),
               BlocBuilder<FeatureSwitchCubit, FeatureSwitchState>(
                 builder: (context, state) => Text(
                   'Current app ${state.featureVariant.name}',
-                  style: context.textTheme.titleLarge,
+                  style: context.textTheme.bodySmall,
                 ),
               ),
               const SizedBox(height: 12),
@@ -121,7 +123,7 @@ class _DebugState extends State<Debug> {
               const SizedBox(height: 32),
               Text(
                 'Hook Model Debug',
-                style: context.textTheme.titleLarge,
+                style: context.textTheme.headlineSmall,
               ),
               const SizedBox(height: 12),
               PBButton(
@@ -156,7 +158,7 @@ class _DebugState extends State<Debug> {
               const SizedBox(height: 32),
               Text(
                 'Gamification Debug',
-                style: context.textTheme.titleLarge,
+                style: context.textTheme.headlineSmall,
               ),
               const SizedBox(height: 12),
               PBButton(

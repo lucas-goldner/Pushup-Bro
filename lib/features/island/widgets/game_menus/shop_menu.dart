@@ -6,8 +6,6 @@ import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
@@ -90,7 +88,7 @@ class _ShopMenuState extends State<ShopMenu> {
       return SheetTag(
         context.l10n.shopAlreadyBuilt(building.getLocalizedName(context)),
         icon: CarbonIcons.checkmark_filled,
-        color: const Color(0xFF2FA37A),
+        color: context.gameColors.jungle,
       );
     }
     final missing = building.price - inventory.bananas;
@@ -98,7 +96,7 @@ class _ShopMenuState extends State<ShopMenu> {
       return SheetTag(
         context.l10n.shopNeedMore(missing),
         icon: CarbonIcons.warning_alt,
-        color: const Color(0xFFE5534B),
+        color: context.gameColors.red,
       );
     }
 
@@ -129,7 +127,7 @@ class _BuildingCard extends StatelessWidget {
   Widget build(BuildContext context) => SheetCard(
         selected: selected,
         onTap: onTap,
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
             Expanded(
@@ -144,17 +142,14 @@ class _BuildingCard extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: defaultTextStyle.copyWith(
-                fontWeight: FontWeight.w700,
-                color: background2,
-              ),
+              style: context.textTheme.titleSmall,
             ),
             const SizedBox(height: 6),
             if (built)
               SheetTag(
                 context.l10n.shopBuilt,
                 icon: CarbonIcons.checkmark,
-                color: const Color(0xFF2FA37A),
+                color: context.gameColors.jungle,
               )
             else
               BananaPrice(building.price, affordable: affordable),

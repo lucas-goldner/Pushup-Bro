@@ -9,8 +9,10 @@ class CalendarHeaderDayOfWeek extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
         child: Text(
-          DateFormat.E().format(day),
-          style: context.textTheme.titleSmall,
+          DateFormat.E().format(day).toUpperCase(),
+          style: context.textTheme.labelSmall?.copyWith(
+            color: context.colorScheme.onSurfaceVariant,
+          ),
         ),
       );
 }

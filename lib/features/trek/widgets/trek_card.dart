@@ -2,13 +2,10 @@ import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/trek_progress.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/trek_map_page.dart';
-
-const _green = Color(0xFF1F5A3C);
-const _lime = Color(0xFF7DD957);
 
 /// The way into the Jungle Trek's story from the jungle: how far Carlos
 /// has got and the stage that comes next.
@@ -29,6 +26,9 @@ class TrekCard extends StatelessWidget {
     final progress = l.trekStageNumber(stage.number);
     final started = trek.stars.isNotEmpty;
     final finished = TrekStage.all.every((s) => trek.cleared(s.id));
+    final game = context.gameColors;
+    final text = context.textTheme;
+    final lime = Color.lerp(game.leaf, game.onGame, 0.25)!;
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -43,19 +43,16 @@ class TrekCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         constraints: const BoxConstraints(maxWidth: 520),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF2E7D4F), _green],
+            colors: [
+              Color.lerp(game.jungle, game.jungleDeep, 0.55)!,
+              game.jungleDeep,
+            ],
           ),
           borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 30,
-              offset: const Offset(0, 14),
-            ),
-          ],
+          boxShadow: context.cardShadow,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -64,22 +61,21 @@ class TrekCard extends StatelessWidget {
             Row(
               children: [
                 const Text('🦎', style: TextStyle(fontSize: 40)),
-                const SizedBox(width: 12),
+                const SizedBox(width: PBSpace.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         l.trekTitle,
-                        style: pageTitleTextStyle.copyWith(
-                          color: Colors.white,
-                          fontSize: 26,
+                        style: text.headlineMedium?.copyWith(
+                          color: game.onGame,
                         ),
                       ),
                       Text(
                         '${l.trekLevel(trek.level)} · $progress',
-                        style: buttonTextStyle.copyWith(
-                          color: _lime,
+                        style: text.labelMedium?.copyWith(
+                          color: lime,
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
                         ),
@@ -96,17 +92,16 @@ class TrekCard extends StatelessWidget {
                   : started
                       ? l.trekNextUp(stage.title(l))
                       : l.trekTagline,
-              style: defaultTextStyle.copyWith(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontSize: 15,
+              style: text.bodyMedium?.copyWith(
+                color: game.onGame.withValues(alpha: 0.85),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: PBSpace.lg),
             Center(
               child: PillButton(
                 label: started ? l.trekContinue : l.trekPlay,
                 icon: CarbonIcons.play_filled_alt,
-                color: const Color(0xFFE5534B),
+                color: game.red,
                 onPressed: onPlay,
               ),
             ),

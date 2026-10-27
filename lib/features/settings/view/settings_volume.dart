@@ -1,13 +1,16 @@
 import 'dart:async';
 
+import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pb_button.dart';
+import 'package:pushup_bro/features/settings/widgets/settings_group.dart';
 import 'package:pushup_bro/features/settings/widgets/volume_displayer.dart';
 
 class VolumeSetting extends StatefulWidget {
@@ -44,37 +47,56 @@ class _VolumeSettingState extends State<VolumeSetting> {
   Widget build(BuildContext context) =>
       BlocBuilder<SharedPreferencesCubit, SharedPreferencesState>(
         builder: (context, state) => CupertinoPageScaffold(
-          backgroundColor: background,
+          backgroundColor: context.colorScheme.surfaceContainerLow,
           child: SafeArea(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  context.l10n.setVolume,
-                  style: context.textTheme.titleLarge,
-                ),
-                const SizedBox(height: 32),
-                VolumeDisplayer(_selectedVolume),
-                const SizedBox(height: 20),
-                _VolumeRow(
-                  label: context.l10n.settingsSounds,
-                  value: _selectedVolume,
-                  onChanged: _updateVolume,
-                ),
-                const SizedBox(height: 24),
-                _VolumeRow(
-                  label: context.l10n.settingsMusic,
-                  value: state.musicVolume,
-                  onChanged: (volume) => unawaited(
-                    context.read<SharedPreferencesCubit>().setMusicVolume(
-                          volume,
-                        ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    PBSpace.xl,
+                    PBSpace.lg,
+                    PBSpace.xl,
+                    PBSpace.xl,
+                  ),
+                  child: Text(
+                    context.l10n.setVolume,
+                    style: context.textTheme.headlineLarge,
                   ),
                 ),
+                VolumeDisplayer(_selectedVolume),
+                const SizedBox(height: PBSpace.xl),
+                SettingsGroup(
+                  children: [
+                    _VolumeRow(
+                      label: context.l10n.settingsSounds,
+                      value: _selectedVolume,
+                      onChanged: _updateVolume,
+                    ),
+                    _VolumeRow(
+                      label: context.l10n.settingsMusic,
+                      value: state.musicVolume,
+                      onChanged: (volume) => unawaited(
+                        context.read<SharedPreferencesCubit>().setMusicVolume(
+                              volume,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
                 const Spacer(),
-                PBButton(
-                  context.l10n.goBack,
-                  callback: () => Navigator.of(context).pop(),
-                  expanded: true,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    PBSpace.sm,
+                    PBSpace.sm,
+                    PBSpace.sm,
+                    PBSpace.lg,
+                  ),
+                  child: PBButton(
+                    context.l10n.goBack,
+                    callback: () => Navigator.of(context).pop(),
+                    expanded: true,
+                  ),
                 ),
               ],
             ),
@@ -83,7 +105,7 @@ class _VolumeSettingState extends State<VolumeSetting> {
       );
 }
 
-/// A labelled volume, 0 to 10, with minus and plus buttons.
+/// A labelled volume, 0 to 10, with round minus and plus buttons.
 class _VolumeRow extends StatelessWidget {
   const _VolumeRow({
     required this.label,
@@ -96,36 +118,58 @@ class _VolumeRow extends StatelessWidget {
   final ValueChanged<int> onChanged;
 
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          Text(label, style: context.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 80,
-                child: PBButton(
-                  '-',
-                  callback: () => onChanged(value == 0 ? 0 : value - 1),
-                ),
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: PBSpace.lg,
+          vertical: PBSpace.md,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: context.textTheme.titleMedium),
+                  Text(
+                    context.l10n.volumeLevel(value),
+                    style: context.textTheme.bodySmall,
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  context.l10n.volumeLevel(value),
-                  style: context.textTheme.bodyMedium,
-                ),
-              ),
-              SizedBox(
-                width: 80,
-                child: PBButton(
-                  '+',
-                  callback: () => onChanged(value == 10 ? 10 : value + 1),
-                ),
-              ),
-            ],
+            ),
+            _StepButton(
+              icon: CarbonIcons.subtract,
+              onTap: () => onChanged(value == 0 ? 0 : value - 1),
+            ),
+            const SizedBox(width: PBSpace.sm),
+            _StepButton(
+              icon: CarbonIcons.add,
+              onTap: () => onChanged(value == 10 ? 10 : value + 1),
+            ),
+          ],
+        ),
+      );
+}
+
+/// A round soft button with an [icon].
+class _StepButton extends StatelessWidget {
+  const _StepButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: context.colorScheme.surfaceContainer,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox(
+            width: 40,
+            height: 40,
+            child: Icon(icon, size: 20, color: context.colorScheme.onSurface),
           ),
-        ],
+        ),
       );
 }

@@ -16,8 +16,7 @@ import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
@@ -109,7 +108,9 @@ class _TrekStagePageState extends State<TrekStagePage> {
   double _shake = 0;
   double _hurt = 0;
   String? _banner;
-  Color _bannerColor = Colors.white;
+
+  /// The banner's colour; the game's white when null.
+  Color? _bannerColor;
   double _bannerTime = 0;
   String? _taunt;
   double _tauntTime = 0;
@@ -260,6 +261,8 @@ class _TrekStagePageState extends State<TrekStagePage> {
       hit,
       onLand: () {
         if (!mounted) return;
+        final game = context.gameColors;
+        final scheme = context.colorScheme;
         final audio = GameAudio.instance
           ..play(
             switch (hit.kind) {
@@ -282,8 +285,12 @@ class _TrekStagePageState extends State<TrekStagePage> {
             color: hit.superEffective
                 ? hit.kind.color
                 : hit.weak
-                    ? const Color(0xFFBFC6D4)
-                    : Colors.white,
+                    ? Color.lerp(
+                        game.onGame,
+                        scheme.onSurfaceVariant,
+                        context.isDark ? 0.6 : 0.35,
+                      )!
+                    : game.onGame,
             at: at + const Offset(0, 40),
             big: hit.superEffective || hit.critical,
           ),
@@ -292,7 +299,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
           _popups.add(
             Popup(
               text: l.criticalHit,
-              color: const Color(0xFFFFE27A),
+              color: Color.lerp(game.banana, game.onGame, 0.3)!,
               at: at + const Offset(0, 10),
             ),
           );
@@ -303,7 +310,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
               : hit.weak
                   ? l.notEffective
                   : hit.kind.label(l),
-          hit.superEffective ? hit.kind.color : Colors.white,
+          hit.superEffective ? hit.kind.color : null,
         );
         final phase = hit.phase;
         if (phase != null) {
@@ -318,7 +325,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
     );
   }
 
-  void _showBanner(String text, Color color) {
+  void _showBanner(String text, Color? color) {
     _banner = text;
     _bannerColor = color;
     _bannerTime = 1.2;
@@ -637,7 +644,8 @@ class _TrekStagePageState extends State<TrekStagePage> {
                   child: AnimatedOpacity(
                     opacity: _white ? 1 : 0,
                     duration: const Duration(milliseconds: 450),
-                    child: const ColoredBox(color: Colors.white),
+                    // The same white the jungle fades through.
+                    child: ColoredBox(color: context.gameColors.flash),
                   ),
                 ),
               ),
@@ -668,7 +676,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
                   radius: 1.1,
                   colors: [
                     Colors.transparent,
-                    const Color(0xFFE5374B).withValues(alpha: 0.45 * _hurt),
+                    context.gameColors.red.withValues(alpha: 0.45 * _hurt),
                   ],
                 ),
               ),
@@ -722,11 +730,16 @@ class _TrekStagePageState extends State<TrekStagePage> {
             child: Text(
               _banner!,
               textAlign: TextAlign.center,
-              style: pageTitleTextStyle.copyWith(
-                fontSize: 26,
-                color: _bannerColor,
-                shadows: const [
-                  Shadow(color: Color(0xAA000000), blurRadius: 10),
+              style: context.textTheme.headlineMedium?.copyWith(
+                fontSize: 28,
+                color: _bannerColor ?? context.gameColors.onGame,
+                shadows: [
+                  Shadow(
+                    color: context.colorScheme.shadow
+                        .withValues(alpha: context.isDark ? 0.6 : 0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
+                  ),
                 ],
               ),
             ),
@@ -790,7 +803,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
                 PillButton(
                   label: l.trekStartFight,
                   icon: CarbonIcons.lightning,
-                  color: const Color(0xFFE5534B),
+                  color: context.gameColors.red,
                   onPressed: _fight,
                 ),
               ],
@@ -875,31 +888,31 @@ class _TitleCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(16),
+                color: context.colorScheme.surface.withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(PBRadius.pill),
+                boxShadow: context.cardShadow,
               ),
               child: Text(
                 '${context.l10n.trekTitle} · '
                 '${context.l10n.trekStageNumber(number)}',
-                style: buttonTextStyle.copyWith(
-                  color: background2,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
+                style: context.textTheme.titleSmall?.copyWith(fontSize: 14),
               ),
             ),
             const SizedBox(height: 14),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: PBSpace.xxl),
               child: Text(
                 title,
                 textAlign: TextAlign.center,
-                style: pageTitleTextStyle.copyWith(
+                style: context.textTheme.displaySmall?.copyWith(
                   fontSize: 38,
-                  color: Colors.white,
+                  color: context.gameColors.onGame,
                   height: 1.1,
-                  shadows: const [
-                    Shadow(color: Color(0x66000000), blurRadius: 18),
+                  shadows: [
+                    Shadow(
+                      color: context.colorScheme.shadow.withValues(alpha: 0.4),
+                      blurRadius: 18,
+                    ),
                   ],
                 ),
               ),
@@ -917,32 +930,35 @@ class _GlassButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => Material(
-        color: Colors.white.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(24),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: onPressed,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: label == null ? 12 : 16,
-              vertical: 12,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: background2, size: 22),
-                if (label != null) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    label!,
-                    style: buttonTextStyle.copyWith(
-                      color: background2,
-                      fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(PBRadius.pill),
+          boxShadow: context.cardShadow,
+        ),
+        child: Material(
+          color: context.colorScheme.surface.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(PBRadius.pill),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(PBRadius.pill),
+            onTap: onPressed,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: label == null ? 12 : 16,
+                vertical: 12,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: context.colorScheme.onSurface, size: 22),
+                  if (label != null) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      label!,
+                      style: context.textTheme.titleSmall,
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

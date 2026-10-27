@@ -12,8 +12,7 @@ import 'package:pushup_bro/core/model/cosmetic_names.dart';
 import 'package:pushup_bro/core/model/cosmetics.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/widgets/banana_counter.dart';
@@ -118,16 +117,25 @@ class _WardrobeState extends State<Wardrobe> {
           final shown = tryingOn == null ? worn : worn.wearing(tryingOn);
 
           return Scaffold(
-            backgroundColor: background,
+            backgroundColor: context.colorScheme.surfaceContainerLow,
             body: Stack(
               children: [
-                const Positioned.fill(
+                Positioned.fill(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: RadialGradient(
-                        center: Alignment(0, -0.45),
+                        center: const Alignment(0, -0.45),
                         radius: 0.9,
-                        colors: [Color(0xFFFFFFFF), Color(0xFFDDE6FF)],
+                        // A soft spotlight on the turntable.
+                        colors: context.isDark
+                            ? [
+                                context.colorScheme.surfaceBright,
+                                context.colorScheme.surfaceContainerLowest,
+                              ]
+                            : [
+                                context.colorScheme.surface,
+                                context.colorScheme.secondaryContainer,
+                              ],
                       ),
                     ),
                   ),
@@ -151,9 +159,7 @@ class _WardrobeState extends State<Wardrobe> {
                         const SizedBox(width: 12),
                         Text(
                           context.l10n.wardrobeTitle,
-                          style: pageTitleTextStyle.copyWith(
-                            color: background2,
-                          ),
+                          style: context.textTheme.headlineLarge,
                         ),
                         const Spacer(),
                         const BananaCounter(),
@@ -231,11 +237,13 @@ class _Drawer extends StatelessWidget {
     return Container(
       height: media.size.height * 0.52,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
+        color: context.colorScheme.surface,
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(PBRadius.sheet)),
         boxShadow: [
           BoxShadow(
-            color: background2.withValues(alpha: 0.12),
+            color: context.colorScheme.shadow
+                .withValues(alpha: context.isDark ? 0.5 : 0.12),
             blurRadius: 40,
             offset: const Offset(0, -8),
           ),
@@ -313,14 +321,14 @@ class _Drawer extends StatelessWidget {
     if (cosmetic.exclusive) {
       return SheetTag(
         '🦎 ${context.l10n.trekExclusiveInfo}',
-        color: const Color(0xFF2FA37A),
+        color: context.gameColors.jungle,
       );
     }
     if (locked) {
       return SheetTag(
         context.l10n.wardrobeLocked,
         icon: CarbonIcons.locked,
-        color: const Color(0xFFF5A623),
+        color: context.gameColors.orange,
       );
     }
     final missing = cosmetic.price - inventory.bananas;
@@ -328,7 +336,7 @@ class _Drawer extends StatelessWidget {
       return SheetTag(
         context.l10n.wardrobeNeedMore(missing, cosmetic.label(context.l10n)),
         icon: CarbonIcons.warning_alt,
-        color: const Color(0xFFE5534B),
+        color: context.gameColors.red,
       );
     }
 
@@ -358,10 +366,12 @@ class _SlotChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-        color: selected ? background2 : background,
-        borderRadius: BorderRadius.circular(22),
+        color: selected
+            ? context.colorScheme.primary
+            : context.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(PBRadius.pill),
         child: InkWell(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(PBRadius.pill),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -372,10 +382,11 @@ class _SlotChip extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   label,
-                  style: buttonTextStyle.copyWith(
-                    color: selected ? Colors.white : background2,
-                    fontWeight: FontWeight.w700,
+                  style: context.textTheme.labelMedium?.copyWith(
                     fontSize: 14,
+                    color: selected
+                        ? context.colorScheme.onPrimary
+                        : context.colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -392,16 +403,22 @@ class _RoundButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => Material(
-        color: Colors.white,
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onPressed,
-          child: SizedBox(
-            width: 48,
-            height: 48,
-            child: Icon(icon, color: background2),
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: context.cardShadow,
+        ),
+        child: Material(
+          color: context.colorScheme.surface,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onPressed,
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Icon(icon, color: context.colorScheme.onSurface),
+            ),
           ),
         ),
       );
@@ -427,10 +444,8 @@ class _CharacterSwitch extends StatelessWidget {
         children: [
           Text(
             context.l10n.playAs,
-            style: buttonTextStyle.copyWith(
-              color: background2.withValues(alpha: 0.6),
-              fontWeight: FontWeight.w700,
-              fontSize: 13,
+            style: context.textTheme.labelMedium?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(width: 8),
@@ -438,10 +453,12 @@ class _CharacterSwitch extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 6),
               child: Material(
-                color: i == 0 ? background2 : Colors.white,
-                borderRadius: BorderRadius.circular(18),
+                color: i == 0
+                    ? context.colorScheme.primary
+                    : context.colorScheme.surface,
+                borderRadius: BorderRadius.circular(PBRadius.pill),
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(PBRadius.pill),
                   onTap: () => onPick(i),
                   child: Padding(
                     padding:
@@ -449,10 +466,10 @@ class _CharacterSwitch extends StatelessWidget {
                     child: Text(
                       '${monkey.look.species == MonkeyLook.lizard //
                           ? '👑' : '🦍'} ${monkey.name}',
-                      style: buttonTextStyle.copyWith(
-                        color: i == 0 ? Colors.white : background2,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
+                      style: context.textTheme.labelMedium?.copyWith(
+                        color: i == 0
+                            ? context.colorScheme.onPrimary
+                            : context.colorScheme.onSurface,
                       ),
                     ),
                   ),

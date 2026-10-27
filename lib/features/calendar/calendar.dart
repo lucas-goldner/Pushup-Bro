@@ -5,7 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/cubit/db_state.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/calendar/widgets/calendar_event.dart';
 import 'package:pushup_bro/features/calendar/widgets/pb_calendar.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -48,17 +50,31 @@ class _CalendarState extends State<Calendar> {
             return Column(
               children: [
                 const SizedBox(height: 64),
-                FutureBuilder(
-                  future: _getLanguage(context),
-                  builder: (context, language) => PBCalendar(
-                    getEventsPerDay: (day) =>
-                        _getEventsForDay(state.pushupSets, day),
-                    selectedDate: _selectedDay,
-                    updateSelectedDate: _updateSelectedDate,
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: PBSpace.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    PBSpace.sm,
+                    PBSpace.xs,
+                    PBSpace.sm,
+                    PBSpace.md,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(PBRadius.lg),
+                    boxShadow: context.cardShadow,
+                  ),
+                  child: FutureBuilder(
+                    future: _getLanguage(context),
+                    builder: (context, language) => PBCalendar(
+                      getEventsPerDay: (day) =>
+                          _getEventsForDay(state.pushupSets, day),
+                      selectedDate: _selectedDay,
+                      updateSelectedDate: _updateSelectedDate,
+                    ),
                   ),
                 ),
                 const SizedBox(
-                  height: 12,
+                  height: PBSpace.md,
                 ),
                 Expanded(
                   child: SingleChildScrollView(

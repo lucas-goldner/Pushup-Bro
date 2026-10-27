@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 
 class CommunityGoal extends StatelessWidget {
   const CommunityGoal({
@@ -28,28 +29,28 @@ class CommunityGoal extends StatelessWidget {
           width: 150,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: background2.withValues(alpha: 0.1),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
+            color: context.colorScheme.surface,
+            borderRadius: BorderRadius.circular(PBRadius.pill),
+            boxShadow: context.cardShadow,
           ),
           child: Row(
             children: [
-              const Icon(CarbonIcons.trophy, size: 18, color: primaryColor),
+              Icon(
+                CarbonIcons.trophy,
+                size: 18,
+                color: context.gameColors.orange,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(PBRadius.pill),
                   child: LinearProgressIndicator(
                     value: getProgress(count).clamp(0, 1),
                     minHeight: 8,
-                    backgroundColor: background,
-                    valueColor: const AlwaysStoppedAnimation(accentColor),
+                    backgroundColor: context.colorScheme.surfaceContainerHigh,
+                    valueColor: AlwaysStoppedAnimation(
+                      context.colorScheme.secondary,
+                    ),
                   ),
                 ),
               ),

@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/cosmetic_names.dart';
 import 'package:pushup_bro/core/model/cosmetics.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
-
-const _tryingOnColor = Color(0xFFF5A623);
 
 /// One cosmetic in the wardrobe: its swatch or picture, its name, and its
 /// price or state.
@@ -39,10 +36,11 @@ class CosmeticTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
     final ring = worn
-        ? accentColor
+        ? scheme.secondary
         : tryingOn
-            ? _tryingOnColor
+            ? context.gameColors.orange
             : Colors.transparent;
 
     return GestureDetector(
@@ -55,37 +53,37 @@ class CosmeticTile extends StatelessWidget {
               duration: const Duration(milliseconds: 180),
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(PBRadius.md + 4),
                 border: Border.all(color: ring, width: 2.5),
               ),
               child: Stack(
                 children: [
-                  Positioned.fill(child: _picture()),
+                  Positioned.fill(child: _picture(context)),
                   if (locked)
                     Positioned.fill(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(18),
+                          color: scheme.surface.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(PBRadius.md),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           CarbonIcons.locked,
-                          color: background2,
+                          color: scheme.onSurface,
                           size: 20,
                         ),
                       ),
                     ),
                   if (worn)
-                    const Positioned(
+                    Positioned(
                       right: 4,
                       top: 4,
                       child: CircleAvatar(
                         radius: 9,
-                        backgroundColor: accentColor,
+                        backgroundColor: scheme.secondary,
                         child: Icon(
                           CarbonIcons.checkmark,
                           size: 12,
-                          color: Colors.white,
+                          color: scheme.onSecondary,
                         ),
                       ),
                     ),
@@ -99,11 +97,7 @@ class CosmeticTile extends StatelessWidget {
               cosmetic.label(context.l10n),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: defaultTextStyle.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: background2,
-              ),
+              style: context.textTheme.labelMedium?.copyWith(fontSize: 12),
             ),
             const SizedBox(height: 2),
             if (owned)
@@ -111,11 +105,9 @@ class CosmeticTile extends StatelessWidget {
                 worn
                     ? context.l10n.wardrobeWearing
                     : context.l10n.wardrobeOwned,
-                style: defaultTextStyle.copyWith(
-                  fontSize: 11,
-                  color:
-                      worn ? accentColor : background2.withValues(alpha: 0.45),
-                  fontWeight: FontWeight.w600,
+                style: context.textTheme.labelSmall?.copyWith(
+                  letterSpacing: 0,
+                  color: worn ? scheme.secondary : scheme.onSurfaceVariant,
                 ),
               )
             else if (cosmetic.exclusive)
@@ -123,10 +115,9 @@ class CosmeticTile extends StatelessWidget {
                 '🦎 ${context.l10n.trekTitle}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: defaultTextStyle.copyWith(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF2FA37A),
+                style: context.textTheme.labelSmall?.copyWith(
+                  letterSpacing: 0,
+                  color: context.gameColors.jungle,
                 ),
               )
             else
@@ -137,11 +128,8 @@ class CosmeticTile extends StatelessWidget {
                   const SizedBox(width: 2),
                   Text(
                     '${cosmetic.price}',
-                    style: defaultTextStyle.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: background2,
-                    ),
+                    style:
+                        context.textTheme.labelMedium?.copyWith(fontSize: 12),
                   ),
                 ],
               ),
@@ -151,16 +139,18 @@ class CosmeticTile extends StatelessWidget {
     );
   }
 
-  Widget _picture() {
+  Widget _picture(BuildContext context) {
     final color = cosmetic.color;
-    final rounded = BorderRadius.circular(18);
+    final scheme = context.colorScheme;
+    final fill = scheme.surfaceContainer;
+    final rounded = BorderRadius.circular(PBRadius.md);
 
     return switch (cosmetic.slot) {
       CosmeticSlot.fur ||
       CosmeticSlot.face ||
       CosmeticSlot.matColor =>
         DecoratedBox(
-          decoration: BoxDecoration(color: background, borderRadius: rounded),
+          decoration: BoxDecoration(color: fill, borderRadius: rounded),
           child: Center(
             child: FractionallySizedBox(
               widthFactor: 0.62,
@@ -169,10 +159,10 @@ class CosmeticTile extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: color,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 3),
+                  border: Border.all(color: scheme.surface, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: (color ?? background2).withValues(alpha: 0.35),
+                      color: (color ?? scheme.shadow).withValues(alpha: 0.35),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -189,7 +179,7 @@ class CosmeticTile extends StatelessWidget {
           ),
         ),
       _ => DecoratedBox(
-          decoration: BoxDecoration(color: background, borderRadius: rounded),
+          decoration: BoxDecoration(color: fill, borderRadius: rounded),
           child: Center(
             child: Text(cosmetic.emoji, style: const TextStyle(fontSize: 30)),
           ),

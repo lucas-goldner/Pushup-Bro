@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
 import 'package:pushup_bro/features/island/widgets/quests/community_quest.dart';
@@ -28,9 +29,9 @@ class QuestDialog extends StatelessWidget {
             QuestType.dailyLogin => '🎁',
           },
           accent: switch (questType) {
-            QuestType.intro => const Color(0xFF3FB2D6),
-            QuestType.community => const Color(0xFFB98AF2),
-            QuestType.dailyLogin => const Color(0xFFF5A623),
+            QuestType.intro => context.gameColors.ice,
+            QuestType.community => context.gameColors.purple,
+            QuestType.dailyLogin => context.gameColors.orange,
           },
           // The intro pages through its own story.
           scrollable: questType != QuestType.intro,

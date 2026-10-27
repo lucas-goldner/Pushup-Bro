@@ -93,26 +93,31 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
   }
 
   @override
-  Widget build(BuildContext context) => CameraBubble(
-        color: _feedback.color(_time),
-        reading: _feedback.reading,
-        child: LayoutBuilder(
-          builder: (context, constraints) => FittedBox(
-            fit: BoxFit.cover,
-            clipBehavior: Clip.hardEdge,
-            child: SizedBox.fromSize(
-              size: _size,
-              child: CustomPaint(
-                painter: SkeletonPainter(
-                  pose: _pose,
-                  imageSize: _size,
-                  color: _feedback.color(_time),
-                  form: _feedback.reading.form,
-                  lineScale: coverLineScale(_size, constraints.biggest),
-                ),
+  Widget build(BuildContext context) {
+    final colors = RepPalette.of(context);
+
+    return CameraBubble(
+      color: _feedback.color(_time, colors),
+      reading: _feedback.reading,
+      child: LayoutBuilder(
+        builder: (context, constraints) => FittedBox(
+          fit: BoxFit.cover,
+          clipBehavior: Clip.hardEdge,
+          child: SizedBox.fromSize(
+            size: _size,
+            child: CustomPaint(
+              painter: SkeletonPainter(
+                pose: _pose,
+                imageSize: _size,
+                color: _feedback.color(_time, colors),
+                form: _feedback.reading.form,
+                colors: colors,
+                lineScale: coverLineScale(_size, constraints.biggest),
               ),
             ),
           ),
         ),
-      );
+      ),
+    );
+  }
 }

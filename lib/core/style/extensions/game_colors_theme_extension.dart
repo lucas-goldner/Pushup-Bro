@@ -21,6 +21,8 @@ class GameColorsThemeExtension
     required this.pink,
     required this.cream,
     required this.onGame,
+    required this.onBanana,
+    required this.flash,
     required this.sand,
     required this.grass,
     required this.map,
@@ -40,6 +42,8 @@ class GameColorsThemeExtension
         pink: PBPalette.pink,
         cream: PBPalette.cream,
         onGame: PBPalette.white,
+        onBanana: PBPalette.navy800,
+        flash: PBPalette.white,
         sand: PBPalette.sand,
         grass: PBPalette.grass,
         map: PBPalette.map,
@@ -59,6 +63,8 @@ class GameColorsThemeExtension
         pink: PBPalette.pink,
         cream: PBPalette.creamDark,
         onGame: PBPalette.white,
+        onBanana: PBPalette.navy800,
+        flash: PBPalette.white,
         sand: PBPalette.sand,
         grass: PBPalette.grass,
         map: PBPalette.map,
@@ -91,6 +97,12 @@ class GameColorsThemeExtension
   /// Text and icons on any of the colours above.
   final Color onGame;
 
+  /// Text on banana yellow, where white doesn't read.
+  final Color onBanana;
+
+  /// The white flash and fade between scenes, white in both modes.
+  final Color flash;
+
   final Color sand;
   final Color grass;
   final Color map;
@@ -110,6 +122,8 @@ class GameColorsThemeExtension
     Color? pink,
     Color? cream,
     Color? onGame,
+    Color? onBanana,
+    Color? flash,
     Color? sand,
     Color? grass,
     Color? map,
@@ -128,6 +142,8 @@ class GameColorsThemeExtension
         pink: pink ?? this.pink,
         cream: cream ?? this.cream,
         onGame: onGame ?? this.onGame,
+        onBanana: onBanana ?? this.onBanana,
+        flash: flash ?? this.flash,
         sand: sand ?? this.sand,
         grass: grass ?? this.grass,
         map: map ?? this.map,
@@ -155,6 +171,8 @@ class GameColorsThemeExtension
       pink: l(pink, other.pink),
       cream: l(cream, other.cream),
       onGame: l(onGame, other.onGame),
+      onBanana: l(onBanana, other.onBanana),
+      flash: l(flash, other.flash),
       sand: l(sand, other.sand),
       grass: l(grass, other.grass),
       map: l(map, other.map),

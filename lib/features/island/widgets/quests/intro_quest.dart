@@ -1,8 +1,7 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
@@ -74,17 +73,16 @@ class _IntroQuestState extends State<IntroQuest> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
           children: [
-            ClipRRect(borderRadius: BorderRadius.circular(24), child: image),
-            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(PBRadius.lg),
+              child: image,
+            ),
+            const SizedBox(height: PBSpace.lg),
             Expanded(
               child: Text(
                 text.trim(),
                 textAlign: TextAlign.center,
-                style: defaultTextStyle.copyWith(
-                  color: background2,
-                  fontSize: 17,
-                  height: 1.45,
-                ),
+                style: context.textTheme.bodyLarge?.copyWith(height: 1.45),
               ),
             ),
             if (showArrow)

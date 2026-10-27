@@ -12,8 +12,8 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/cosmetic_names.dart';
 import 'package:pushup_bro/core/model/cosmetics.dart';
 import 'package:pushup_bro/core/model/trek_progress.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/extensions/game_colors_theme_extension.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
@@ -24,18 +24,54 @@ import 'package:pushup_bro/features/wardrobe/widgets/cosmetic_tile.dart';
 
 const _stageGap = 170.0;
 
-/// The ground colour of each stretch of the trail, from the Fern Trail up
-/// to the misty peak still to come.
-const _zones = [
-  Color(0xFF2E6B3F),
-  Color(0xFF225A35),
-  Color(0xFF3B5E48),
-  Color(0xFF2A5E78),
-  Color(0xFF8A7448),
-  Color(0xFF7A4F38),
-  Color(0xFF3E3352),
-  Color(0xFF5D6675),
-];
+/// [color] with its lightness cut by [amount] (0 to 1).
+Color _darken(Color color, double amount) {
+  final hsl = HSLColor.fromColor(color);
+
+  return hsl.withLightness(hsl.lightness * (1 - amount)).toColor();
+}
+
+/// The map's painted illustration, mixed from the game colours.
+@immutable
+class _MapArt {
+  _MapArt(GameColorsThemeExtension game)
+      : zones = [
+          Color.lerp(game.jungleDeep, game.leaf, 0.3)!,
+          game.jungleDeep,
+          Color.lerp(game.jungleDeep, game.grass, 0.2)!,
+          _darken(Color.lerp(game.jungleDeep, game.ice, 0.5)!, 0.2),
+          _darken(game.map, 0.35),
+          _darken(Color.lerp(game.map, game.coral, 0.4)!, 0.4),
+          _darken(Color.lerp(game.purple, game.jungleDeep, 0.3)!, 0.5),
+          _darken(Color.lerp(game.ice, game.sand, 0.6)!, 0.45),
+        ],
+        trailEdge = _darken(game.jungleDeep, 0.3),
+        trail = Color.lerp(game.map, game.orange, 0.25)!,
+        cleared = game.banana,
+        light = game.onGame,
+        locked = HSLColor.fromColor(game.jungleDeep)
+            .withSaturation(0.07)
+            .withLightness(0.45)
+            .toColor();
+
+  /// The ground colour of each stretch of the trail, from the Fern Trail
+  /// up to the misty peak still to come.
+  final List<Color> zones;
+  final Color trailEdge;
+  final Color trail;
+
+  /// The trail walked so far.
+  final Color cleared;
+
+  /// Highlights painted on the ground.
+  final Color light;
+
+  /// A stage node not unlocked yet.
+  final Color locked;
+
+  /// The node for the stretch still to come, in the mist.
+  Color get soon => Color.lerp(zones.last, light, 0.15)!;
+}
 
 /// Stops on the map: every stage, then the stretch still to come.
 int get _stops => TrekStage.all.length + 1;
@@ -104,13 +140,15 @@ class _TrekMapPageState extends State<TrekMapPage> {
         builder: (context, trek) {
           final selected = _selected ?? currentStage(trek);
           final safe = MediaQuery.paddingOf(context);
+          final art = _MapArt(context.gameColors);
 
           return Scaffold(
-            backgroundColor: _zones.first,
+            backgroundColor: art.zones.first,
             body: Stack(
               children: [
                 Positioned.fill(
                   child: _Trail(
+                    art: art,
                     trek: trek,
                     selected: selected,
                     soonSelected: _soon,
@@ -152,7 +190,8 @@ class _TrekMapPageState extends State<TrekMapPage> {
                     child: AnimatedOpacity(
                       opacity: _white ? 1 : 0,
                       duration: const Duration(milliseconds: 420),
-                      child: const ColoredBox(color: Colors.white),
+                      // The same white the jungle fades through.
+                      child: ColoredBox(color: context.gameColors.flash),
                     ),
                   ),
                 ),
@@ -177,6 +216,9 @@ class _TopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final scheme = context.colorScheme;
+    final game = context.gameColors;
+    final text = context.textTheme;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -184,8 +226,8 @@ class _TopBar extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withValues(alpha: 0.45),
-            Colors.black.withValues(alpha: 0),
+            scheme.scrim.withValues(alpha: 0.45),
+            scheme.scrim.withValues(alpha: 0),
           ],
         ),
       ),
@@ -195,20 +237,29 @@ class _TopBar extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           child: Row(
             children: [
-              Material(
-                color: Colors.white,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: onBack,
-                  child: const SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Icon(CarbonIcons.arrow_left, color: background2),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: context.cardShadow,
+                ),
+                child: Material(
+                  color: scheme.surface,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: onBack,
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: Icon(
+                        CarbonIcons.arrow_left,
+                        color: scheme.onSurface,
+                      ),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: PBSpace.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,23 +270,22 @@ class _TopBar extends StatelessWidget {
                       child: Text(
                         l.trekTitle,
                         maxLines: 1,
-                        style: pageTitleTextStyle.copyWith(
-                          color: Colors.white,
-                          fontSize: 26,
+                        style: text.headlineMedium?.copyWith(
+                          color: game.onGame,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: PBSpace.xs),
                     Row(
                       children: [
                         Text(
                           l.trekLevel(trek.level),
-                          style: buttonTextStyle.copyWith(
+                          style: text.labelMedium?.copyWith(
+                            color: game.onGame,
                             fontWeight: FontWeight.w800,
-                            fontSize: 13,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: PBSpace.sm),
                         Expanded(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(4),
@@ -243,10 +293,8 @@ class _TopBar extends StatelessWidget {
                               value: trek.xp / trek.nextLevelXp,
                               minHeight: 7,
                               backgroundColor:
-                                  Colors.white.withValues(alpha: 0.2),
-                              valueColor: const AlwaysStoppedAnimation(
-                                Color(0xFFF5C343),
-                              ),
+                                  game.onGame.withValues(alpha: 0.2),
+                              valueColor: AlwaysStoppedAnimation(game.banana),
                             ),
                           ),
                         ),
@@ -255,27 +303,31 @@ class _TopBar extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: PBSpace.md),
               Badge(
                 isLabelVisible: trek.points > 0,
                 label: Text('${trek.points}'),
-                backgroundColor: const Color(0xFFE5534B),
-                child: Material(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: onStats,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      child: Text(
-                        '💪 ${l.trekStats}',
-                        style: buttonTextStyle.copyWith(
-                          color: background2,
-                          fontWeight: FontWeight.w700,
+                backgroundColor: game.red,
+                textColor: game.onGame,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(PBRadius.pill),
+                    boxShadow: context.cardShadow,
+                  ),
+                  child: Material(
+                    color: scheme.surface,
+                    borderRadius: BorderRadius.circular(PBRadius.pill),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(PBRadius.pill),
+                      onTap: onStats,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: PBSpace.lg,
+                          vertical: PBSpace.md,
+                        ),
+                        child: Text(
+                          '💪 ${l.trekStats}',
+                          style: text.titleSmall,
                         ),
                       ),
                     ),
@@ -293,6 +345,7 @@ class _TopBar extends StatelessWidget {
 /// The trail and its stage nodes, scrolled to the current stage.
 class _Trail extends StatefulWidget {
   const _Trail({
+    required this.art,
     required this.trek,
     required this.selected,
     required this.soonSelected,
@@ -301,6 +354,7 @@ class _Trail extends StatefulWidget {
     required this.bottomPadding,
   });
 
+  final _MapArt art;
   final TrekProgress trek;
   final TrekStage selected;
   final bool soonSelected;
@@ -376,6 +430,7 @@ class _TrailState extends State<_Trail> {
                   Positioned.fill(
                     child: CustomPaint(
                       painter: _GroundPainter(
+                        art: widget.art,
                         stops: [
                           for (var i = 0; i < _stops; i++) _node(i, width).dy,
                         ],
@@ -385,6 +440,7 @@ class _TrailState extends State<_Trail> {
                   Positioned.fill(
                     child: CustomPaint(
                       painter: _TrailPainter(
+                        art: widget.art,
                         points: [
                           for (var i = 0; i < _stops; i++) _node(i, width),
                         ],
@@ -417,6 +473,7 @@ class _TrailState extends State<_Trail> {
                       top: _node(i, width).dy - 44,
                       width: 120,
                       child: _StageNode(
+                        art: widget.art,
                         stage: stage,
                         stars: widget.trek.stars[stage.id] ?? 0,
                         unlocked: unlocked(widget.trek, stage),
@@ -432,6 +489,7 @@ class _TrailState extends State<_Trail> {
                     top: _node(stages, width).dy - 44,
                     width: 120,
                     child: _SoonNode(
+                      art: widget.art,
                       selected: widget.soonSelected,
                       onTap: widget.onSoon,
                     ),
@@ -471,7 +529,8 @@ class _Landmark extends StatelessWidget {
                   borderRadius: BorderRadius.circular(60),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
+                      color: context.colorScheme.shadow
+                          .withValues(alpha: context.isDark ? 0.5 : 0.35),
                       blurRadius: 14,
                     ),
                   ],
@@ -503,7 +562,9 @@ class _Landmark extends StatelessWidget {
 /// The ground under the trail: a band of colour per stretch, blended into
 /// each other, dotted with soft clumps of foliage, water and stone.
 class _GroundPainter extends CustomPainter {
-  _GroundPainter({required this.stops});
+  _GroundPainter({required this.art, required this.stops});
+
+  final _MapArt art;
 
   /// The y of each stop, from the first stage (bottom) to the last.
   final List<double> stops;
@@ -511,7 +572,7 @@ class _GroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Bottom to top in the scroll view is high y to low y.
-    final colors = [for (var i = stops.length - 1; i >= 0; i--) _zones[i]];
+    final colors = [for (var i = stops.length - 1; i >= 0; i--) art.zones[i]];
     final positions = [
       for (var i = stops.length - 1; i >= 0; i--) stops[i] / size.height,
     ];
@@ -528,7 +589,7 @@ class _GroundPainter extends CustomPainter {
 
     final random = math.Random(7);
     for (var i = 0; i < stops.length; i++) {
-      final zone = _zones[i];
+      final zone = art.zones[i];
       for (var k = 0; k < 14; k++) {
         final center = Offset(
           random.nextDouble() * size.width,
@@ -543,11 +604,8 @@ class _GroundPainter extends CustomPainter {
             height: radius * 1.3,
           ),
           Paint()
-            ..color = Color.lerp(
-              zone,
-              light ? Colors.white : Colors.black,
-              light ? 0.1 : 0.16,
-            )!
+            ..color =
+                light ? Color.lerp(zone, art.light, 0.1)! : _darken(zone, 0.16)
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
         );
       }
@@ -556,12 +614,18 @@ class _GroundPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GroundPainter oldDelegate) =>
-      !listEquals(oldDelegate.stops, stops);
+      !listEquals(oldDelegate.stops, stops) ||
+      !listEquals(oldDelegate.art.zones, art.zones);
 }
 
 class _TrailPainter extends CustomPainter {
-  _TrailPainter({required this.points, required this.clearedUpTo});
+  _TrailPainter({
+    required this.art,
+    required this.points,
+    required this.clearedUpTo,
+  });
 
+  final _MapArt art;
   final List<Offset> points;
   final int clearedUpTo;
 
@@ -597,7 +661,7 @@ class _TrailPainter extends CustomPainter {
         canvas.drawCircle(
           at,
           6,
-          Paint()..color = Colors.white.withValues(alpha: 0.5),
+          Paint()..color = art.light.withValues(alpha: 0.5),
         );
       }
     }
@@ -605,7 +669,7 @@ class _TrailPainter extends CustomPainter {
       ..drawPath(
         all,
         Paint()
-          ..color = const Color(0xFF173D2A)
+          ..color = art.trailEdge
           ..style = PaintingStyle.stroke
           ..strokeWidth = 30
           ..strokeCap = StrokeCap.round,
@@ -613,7 +677,7 @@ class _TrailPainter extends CustomPainter {
       ..drawPath(
         all,
         Paint()
-          ..color = const Color(0xFFC79A64)
+          ..color = art.trail
           ..style = PaintingStyle.stroke
           ..strokeWidth = 20
           ..strokeCap = StrokeCap.round,
@@ -622,7 +686,7 @@ class _TrailPainter extends CustomPainter {
       canvas.drawPath(
         _path(stagePoints.take(math.min(points.length - 1, clearedUpTo + 1))),
         Paint()
-          ..color = const Color(0xFFF5C343)
+          ..color = art.cleared
           ..style = PaintingStyle.stroke
           ..strokeWidth = 8
           ..strokeCap = StrokeCap.round,
@@ -632,11 +696,14 @@ class _TrailPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_TrailPainter oldDelegate) =>
-      oldDelegate.clearedUpTo != clearedUpTo || oldDelegate.points != points;
+      oldDelegate.clearedUpTo != clearedUpTo ||
+      oldDelegate.points != points ||
+      oldDelegate.art.trail != art.trail;
 }
 
 class _StageNode extends StatelessWidget {
   const _StageNode({
+    required this.art,
     required this.stage,
     required this.stars,
     required this.unlocked,
@@ -645,6 +712,7 @@ class _StageNode extends StatelessWidget {
     required this.onTap,
   });
 
+  final _MapArt art;
   final TrekStage stage;
   final int stars;
   final bool unlocked;
@@ -655,11 +723,12 @@ class _StageNode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cleared = stars > 0;
+    final game = context.gameColors;
     final color = cleared
-        ? const Color(0xFF2FA37A)
+        ? game.jungle
         : unlocked
-            ? const Color(0xFFF5A623)
-            : const Color(0xFF6B7A72);
+            ? game.orange
+            : art.locked;
 
     return GestureDetector(
       onTap: onTap,
@@ -676,9 +745,9 @@ class _StageNode extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: selected
-                      ? Colors.white
+                      ? game.onGame
                       : current
-                          ? const Color(0xFFF5C343).withValues(alpha: 0.6)
+                          ? game.banana.withValues(alpha: 0.6)
                           : Colors.transparent,
                   width: 4,
                 ),
@@ -692,7 +761,7 @@ class _StageNode extends StatelessWidget {
               decoration: BoxDecoration(
                 color: color,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 3),
+                border: Border.all(color: game.onGame, width: 3),
                 boxShadow: [
                   BoxShadow(
                     color: color.withValues(alpha: 0.5),
@@ -716,8 +785,8 @@ class _StageNode extends StatelessWidget {
                     CarbonIcons.star_filled,
                     size: 16,
                     color: i < stars
-                        ? const Color(0xFFF5C343)
-                        : Colors.white.withValues(alpha: 0.3),
+                        ? game.banana
+                        : game.onGame.withValues(alpha: 0.3),
                   ),
               ],
             ),
@@ -726,10 +795,15 @@ class _StageNode extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: buttonTextStyle.copyWith(
+            style: context.textTheme.labelMedium?.copyWith(
+              color: game.onGame,
               fontWeight: FontWeight.w800,
-              fontSize: 13,
-              shadows: const [Shadow(color: Color(0xAA000000), blurRadius: 6)],
+              shadows: [
+                Shadow(
+                  color: context.colorScheme.shadow.withValues(alpha: 0.6),
+                  blurRadius: 6,
+                ),
+              ],
             ),
           ),
         ],
@@ -760,6 +834,9 @@ class _StagePanel extends StatelessWidget {
         for (final e in wave) '${e.species}${e.color}': e,
     }.values;
     final loot = Cosmetic.byId(stage.loot)!;
+    final scheme = context.colorScheme;
+    final game = context.gameColors;
+    final text = context.textTheme;
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -770,18 +847,12 @@ class _StagePanel extends StatelessWidget {
         child: Opacity(opacity: t.clamp(0, 1), child: child),
       ),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         constraints: const BoxConstraints(maxWidth: 520),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 30,
-              offset: const Offset(0, 12),
-            ),
-          ],
+          boxShadow: context.cardShadow,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -789,55 +860,50 @@ class _StagePanel extends StatelessWidget {
           children: [
             Row(
               children: [
-                SheetBadge(stage.emoji, color: const Color(0xFF2FA37A)),
-                const SizedBox(width: 12),
+                SheetBadge(stage.emoji, color: game.jungle),
+                const SizedBox(width: PBSpace.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         l.trekStageNumber(stage.number),
-                        style: buttonTextStyle.copyWith(
-                          color: const Color(0xFF2FA37A),
+                        style: text.labelMedium?.copyWith(
+                          color: game.jungle,
                           fontWeight: FontWeight.w800,
-                          fontSize: 13,
                         ),
                       ),
                       Text(
                         stage.title(l),
-                        style: pageTitleTextStyle.copyWith(
-                          color: background2,
-                          fontSize: 22,
-                          height: 1.1,
-                        ),
+                        style: text.headlineSmall?.copyWith(height: 1.1),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: PBSpace.sm),
             Text(
               stage.blurb(l),
-              style: defaultTextStyle.copyWith(
+              style: text.bodyMedium?.copyWith(
                 fontSize: 14,
-                color: background2.withValues(alpha: 0.7),
+                color: scheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: PBSpace.md),
             Wrap(
               spacing: 6,
               runSpacing: 6,
               children: [for (final e in enemies) EnemyChip(spec: e)],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: PBSpace.md),
             Row(
               children: [
                 SizedBox(
                   width: 54,
                   child: CosmeticTile(
                     cosmetic: loot,
-                    matColor: const Color(0xFF3FAE6A),
+                    matColor: game.jungle,
                     owned: true,
                     worn: false,
                     tryingOn: false,
@@ -853,18 +919,16 @@ class _StagePanel extends StatelessWidget {
                     children: [
                       Text(
                         cleared ? l.trekRewardClaimed : l.trekReward,
-                        style: defaultTextStyle.copyWith(
+                        style: text.labelMedium?.copyWith(
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: background2.withValues(alpha: 0.55),
+                          color: scheme.onSurfaceVariant,
                         ),
                       ),
                       Text(
                         loot.label(l),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: buttonTextStyle.copyWith(
-                          color: background2,
+                        style: text.titleSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
                         ),
@@ -876,7 +940,7 @@ class _StagePanel extends StatelessWidget {
                   PillButton(
                     label: cleared ? l.trekReplay : l.trekStart,
                     icon: CarbonIcons.play_filled_alt,
-                    color: cleared ? background2 : const Color(0xFF2FA37A),
+                    color: cleared ? null : game.jungle,
                     onPressed: onPlay,
                     compact: true,
                   ),
@@ -887,7 +951,7 @@ class _StagePanel extends StatelessWidget {
               SheetTag(
                 l.trekLocked,
                 icon: CarbonIcons.locked,
-                color: const Color(0xFF6B7A72),
+                color: scheme.onSurfaceVariant,
               ),
             ],
           ],
@@ -899,69 +963,79 @@ class _StagePanel extends StatelessWidget {
 
 /// The last stop on the map: the trail runs on into the mist.
 class _SoonNode extends StatelessWidget {
-  const _SoonNode({required this.selected, required this.onTap});
+  const _SoonNode({
+    required this.art,
+    required this.selected,
+    required this.onTap,
+  });
 
+  final _MapArt art;
   final bool selected;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Column(
-          children: [
-            Container(
-              width: 86,
-              height: 86,
+  Widget build(BuildContext context) {
+    final game = context.gameColors;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 86,
+            height: 86,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: selected ? game.onGame : Colors.transparent,
+                width: 4,
+              ),
+            ),
+            child: Container(
+              width: 72,
+              height: 72,
               alignment: Alignment.center,
               decoration: BoxDecoration(
+                color: art.soon,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: selected ? Colors.white : Colors.transparent,
-                  width: 4,
+                  color: game.onGame.withValues(alpha: 0.8),
+                  width: 3,
                 ),
-              ),
-              child: Container(
-                width: 72,
-                height: 72,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF7D8696),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    width: 3,
-                  ),
-                ),
-                child: Text(
-                  '?',
-                  style: pageTitleTextStyle.copyWith(
-                    color: Colors.white,
-                    fontSize: 34,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5C343),
-                borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                context.l10n.trekComingSoon,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                style: buttonTextStyle.copyWith(
-                  color: background2,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 12,
+                '?',
+                style: context.textTheme.displaySmall?.copyWith(
+                  color: game.onGame,
                 ),
               ),
             ),
-          ],
-        ),
-      );
+          ),
+          const SizedBox(height: 2),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: game.banana,
+              borderRadius: BorderRadius.circular(PBRadius.pill),
+              boxShadow: context.glow(game.banana),
+            ),
+            child: Text(
+              context.l10n.trekComingSoon,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              style: context.textTheme.labelMedium?.copyWith(
+                // Dark ink: white doesn't read on banana yellow.
+                color: game.onBanana,
+                fontWeight: FontWeight.w800,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// What the panel says about the stretch still to come.
@@ -971,6 +1045,7 @@ class _ComingSoonPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final text = context.textTheme;
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -981,49 +1056,38 @@ class _ComingSoonPanel extends StatelessWidget {
         child: Opacity(opacity: t.clamp(0, 1), child: child),
       ),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         constraints: const BoxConstraints(maxWidth: 520),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colorScheme.surface,
           borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 30,
-              offset: const Offset(0, 12),
-            ),
-          ],
+          boxShadow: context.cardShadow,
         ),
         child: Row(
           children: [
             Image.asset(TrekStage.landmarkFor('soon'), width: 84, height: 84),
-            const SizedBox(width: 12),
+            const SizedBox(width: PBSpace.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     l.trekComingSoon,
-                    style: buttonTextStyle.copyWith(
-                      color: const Color(0xFFD08A28),
+                    style: text.labelMedium?.copyWith(
+                      color: context.gameColors.orange,
                       fontWeight: FontWeight.w800,
-                      fontSize: 13,
                     ),
                   ),
                   Text(
                     l.trekComingSoonTitle,
-                    style: pageTitleTextStyle.copyWith(
-                      color: background2,
-                      fontSize: 22,
-                      height: 1.1,
-                    ),
+                    style: text.headlineSmall?.copyWith(height: 1.1),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     l.trekComingSoonInfo,
-                    style: defaultTextStyle.copyWith(
+                    style: text.bodyMedium?.copyWith(
                       fontSize: 14,
-                      color: background2.withValues(alpha: 0.7),
+                      color: context.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],

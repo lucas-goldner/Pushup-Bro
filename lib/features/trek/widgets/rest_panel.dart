@@ -1,8 +1,7 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
@@ -25,13 +24,13 @@ class EnemyChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = spec.color?.color ?? const Color(0xFF8B5FD9);
+    final color = spec.color?.color ?? context.gameColors.purple;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(18),
+        color: context.tint(color),
+        borderRadius: BorderRadius.circular(PBRadius.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -62,11 +61,7 @@ class EnemyChip extends StatelessWidget {
             child: Text(
               spec.species.name(context.l10n),
               overflow: TextOverflow.ellipsis,
-              style: buttonTextStyle.copyWith(
-                color: background2,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-              ),
+              style: context.textTheme.labelMedium,
             ),
           ),
         ],
@@ -97,9 +92,12 @@ class RestPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final safe = MediaQuery.paddingOf(context);
+    final scheme = context.colorScheme;
+    final game = context.gameColors;
+    final text = context.textTheme;
 
     return ColoredBox(
-      color: background2.withValues(alpha: 0.35),
+      color: scheme.scrim.withValues(alpha: context.isDark ? 0.5 : 0.35),
       child: Align(
         alignment: Alignment.bottomCenter,
         child: Container(
@@ -107,8 +105,9 @@ class RestPanel extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           constraints: const BoxConstraints(maxWidth: 520),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: scheme.surface,
             borderRadius: BorderRadius.circular(32),
+            boxShadow: context.cardShadow,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -125,44 +124,33 @@ class RestPanel extends StatelessWidget {
                           value: secondsLeft / restSeconds,
                           strokeWidth: 8,
                           strokeCap: StrokeCap.round,
-                          backgroundColor: background,
-                          valueColor: const AlwaysStoppedAnimation(
-                            Color(0xFF2FA37A),
-                          ),
+                          backgroundColor: scheme.surfaceContainerHigh,
+                          valueColor: AlwaysStoppedAnimation(game.jungle),
                         ),
                         Center(
                           child: Text(
                             '${secondsLeft.ceil()}',
-                            style: pushupTextStyle.copyWith(
-                              fontSize: 30,
-                              color: background2,
-                            ),
+                            style: text.displaySmall,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: PBSpace.lg),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          l.trekRest,
-                          style: pageTitleTextStyle.copyWith(
-                            fontSize: 24,
-                            color: background2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
+                        Text(l.trekRest, style: text.headlineMedium),
+                        const SizedBox(height: PBSpace.xs),
                         Text(
                           l.trekRestInfo,
-                          style: defaultTextStyle.copyWith(
+                          style: text.bodyMedium?.copyWith(
                             fontSize: 14,
-                            color: background2.withValues(alpha: 0.6),
+                            color: scheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: PBSpace.sm),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(6),
                           child: TweenAnimationBuilder<double>(
@@ -173,10 +161,8 @@ class RestPanel extends StatelessWidget {
                                 LinearProgressIndicator(
                               value: value,
                               minHeight: 10,
-                              backgroundColor: background,
-                              valueColor: const AlwaysStoppedAnimation(
-                                Color(0xFF4FB35A),
-                              ),
+                              backgroundColor: scheme.surfaceContainerHigh,
+                              valueColor: AlwaysStoppedAnimation(game.leaf),
                             ),
                           ),
                         ),
@@ -190,13 +176,10 @@ class RestPanel extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   l.trekNextWave,
-                  style: buttonTextStyle.copyWith(
-                    color: background2,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: text.titleSmall,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: PBSpace.sm),
               for (final spec in {
                 for (final e in nextWave) '${e.species}${e.color}': e,
               }.values)
@@ -209,20 +192,17 @@ class RestPanel extends StatelessWidget {
                       Expanded(
                         child: Text(
                           spec.color?.weakness(l) ?? l.weakShifting,
-                          style: defaultTextStyle.copyWith(
-                            fontSize: 13,
-                            color: background2.withValues(alpha: 0.7),
-                          ),
+                          style: text.bodySmall,
                         ),
                       ),
                     ],
                   ),
                 ),
-              const SizedBox(height: 12),
+              const SizedBox(height: PBSpace.md),
               PillButton(
                 label: l.trekSkipRest,
                 icon: CarbonIcons.lightning,
-                color: const Color(0xFFE5534B),
+                color: game.red,
                 onPressed: onReady,
               ),
             ],
@@ -247,51 +227,53 @@ class KnockedOutPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final scheme = context.colorScheme;
+    final red = context.gameColors.red;
 
     return ColoredBox(
-      color: background2.withValues(alpha: 0.45),
+      color: scheme.scrim.withValues(alpha: context.isDark ? 0.6 : 0.45),
       child: Center(
         child: Container(
-          margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(24),
+          margin: const EdgeInsets.all(PBSpace.xl),
+          padding: const EdgeInsets.all(PBSpace.xl),
           constraints: const BoxConstraints(maxWidth: 420),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: scheme.surface,
             borderRadius: BorderRadius.circular(32),
+            boxShadow: context.cardShadow,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SheetBadge('😵', size: 76, color: Color(0xFFE5534B)),
+              SheetBadge('😵', size: 76, color: red),
               const SizedBox(height: 14),
               Text(
                 l.trekKnockedOut,
                 textAlign: TextAlign.center,
-                style: pageTitleTextStyle.copyWith(color: background2),
+                style: context.textTheme.headlineLarge,
               ),
               const SizedBox(height: 6),
               Text(
                 l.trekKnockedOutInfo,
                 textAlign: TextAlign.center,
-                style: defaultTextStyle.copyWith(
-                  color: background2.withValues(alpha: 0.6),
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 20),
               PillButton(
                 label: l.trekTryAgain,
                 icon: CarbonIcons.restart,
-                color: const Color(0xFFE5534B),
+                color: red,
                 onPressed: onRetry,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: PBSpace.sm),
               TextButton(
                 onPressed: onLeave,
                 child: Text(
                   l.trekBackToMap,
-                  style: buttonTextStyle.copyWith(
-                    color: background2,
-                    fontWeight: FontWeight.w700,
+                  style: context.textTheme.labelLarge?.copyWith(
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
               ),

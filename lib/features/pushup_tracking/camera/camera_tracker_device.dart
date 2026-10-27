@@ -325,24 +325,29 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
   Widget build(BuildContext context) {
     final controller = _controller;
     final time = _clock.elapsed;
+    final colors = RepPalette.of(context);
     if (_error != null ||
         controller == null ||
         !controller.value.isInitialized) {
       return CameraBubble(
-        color: Colors.white,
+        color: colors.rest,
         reading: PushupReading.none,
         message: _error != null
             ? context.l10n.cameraUnavailable
             : context.l10n.cameraStarting,
-        child: const Center(
-          child: Icon(Icons.videocam_rounded, color: Colors.white54, size: 40),
+        child: Center(
+          child: Icon(
+            Icons.videocam_rounded,
+            color: colors.rest.withValues(alpha: 0.54),
+            size: 40,
+          ),
         ),
       );
     }
     final preview = CameraPreview(controller);
 
     return CameraBubble(
-      color: _feedback.color(time),
+      color: _feedback.color(time, colors),
       reading: _feedback.reading,
       child: LayoutBuilder(
         builder: (context, constraints) => FittedBox(
@@ -366,8 +371,9 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
                   painter: SkeletonPainter(
                     pose: _pose,
                     imageSize: _upright,
-                    color: _feedback.color(time),
+                    color: _feedback.color(time, colors),
                     form: _feedback.reading.form,
+                    colors: colors,
                     lineScale: coverLineScale(
                       _upright.isEmpty ? const Size(300, 400) : _upright,
                       constraints.biggest,

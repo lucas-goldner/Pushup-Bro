@@ -1,8 +1,7 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
@@ -27,7 +26,8 @@ class QuestResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ColoredBox(
-        color: background2.withValues(alpha: 0.35),
+        color: context.colorScheme.scrim
+            .withValues(alpha: context.isDark ? 0.5 : 0.35),
         child: Center(
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: 1),
@@ -38,12 +38,13 @@ class QuestResult extends StatelessWidget {
               child: Opacity(opacity: t.clamp(0, 1), child: child),
             ),
             child: Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(24),
+              margin: const EdgeInsets.all(PBSpace.xl),
+              padding: const EdgeInsets.all(PBSpace.xl),
               constraints: const BoxConstraints(maxWidth: 420),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.colorScheme.surface,
                 borderRadius: BorderRadius.circular(32),
+                boxShadow: context.cardShadow,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -51,14 +52,16 @@ class QuestResult extends StatelessWidget {
                   SheetBadge(
                     won ? '🏆' : '💫',
                     size: 76,
-                    color: won ? const Color(0xFFF5A623) : accentColor,
+                    color: won
+                        ? context.gameColors.orange
+                        : context.colorScheme.secondary,
                   ),
                   const SizedBox(height: 14),
                   Text(
                     won
                         ? context.l10n.questComplete
                         : context.l10n.questSoClose,
-                    style: pageTitleTextStyle.copyWith(color: background2),
+                    style: context.textTheme.headlineLarge,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -66,8 +69,8 @@ class QuestResult extends StatelessWidget {
                         ? quest.title(context.l10n)
                         : context.l10n.questTomorrow,
                     textAlign: TextAlign.center,
-                    style: defaultTextStyle.copyWith(
-                      color: background2.withValues(alpha: 0.6),
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: context.colorScheme.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -77,13 +80,13 @@ class QuestResult extends StatelessWidget {
                         child: _Stat(
                           value: '$pushups',
                           label: context.l10n.questPushups,
-                          icon: const Icon(
+                          icon: Icon(
                             CarbonIcons.chart_line,
-                            color: accentColor,
+                            color: context.colorScheme.secondary,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: PBSpace.md),
                       Expanded(
                         child: _Stat(
                           value: '+$bananas',
@@ -91,7 +94,7 @@ class QuestResult extends StatelessWidget {
                               ? context.l10n.questBananasDoubled
                               : context.l10n.questBananas,
                           icon: Assets.images.island.banana.image(width: 30),
-                          color: const Color(0xFFFFF4D6),
+                          color: context.gameColors.cream,
                         ),
                       ),
                     ],
@@ -115,20 +118,22 @@ class _Stat extends StatelessWidget {
     required this.value,
     required this.label,
     required this.icon,
-    this.color = background,
+    this.color,
   });
 
   final String value;
   final String label;
   final Widget icon;
-  final Color color;
+
+  /// The tile's fill; the page background colour when null.
+  final Color? color;
 
   @override
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
+          color: color ?? context.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(PBRadius.md),
         ),
         child: Column(
           children: [
@@ -136,18 +141,12 @@ class _Stat extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               value,
-              style: pushupTextStyle.copyWith(
-                fontSize: 28,
-                color: background2,
-              ),
+              style: context.textTheme.displaySmall?.copyWith(fontSize: 30),
             ),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: defaultTextStyle.copyWith(
-                fontSize: 13,
-                color: background2.withValues(alpha: 0.6),
-              ),
+              style: context.textTheme.bodySmall,
             ),
           ],
         ),

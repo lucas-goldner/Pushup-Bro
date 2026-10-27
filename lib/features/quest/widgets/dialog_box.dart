@@ -2,8 +2,7 @@ import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 
@@ -90,6 +89,7 @@ class _DialogBoxState extends State<DialogBox>
   Widget build(BuildContext context) {
     final (speaker, lineText) = widget.line;
     final text = lineText(context.l10n);
+    final scheme = context.colorScheme;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -102,19 +102,9 @@ class _DialogBoxState extends State<DialogBox>
             margin: const EdgeInsets.only(top: 22),
             padding: const EdgeInsets.fromLTRB(20, 30, 20, 16),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: speaker.color.withValues(alpha: 0.45),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: background2.withValues(alpha: 0.25),
-                  blurRadius: 30,
-                  offset: const Offset(0, 12),
-                ),
-              ],
+              color: scheme.surface,
+              borderRadius: BorderRadius.circular(PBRadius.lg),
+              boxShadow: context.cardShadow,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,11 +128,9 @@ class _DialogBoxState extends State<DialogBox>
                           ),
                         ],
                       ),
-                      style: defaultTextStyle.copyWith(
-                        color: background2,
+                      style: context.textTheme.bodyLarge?.copyWith(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        height: 1.4,
                       ),
                     );
                   },
@@ -177,28 +165,31 @@ class _DialogBoxState extends State<DialogBox>
                   height: 48,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Color.alphaBlend(
+                      context.tint(speaker.color),
+                      scheme.surface,
+                    ),
                     shape: BoxShape.circle,
-                    border: Border.all(color: speaker.color, width: 3),
+                    boxShadow: context.cardShadow,
                   ),
                   child: Text(
                     speaker.emoji,
                     style: const TextStyle(fontSize: 24),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: PBSpace.sm),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: speaker.color,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(PBRadius.pill),
+                    boxShadow: context.glow(speaker.color),
                   ),
                   child: Text(
                     speaker.name(context.l10n),
-                    style: buttonTextStyle.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                    style: context.textTheme.titleSmall?.copyWith(
+                      color: context.gameColors.onGame,
                     ),
                   ),
                 ),

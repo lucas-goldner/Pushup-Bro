@@ -3,8 +3,7 @@ import 'dart:math' as math;
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/trek/model/battle.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 
@@ -48,40 +47,40 @@ class PlayerBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fraction = (hp / maxHp).clamp(0.0, 1.0);
-    final color = Color.lerp(
-      const Color(0xFFE5534B),
-      const Color(0xFF4FB35A),
-      fraction,
-    )!;
+    final scheme = context.colorScheme;
+    final game = context.gameColors;
+    final text = context.textTheme;
+    final color = Color.lerp(game.red, game.leaf, fraction)!;
 
     return Transform.translate(
       offset: Offset(math.sin(shake * 40) * 6 * shake, 0),
       child: Container(
         padding: const EdgeInsets.fromLTRB(10, 8, 14, 8),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(22),
+          color: scheme.surface.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(PBRadius.pill),
+          boxShadow: context.cardShadow,
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: background2,
-                borderRadius: BorderRadius.circular(12),
+                color: scheme.primary,
+                borderRadius: BorderRadius.circular(PBRadius.pill),
               ),
               child: Text(
                 context.l10n.trekLevel(level),
-                style: buttonTextStyle.copyWith(
+                style: text.labelMedium?.copyWith(
+                  color: scheme.onPrimary,
                   fontWeight: FontWeight.w800,
-                  fontSize: 13,
                 ),
               ),
             ),
             const SizedBox(width: 10),
-            const Icon(
+            Icon(
               CarbonIcons.favorite_filled,
-              color: Color(0xFFE5534B),
+              color: game.red,
               size: 18,
             ),
             const SizedBox(width: 6),
@@ -98,7 +97,7 @@ class PlayerBar extends StatelessWidget {
                       builder: (context, value, _) => LinearProgressIndicator(
                         value: value,
                         minHeight: 12,
-                        backgroundColor: background,
+                        backgroundColor: scheme.surfaceContainerHigh,
                         valueColor: AlwaysStoppedAnimation(color),
                       ),
                     ),
@@ -106,10 +105,9 @@ class PlayerBar extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${hp.ceil()} / ${maxHp.round()}',
-                    style: defaultTextStyle.copyWith(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: background2.withValues(alpha: 0.6),
+                    style: text.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      letterSpacing: 0,
                     ),
                   ),
                 ],
@@ -118,11 +116,7 @@ class PlayerBar extends StatelessWidget {
             const SizedBox(width: 10),
             Text(
               context.l10n.trekWave(wave, waves),
-              style: buttonTextStyle.copyWith(
-                color: background2,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-              ),
+              style: text.labelMedium,
             ),
           ],
         ),
@@ -142,6 +136,7 @@ class FoeBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = foe.color.color;
+    final scheme = context.colorScheme;
 
     return SizedBox(
       width: 112,
@@ -149,16 +144,26 @@ class FoeBar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (targeted)
-            const Icon(CarbonIcons.caret_down, color: Colors.white, size: 18),
-          Container(
-            padding: const EdgeInsets.fromLTRB(6, 4, 6, 5),
+            Icon(
+              CarbonIcons.caret_down,
+              color: context.gameColors.onGame,
+              size: 18,
+              shadows: [
+                Shadow(
+                  color: scheme.shadow.withValues(alpha: 0.4),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.92),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: targeted ? color : Colors.transparent,
-                width: 2,
-              ),
+              color: targeted
+                  ? Color.alphaBlend(context.tint(color), scheme.surface)
+                  : scheme.surface.withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(PBRadius.sm),
+              boxShadow: targeted ? context.glow(color) : context.cardShadow,
             ),
             child: Column(
               children: [
@@ -166,10 +171,9 @@ class FoeBar extends StatelessWidget {
                   foe.spec.species.name(context.l10n),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: defaultTextStyle.copyWith(
-                    fontSize: 11,
+                  style: context.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: background2,
+                    letterSpacing: 0,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -181,7 +185,7 @@ class FoeBar extends StatelessWidget {
                     builder: (context, value, _) => LinearProgressIndicator(
                       value: value,
                       minHeight: 7,
-                      backgroundColor: background,
+                      backgroundColor: scheme.surfaceContainerHigh,
                       valueColor: AlwaysStoppedAnimation(color),
                     ),
                   ),
@@ -207,14 +211,8 @@ class WeaknessHint extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: foe.color.color,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: foe.color.color.withValues(alpha: 0.4),
-              blurRadius: 14,
-              offset: const Offset(0, 5),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(PBRadius.pill),
+          boxShadow: context.glow(foe.color.color),
         ),
         child: Text(
           foe.shifts
@@ -222,7 +220,8 @@ class WeaknessHint extends StatelessWidget {
                   '${context.l10n.weakShifting}'
               : foe.color.weakness(context.l10n),
           textAlign: TextAlign.center,
-          style: buttonTextStyle.copyWith(
+          style: context.textTheme.labelMedium?.copyWith(
+            color: context.gameColors.onGame,
             fontWeight: FontWeight.w800,
             fontSize: 14,
           ),
@@ -248,6 +247,8 @@ class RepMeter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final held = holding >= holdSeconds;
+    final scheme = context.colorScheme;
+    final blue = ScaleColor.blue.color;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -261,7 +262,8 @@ class RepMeter extends StatelessWidget {
               DecoratedBox(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.92),
+                  color: scheme.surface.withValues(alpha: 0.94),
+                  boxShadow: context.cardShadow,
                 ),
               ),
               Padding(
@@ -270,9 +272,9 @@ class RepMeter extends StatelessWidget {
                   value: (holding / holdSeconds).clamp(0.0, 1.0),
                   strokeWidth: 7,
                   strokeCap: StrokeCap.round,
-                  backgroundColor: background,
+                  backgroundColor: scheme.surfaceContainerHigh,
                   valueColor: AlwaysStoppedAnimation(
-                    held ? ScaleColor.blue.color : const Color(0xFF9DC4EE),
+                    held ? blue : Color.lerp(blue, scheme.surface, 0.45),
                   ),
                 ),
               ),
@@ -281,20 +283,16 @@ class RepMeter extends StatelessWidget {
                 children: [
                   Text(
                     '$reps',
-                    style: pushupTextStyle.copyWith(
+                    style: context.textTheme.displaySmall?.copyWith(
                       fontSize: 30,
-                      color: background2,
                       height: 1,
                     ),
                   ),
                   Text(
                     context.l10n.holdMeter,
-                    style: defaultTextStyle.copyWith(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: held
-                          ? ScaleColor.blue.color
-                          : background2.withValues(alpha: 0.5),
+                    style: context.textTheme.labelSmall?.copyWith(
+                      letterSpacing: 0,
+                      color: held ? blue : scheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -320,12 +318,15 @@ class RepMeter extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: ScaleColor.yellow.color,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(PBRadius.pill),
+                        boxShadow: context.glow(ScaleColor.yellow.color),
                       ),
                       child: Text(
                         context.l10n.comboCount(combo),
-                        style: buttonTextStyle.copyWith(
+                        style: context.textTheme.labelLarge?.copyWith(
+                          color: context.gameColors.onBanana,
                           fontWeight: FontWeight.w800,
+                          fontSize: 16,
                         ),
                       ),
                     ),
@@ -358,11 +359,16 @@ class PopupLayer extends StatelessWidget {
                   child: Text(
                     popup.text,
                     textAlign: TextAlign.center,
-                    style: pushupTextStyle.copyWith(
-                      fontSize: popup.big ? 30 : 20,
+                    style: context.textTheme.displaySmall?.copyWith(
+                      fontSize: popup.big ? 34 : 22,
                       color: popup.color,
-                      shadows: const [
-                        Shadow(color: Color(0xAA000000), blurRadius: 6),
+                      shadows: [
+                        Shadow(
+                          color: context.colorScheme.shadow
+                              .withValues(alpha: context.isDark ? 0.6 : 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
                       ],
                     ),
                   ),

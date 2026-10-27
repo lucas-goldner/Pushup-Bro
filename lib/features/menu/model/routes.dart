@@ -32,6 +32,7 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
             child: PageContainer(
               PushupTracking(),
               menuTab: MenuTabInfo.pushupTracking,
+              overScene: true,
             ),
           ),
         ),

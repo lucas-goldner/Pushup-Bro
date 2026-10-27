@@ -2,14 +2,49 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/pushup_pose.dart';
 
-/// The Jungle Trek's colours for the three kinds of pushup.
-const _normal = Color(0xFF4FB35A);
-const _held = Color(0xFF4A90E2);
-const _quick = Color(0xFFF5C343);
-const _badForm = Color(0xFFFF8A3D);
+/// The Jungle Trek's colours for the three kinds of pushup, from the
+/// theme's game colours: green for a normal one, blue held, yellow quick,
+/// orange when the form slips, and white at rest.
+@immutable
+class RepPalette {
+  const RepPalette({
+    required this.normal,
+    required this.held,
+    required this.quick,
+    required this.badForm,
+    required this.rest,
+    required this.shade,
+  });
+
+  factory RepPalette.of(BuildContext context) {
+    final game = context.gameColors;
+
+    return RepPalette(
+      normal: game.leaf,
+      held: game.held,
+      quick: game.banana,
+      badForm: game.orange,
+      rest: game.onGame,
+      shade: context.colorScheme.scrim,
+    );
+  }
+
+  final Color normal;
+  final Color held;
+  final Color quick;
+  final Color badForm;
+
+  /// The skeleton when nothing is happening.
+  final Color rest;
+
+  /// The soft outline under the skeleton's lines and joints.
+  final Color shade;
+}
+
+enum _RepKind { normal, held, quick }
 
 /// How long at the bottom makes a held pushup, and how soon after the last
 /// one makes a quick one (as the Trek counts them).
@@ -23,7 +58,7 @@ class RepFeedback {
   Duration? _downSince;
   Duration? _lastRep;
   Duration? _flashAt;
-  Color _flash = _normal;
+  _RepKind _flash = _RepKind.normal;
   PushupReading reading = PushupReading.none;
 
   void update(PushupReading next, Duration time) {
@@ -35,27 +70,33 @@ class RepFeedback {
       final quick = _lastRep != null &&
           (time - _lastRep!).inMilliseconds / 1000 <= _quickSeconds;
       _flash = held
-          ? _held
+          ? _RepKind.held
           : quick
-              ? _quick
-              : _normal;
+              ? _RepKind.quick
+              : _RepKind.normal;
       _flashAt = time;
       _lastRep = time;
       _downSince = null;
     }
   }
 
-  Color color(Duration time) {
+  Color color(Duration time, RepPalette colors) {
     final flashAt = _flashAt;
-    if (flashAt != null && (time - flashAt).inMilliseconds < 500) return _flash;
+    if (flashAt != null && (time - flashAt).inMilliseconds < 500) {
+      return switch (_flash) {
+        _RepKind.normal => colors.normal,
+        _RepKind.held => colors.held,
+        _RepKind.quick => colors.quick,
+      };
+    }
     final since = _downSince;
     if (reading.down && since != null) {
       final held =
           ((time - since).inMilliseconds / 1000 / _holdSeconds).clamp(0.0, 1.0);
-      return Color.lerp(Colors.white, _held, 0.3 + 0.7 * held)!;
+      return Color.lerp(colors.rest, colors.held, 0.3 + 0.7 * held)!;
     }
 
-    return Colors.white;
+    return colors.rest;
   }
 }
 
@@ -68,6 +109,7 @@ class SkeletonPainter extends CustomPainter {
     required this.imageSize,
     required this.color,
     required this.form,
+    required this.colors,
     this.lineScale = 1,
   });
 
@@ -79,6 +121,9 @@ class SkeletonPainter extends CustomPainter {
   final Size imageSize;
   final Color color;
   final PushupForm form;
+
+  /// For the bad form bones and the shade under the lines.
+  final RepPalette colors;
 
   static const Set<(Joint, Joint)> _hipBones = {
     (Joint.leftShoulder, Joint.leftHip),
@@ -96,7 +141,7 @@ class SkeletonPainter extends CustomPainter {
     Offset at(PosePoint p) => Offset(p.x * scale, p.y * scale);
     final badForm = form == PushupForm.sagging || form == PushupForm.piking;
     final glow = Paint()
-      ..color = Colors.black.withValues(alpha: 0.35)
+      ..color = colors.shade.withValues(alpha: 0.35)
       ..strokeWidth = 9 * lineScale
       ..strokeCap = StrokeCap.round;
     for (final (a, b) in skeletonBones) {
@@ -109,7 +154,7 @@ class SkeletonPainter extends CustomPainter {
         continue;
       }
       final bone = Paint()
-        ..color = badForm && _hipBones.contains((a, b)) ? _badForm : color
+        ..color = badForm && _hipBones.contains((a, b)) ? colors.badForm : color
         ..strokeWidth = 5 * lineScale
         ..strokeCap = StrokeCap.round;
       canvas
@@ -119,7 +164,11 @@ class SkeletonPainter extends CustomPainter {
     for (final point in pose.values) {
       if (point.likelihood < PushupPoseTracker.minLikelihood) continue;
       canvas
-        ..drawCircle(at(point), 6 * lineScale, Paint()..color = Colors.black26)
+        ..drawCircle(
+          at(point),
+          6 * lineScale,
+          Paint()..color = colors.shade.withValues(alpha: 0.26),
+        )
         ..drawCircle(at(point), 4.5 * lineScale, Paint()..color = color);
     }
   }
@@ -162,28 +211,25 @@ class CameraBubble extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(PBRadius.lg + 2),
         border: Border.all(color: color, width: 4),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: context.cardShadow,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(PBRadius.lg - 2),
         child: Stack(
           fit: StackFit.expand,
           children: [
             // The cut-out sits on the jungle's colours.
-            const DecoratedBox(
+            DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xFF2E7D4F), Color(0xFF123524)],
+                  colors: [
+                    context.gameColors.jungle,
+                    context.gameColors.jungleDeep,
+                  ],
                 ),
               ),
             ),
@@ -197,17 +243,17 @@ class CameraBubble extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(10),
+                    color: context.colorScheme.scrim.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(PBRadius.sm),
                   ),
                   child: Text(
                     hint,
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: buttonTextStyle.copyWith(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                    style: context.textTheme.labelSmall?.copyWith(
+                      color: context.gameColors.onGame,
+                      letterSpacing: 0,
                       height: 1.2,
                     ),
                   ),

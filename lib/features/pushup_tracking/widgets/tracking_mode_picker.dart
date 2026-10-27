@@ -7,8 +7,7 @@ import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 
 /// Picks how pushups are counted, AirPods or camera; shown in the settings
 /// and before every workout. The choice is remembered.
@@ -29,9 +28,10 @@ class TrackingModePicker extends StatelessWidget {
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: onDark
-              ? Colors.white.withValues(alpha: 0.18)
-              : Colors.white.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(20),
+              ? context.gameColors.onGame.withValues(alpha: 0.18)
+              : context.colorScheme.surface,
+          borderRadius: BorderRadius.circular(PBRadius.pill),
+          boxShadow: onDark ? null : context.cardShadow,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -49,12 +49,14 @@ class TrackingModePicker extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
                   decoration: BoxDecoration(
                     color: option == mode
-                        ? (onDark ? Colors.white : background2)
+                        ? (onDark
+                            ? context.colorScheme.surface
+                            : context.colorScheme.primary)
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(PBRadius.pill),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -62,15 +64,13 @@ class TrackingModePicker extends StatelessWidget {
                       Icon(
                         icon,
                         size: 16,
-                        color: _foreground(selected: option == mode),
+                        color: _foreground(context, selected: option == mode),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         label,
-                        style: buttonTextStyle.copyWith(
-                          color: _foreground(selected: option == mode),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
+                        style: context.textTheme.labelMedium?.copyWith(
+                          color: _foreground(context, selected: option == mode),
                         ),
                       ),
                     ],
@@ -83,7 +83,9 @@ class TrackingModePicker extends StatelessWidget {
     );
   }
 
-  Color _foreground({required bool selected}) => onDark
-      ? (selected ? background2 : Colors.white)
-      : (selected ? Colors.white : background2);
+  Color _foreground(BuildContext context, {required bool selected}) => onDark
+      ? (selected ? context.colorScheme.onSurface : context.gameColors.onGame)
+      : (selected
+          ? context.colorScheme.onPrimary
+          : context.colorScheme.onSurfaceVariant);
 }

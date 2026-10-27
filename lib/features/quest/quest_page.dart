@@ -14,8 +14,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
@@ -474,7 +473,8 @@ class _QuestPageState extends State<QuestPage> {
                   opacity: _white ? 1 : 0,
                   duration: const Duration(milliseconds: 450),
                   curve: Curves.easeOut,
-                  child: const ColoredBox(color: Colors.white),
+                  // The same white the jungle fades through, in both modes.
+                  child: ColoredBox(color: context.gameColors.flash),
                 ),
               ),
             ),
@@ -605,30 +605,30 @@ class _TitleCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(16),
+                color: context.colorScheme.surface.withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(PBRadius.pill),
+                boxShadow: context.cardShadow,
               ),
               child: Text(
                 '${quest.location.emoji}  ${quest.location.name(context.l10n)}',
-                style: buttonTextStyle.copyWith(
-                  color: background2,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
+                style: context.textTheme.titleSmall?.copyWith(fontSize: 14),
               ),
             ),
             const SizedBox(height: 14),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: PBSpace.xxl),
               child: Text(
                 quest.title(context.l10n),
                 textAlign: TextAlign.center,
-                style: pageTitleTextStyle.copyWith(
+                style: context.textTheme.displaySmall?.copyWith(
                   fontSize: 38,
-                  color: Colors.white,
+                  color: context.gameColors.onGame,
                   height: 1.1,
-                  shadows: const [
-                    Shadow(color: Color(0x66000000), blurRadius: 18),
+                  shadows: [
+                    Shadow(
+                      color: context.colorScheme.shadow.withValues(alpha: 0.4),
+                      blurRadius: 18,
+                    ),
                   ],
                 ),
               ),
@@ -646,32 +646,35 @@ class _GlassButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => Material(
-        color: Colors.white.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(24),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: onPressed,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: label == null ? 12 : 16,
-              vertical: 12,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: background2, size: 22),
-                if (label != null) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    label!,
-                    style: buttonTextStyle.copyWith(
-                      color: background2,
-                      fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(PBRadius.pill),
+          boxShadow: context.cardShadow,
+        ),
+        child: Material(
+          color: context.colorScheme.surface.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(PBRadius.pill),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(PBRadius.pill),
+            onTap: onPressed,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: label == null ? 12 : 16,
+                vertical: 12,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: context.colorScheme.onSurface, size: 22),
+                  if (label != null) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      label!,
+                      style: context.textTheme.titleSmall,
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

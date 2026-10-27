@@ -1,8 +1,7 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker.dart';
@@ -40,6 +39,9 @@ class ChallengeHud extends StatelessWidget {
     final rule = quest.rule;
     final score = rule is HoldRule ? held : pushups;
     final safe = MediaQuery.paddingOf(context);
+    final scheme = context.colorScheme;
+    final text = context.textTheme;
+    final clock = remaining < 6 ? context.gameColors.red : scheme.onSurface;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, safe.top + 8, 16, safe.bottom + 24),
@@ -54,7 +56,7 @@ class ChallengeHud extends StatelessWidget {
                     quest.location.emoji,
                     style: const TextStyle(fontSize: 22),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: PBSpace.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,17 +65,11 @@ class ChallengeHud extends StatelessWidget {
                           quest.title(context.l10n),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: buttonTextStyle.copyWith(
-                            color: background2,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: text.titleSmall,
                         ),
                         Text(
                           rule.summary(context.l10n),
-                          style: defaultTextStyle.copyWith(
-                            fontSize: 13,
-                            color: background2.withValues(alpha: 0.6),
-                          ),
+                          style: text.bodySmall,
                         ),
                       ],
                     ),
@@ -82,9 +78,9 @@ class ChallengeHud extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: PBSpace.lg),
           _ScoreRing(score: score, goal: rule.goal),
-          const SizedBox(height: 10),
+          const SizedBox(height: PBSpace.md),
           if (rule is TimedRule)
             _Glass(
               compact: true,
@@ -94,17 +90,15 @@ class ChallengeHud extends StatelessWidget {
                   Icon(
                     CarbonIcons.timer,
                     size: 18,
-                    color:
-                        remaining < 6 ? const Color(0xFFE5534B) : background2,
+                    color: clock,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     '0:${remaining.ceil().toString().padLeft(2, '0')}',
-                    style: buttonTextStyle.copyWith(
-                      color:
-                          remaining < 6 ? const Color(0xFFE5534B) : background2,
-                      fontWeight: FontWeight.w700,
+                    style: text.titleMedium?.copyWith(
+                      color: clock,
                       fontSize: 18,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -117,12 +111,12 @@ class ChallengeHud extends StatelessWidget {
             PillButton(
               label: context.l10n.questFinish,
               icon: CarbonIcons.checkmark,
-              color: accentColor,
+              color: scheme.secondary,
               onPressed: onFinish,
             )
           else ...[
             const TrackingModePicker(onDark: true),
-            const SizedBox(height: 12),
+            const SizedBox(height: PBSpace.md),
             PillButton(
               label: context.l10n.questStartChallenge,
               icon: CarbonIcons.play_filled_alt,
@@ -142,66 +136,61 @@ class _ScoreRing extends StatelessWidget {
   final int goal;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: 132,
-        height: 132,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.9),
-                boxShadow: [
-                  BoxShadow(
-                    color: background2.withValues(alpha: 0.2),
-                    blurRadius: 24,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+
+    return SizedBox(
+      width: 132,
+      height: 132,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: scheme.surface.withValues(alpha: 0.94),
+              boxShadow: context.cardShadow,
             ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: TweenAnimationBuilder<double>(
-                tween: Tween(end: (score / goal).clamp(0, 1).toDouble()),
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutCubic,
-                builder: (context, value, _) => CircularProgressIndicator(
-                  value: value,
-                  strokeWidth: 9,
-                  strokeCap: StrokeCap.round,
-                  backgroundColor: background,
-                  valueColor: AlwaysStoppedAnimation(
-                    score >= goal ? const Color(0xFF2FA37A) : accentColor,
-                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(end: (score / goal).clamp(0, 1).toDouble()),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) => CircularProgressIndicator(
+                value: value,
+                strokeWidth: 9,
+                strokeCap: StrokeCap.round,
+                backgroundColor: scheme.surfaceContainer,
+                valueColor: AlwaysStoppedAnimation(
+                  score >= goal ? context.gameColors.jungle : scheme.secondary,
                 ),
               ),
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '$score',
-                  style: pushupTextStyle.copyWith(
-                    fontSize: 44,
-                    color: background2,
-                    height: 1,
-                  ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$score',
+                style: context.textTheme.displayMedium?.copyWith(
+                  fontSize: 44,
                 ),
-                Text(
-                  context.l10n.questOfGoal(goal),
-                  style: defaultTextStyle.copyWith(
-                    fontSize: 14,
-                    color: background2.withValues(alpha: 0.55),
-                    fontWeight: FontWeight.w600,
-                  ),
+              ),
+              Text(
+                context.l10n.questOfGoal(goal),
+                style: context.textTheme.labelMedium?.copyWith(
+                  fontSize: 14,
+                  color: scheme.onSurfaceVariant,
                 ),
-              ],
-            ),
-          ],
-        ),
-      );
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _HoldMeter extends StatelessWidget {
@@ -213,6 +202,7 @@ class _HoldMeter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final full = holding >= seconds;
+    final game = context.gameColors;
 
     return _Glass(
       compact: true,
@@ -223,9 +213,8 @@ class _HoldMeter extends StatelessWidget {
           children: [
             Text(
               full ? context.l10n.questHeld : context.l10n.questHoldBottom,
-              style: buttonTextStyle.copyWith(
-                color: full ? const Color(0xFF2FA37A) : background2,
-                fontWeight: FontWeight.w700,
+              style: context.textTheme.titleSmall?.copyWith(
+                color: full ? game.jungle : context.colorScheme.onSurface,
                 fontSize: 14,
               ),
             ),
@@ -235,9 +224,9 @@ class _HoldMeter extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: (holding / seconds).clamp(0, 1),
                 minHeight: 10,
-                backgroundColor: background,
+                backgroundColor: context.colorScheme.surfaceContainer,
                 valueColor: AlwaysStoppedAnimation(
-                  full ? const Color(0xFF2FA37A) : const Color(0xFFF5A623),
+                  full ? game.jungle : game.orange,
                 ),
               ),
             ),
@@ -261,8 +250,9 @@ class _Glass extends StatelessWidget {
           vertical: compact ? 8 : 10,
         ),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(20),
+          color: context.colorScheme.surface.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(PBRadius.md),
+          boxShadow: context.cardShadow,
         ),
         child: child,
       );

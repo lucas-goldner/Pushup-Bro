@@ -9,8 +9,7 @@ import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/quest_log.dart';
 import 'package:pushup_bro/core/model/trek_progress.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/jungle/widgets/jungle_scene.dart';
 import 'package:pushup_bro/features/jungle/widgets/quest_card.dart';
@@ -84,6 +83,10 @@ class _JungleState extends State<Jungle> {
   @override
   Widget build(BuildContext context) {
     final quest = JungleQuest.forDay(DateTime.now());
+    final scheme = context.colorScheme;
+    final game = context.gameColors;
+    // The island fades to white as Carlos runs in, in both modes.
+    final whiteout = game.flash;
 
     return PopScope(
       canPop: false,
@@ -91,17 +94,17 @@ class _JungleState extends State<Jungle> {
         if (!didPop) unawaited(_leave());
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: whiteout,
         body: Stack(
           children: [
-            const Positioned.fill(
+            Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFF1F5A3C), jungleMist],
-                    stops: [0, 0.6],
+                    colors: [game.jungleDeep, jungleMistOf(context)],
+                    stops: const [0, 0.6],
                   ),
                 ),
               ),
@@ -112,30 +115,38 @@ class _JungleState extends State<Jungle> {
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Row(
                   children: [
-                    Material(
-                      color: Colors.white,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: _leave,
-                        child: const SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: Icon(
-                            CarbonIcons.arrow_left,
-                            color: background2,
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: context.cardShadow,
+                      ),
+                      child: Material(
+                        color: scheme.surface,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: _leave,
+                          child: SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: Icon(
+                              CarbonIcons.arrow_left,
+                              color: scheme.onSurface,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: PBSpace.md),
                     Text(
                       context.l10n.islandJungle,
-                      style: pageTitleTextStyle.copyWith(
-                        fontSize: 30,
-                        color: Colors.white,
-                        shadows: const [
-                          Shadow(color: Color(0x55000000), blurRadius: 12),
+                      style: context.textTheme.headlineLarge?.copyWith(
+                        color: game.onGame,
+                        shadows: [
+                          Shadow(
+                            color: scheme.shadow.withValues(alpha: 0.35),
+                            blurRadius: 12,
+                          ),
                         ],
                       ),
                     ),
@@ -197,7 +208,7 @@ class _JungleState extends State<Jungle> {
                   opacity: _white ? 1 : 0,
                   duration: const Duration(milliseconds: 450),
                   curve: Curves.easeOut,
-                  child: const ColoredBox(color: Colors.white),
+                  child: ColoredBox(color: whiteout),
                 ),
               ),
             ),
@@ -227,20 +238,15 @@ class _ModePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    final game = context.gameColors;
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 520),
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(PBSpace.xs),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        color: context.colorScheme.surface.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(PBRadius.pill),
+        boxShadow: context.cardShadow,
       ),
       child: Row(
         children: [
@@ -248,7 +254,7 @@ class _ModePicker extends StatelessWidget {
             emoji: dailyDone ? '✅' : '☀️',
             label: l.jungleTabDaily,
             selected: !story,
-            color: const Color(0xFF2FA37A),
+            color: game.jungle,
             onTap: () => onPick(false),
           ),
           _ModeTab(
@@ -256,7 +262,7 @@ class _ModePicker extends StatelessWidget {
             label: l.jungleTabStory,
             badge: '$stage',
             selected: story,
-            color: const Color(0xFF1F5A3C),
+            color: game.jungleDeep,
             onTap: () => onPick(true),
           ),
         ],
@@ -284,7 +290,8 @@ class _ModeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : background2;
+    final foreground =
+        selected ? context.gameColors.onGame : context.colorScheme.onSurface;
 
     return Expanded(
       child: GestureDetector(
@@ -295,7 +302,7 @@ class _ModeTab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           decoration: BoxDecoration(
             color: selected ? color : Colors.transparent,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(PBRadius.pill),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -307,7 +314,7 @@ class _ModeTab extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: buttonTextStyle.copyWith(
+                  style: context.textTheme.labelMedium?.copyWith(
                     color: foreground,
                     fontWeight: FontWeight.w800,
                     fontSize: 14,
@@ -321,16 +328,17 @@ class _ModeTab extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                   decoration: BoxDecoration(
                     color: selected
-                        ? Colors.white.withValues(alpha: 0.25)
-                        : color.withValues(alpha: 0.12),
+                        ? context.gameColors.onGame.withValues(alpha: 0.25)
+                        : context.tint(color),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     badge!,
-                    style: buttonTextStyle.copyWith(
+                    style: context.textTheme.labelSmall?.copyWith(
                       color: foreground,
                       fontWeight: FontWeight.w800,
                       fontSize: 12,
+                      letterSpacing: 0,
                     ),
                   ),
                 ),

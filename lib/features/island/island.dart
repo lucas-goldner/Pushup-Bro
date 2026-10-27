@@ -90,14 +90,14 @@ class _IslandState extends State<Island> {
   @override
   Widget build(BuildContext context) => Stack(
         children: [
-          const Positioned.fill(
+          Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xFF9CD6F2), islandHorizon],
-                  stops: [0, 0.55],
+                  colors: [islandSky(context).top, islandSky(context).horizon],
+                  stops: const [0, 0.55],
                 ),
               ),
             ),

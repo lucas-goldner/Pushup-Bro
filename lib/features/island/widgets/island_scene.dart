@@ -17,9 +17,19 @@ import 'package:pushup_bro/features/jungle/jungle.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
-/// Matches the bottom of the island screen's sky gradient, so the fogged
-/// horizon melts into the backdrop.
-const islandHorizon = Color(0xFFDDF1FA);
+/// The island's day sky behind the 3D scene: the theme's ice blue washed
+/// with white, so it stays bright in dark mode like the world itself. The
+/// fog uses its `horizon` too, so the far sea melts into the backdrop.
+typedef IslandSky = ({Color top, Color horizon});
+
+IslandSky islandSky(BuildContext context) {
+  final game = context.gameColors;
+
+  return (
+    top: Color.lerp(game.ice, game.onGame, 0.5)!,
+    horizon: Color.lerp(game.ice, game.onGame, 0.85)!,
+  );
+}
 
 /// Things Carlos says when he's tapped.
 List<String> _greetings(S l) =>
@@ -120,7 +130,7 @@ class IslandSceneState extends State<IslandScene> {
     _scene = scene;
     final world = _world = IslandWorld();
     _syncInventory(context.read<GameInventoryCubit>().state.inventory);
-    final horizon = linearColor(islandHorizon);
+    final horizon = linearColor(islandSky(context).horizon);
     scene
       ..directionalLight = DirectionalLight(
         direction: vm.Vector3(-0.5, -1, -0.45),
@@ -290,7 +300,8 @@ class IslandSceneState extends State<IslandScene> {
                         builder: (context, white, _) => white <= 0
                             ? const SizedBox.shrink()
                             : ColoredBox(
-                                color: Colors.white.withValues(alpha: white),
+                                color: context.gameColors.onGame
+                                    .withValues(alpha: white),
                               ),
                       ),
                     ),

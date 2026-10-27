@@ -50,22 +50,3 @@ abstract final class PBPalette {
   static const grass = Color(0xFFABC090);
   static const map = Color(0xFFC0AB86);
 }
-
-@Deprecated('Use context.colorScheme.onSurface')
-const Color primaryColor = Color(0xFF302f36);
-@Deprecated('Use context.colorScheme.onSurfaceVariant')
-const Color secondaryColor = Color(0xFFa9a8be);
-@Deprecated('Use context.colorScheme.onSurface')
-const Color ternaryColor = Color(0xFF1e1113);
-@Deprecated('Use context.colorScheme.secondary')
-const Color accentColor = Color(0xFF5E9EFF);
-@Deprecated('Use context.colorScheme.shadow')
-const Color shadow = Color(0xFF4A5367);
-@Deprecated('Use context.colorScheme.shadow')
-const Color shadowDark = Color(0xFF000000);
-@Deprecated('Use context.colorScheme.surfaceContainerLow')
-const Color background = Color(0xFFF2F6FF);
-@Deprecated('Use context.colorScheme.primary (fills) or onSurface (text)')
-const Color background2 = Color(0xFF17203A);
-@Deprecated('Use context.colorScheme.outlineVariant')
-const Color background3 = Color(0xFF25254B);

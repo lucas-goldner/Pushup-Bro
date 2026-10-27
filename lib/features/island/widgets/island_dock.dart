@@ -5,8 +5,7 @@ import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/extensions/shop_buyables.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 
 /// The island's actions, as a floating row of tiles at the bottom.
@@ -29,17 +28,11 @@ class IslandDock extends StatelessWidget {
       BlocSelector<GameInventoryCubit, GameInventoryState, List<ShopBuyables>>(
         selector: (state) => state.inventory.boughtItems,
         builder: (context, boughtItems) => Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(PBSpace.sm),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: background2.withValues(alpha: 0.12),
-                blurRadius: 30,
-                offset: const Offset(0, 12),
-              ),
-            ],
+            color: context.colorScheme.surface,
+            borderRadius: BorderRadius.circular(PBRadius.lg + 2),
+            boxShadow: context.cardShadow,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -87,15 +80,16 @@ class _DockTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = highlighted ? Colors.white : primaryColor;
+    final scheme = context.colorScheme;
+    final foreground = highlighted ? scheme.onPrimary : scheme.onSurface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Material(
-        color: highlighted ? background2 : background,
-        borderRadius: BorderRadius.circular(20),
+        color: highlighted ? scheme.primary : scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(PBRadius.md + 2),
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(PBRadius.md + 2),
           onTap: onTap,
           child: SizedBox(
             width: 74,
@@ -109,9 +103,8 @@ class _DockTile extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: defaultTextStyle.copyWith(
+                  style: context.textTheme.labelMedium?.copyWith(
                     fontSize: 12,
-                    fontWeight: FontWeight.w700,
                     color: foreground,
                   ),
                 ),

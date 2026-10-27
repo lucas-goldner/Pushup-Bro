@@ -22,7 +22,7 @@ class GameMenu extends StatelessWidget {
           title: context.l10n.shopTitle,
           subtitle: context.l10n.shopSubtitle,
           badge: '🏗️',
-          accent: const Color(0xFFF5A623),
+          accent: context.gameColors.orange,
           onClose: closeMenu,
           trailing: const BananaCounter(),
           child: ShopMenu(closeMenu: closeMenu),

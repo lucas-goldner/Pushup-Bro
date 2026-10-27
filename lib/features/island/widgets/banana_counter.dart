@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 class BananaCounter extends StatelessWidget {
@@ -17,15 +17,9 @@ class BananaCounter extends StatelessWidget {
           height: 40,
           padding: const EdgeInsets.only(left: 8, right: 14),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: background2.withValues(alpha: 0.1),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
+            color: context.colorScheme.surface,
+            borderRadius: BorderRadius.circular(PBRadius.pill),
+            boxShadow: context.cardShadow,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -34,10 +28,8 @@ class BananaCounter extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 '$count',
-                style: buttonTextStyle.copyWith(
-                  color: primaryColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 17,
+                style: context.textTheme.titleMedium?.copyWith(
+                  color: context.colorScheme.onSurface,
                 ),
               ),
             ],

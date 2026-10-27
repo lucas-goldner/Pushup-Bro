@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 
+/// The selected day: ringed in the theme's secondary colour.
 class PBCalendarSelected extends StatelessWidget {
   const PBCalendarSelected(this.day, {super.key});
   final DateTime day;
@@ -11,12 +12,10 @@ class PBCalendarSelected extends StatelessWidget {
           height: 40,
           width: 40,
           decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(
-              Radius.circular(40),
-            ),
+            shape: BoxShape.circle,
             border: Border.all(
               width: 2,
-              color: context.colorScheme.inversePrimary,
+              color: context.colorScheme.secondary,
             ),
           ),
           child: Center(
@@ -28,7 +27,9 @@ class PBCalendarSelected extends StatelessWidget {
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.visible,
-              style: context.textTheme.bodyMedium,
+              style: context.textTheme.titleSmall?.copyWith(
+                color: context.colorScheme.secondary,
+              ),
             ),
           ),
         ),

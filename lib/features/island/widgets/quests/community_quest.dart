@@ -29,8 +29,8 @@ class CommunityQuest extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Text(
                 context.l10n.communityText,
-                textAlign: TextAlign.left,
-                style: context.textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+                style: context.textTheme.bodyLarge?.copyWith(height: 1.45),
               ),
             ),
           ],

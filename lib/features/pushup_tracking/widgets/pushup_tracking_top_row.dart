@@ -46,7 +46,7 @@ class PushupTrackingTopRow extends StatelessWidget {
                       icon: Icon(
                         size: 32,
                         CarbonIcons.event_schedule,
-                        color: context.colorScheme.onSecondaryContainer,
+                        color: context.colorScheme.onSurface,
                       ),
                     ),
                     Positioned(
@@ -59,7 +59,7 @@ class PushupTrackingTopRow extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: context.colorScheme.onSecondary,
+                          color: context.colorScheme.secondary,
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(4),
@@ -67,8 +67,8 @@ class PushupTrackingTopRow extends StatelessWidget {
                             child: BlocBuilder<NewsCubit, NewsState>(
                               builder: (context, state) => Text(
                                 state.news.length.toString(),
-                                style: context.textTheme.labelLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
+                                style: context.textTheme.labelSmall?.copyWith(
+                                  color: context.colorScheme.onSecondary,
                                 ),
                               ),
                             ),

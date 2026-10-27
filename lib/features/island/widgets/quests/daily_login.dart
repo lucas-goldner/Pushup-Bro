@@ -4,8 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
@@ -40,15 +39,15 @@ class DailyLogin extends StatelessWidget {
       children: [
         Text(
           context.l10n.dailyInfo,
-          style: defaultTextStyle.copyWith(
-            color: background2.withValues(alpha: 0.65),
+          style: context.textTheme.bodyMedium?.copyWith(
+            color: context.colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             for (var i = 0; i < 4; i++) ...[
-              if (i > 0) const SizedBox(width: 8),
+              if (i > 0) const SizedBox(width: PBSpace.sm),
               Expanded(
                 child: _Day(
                   label: i == 0
@@ -65,7 +64,7 @@ class DailyLogin extends StatelessWidget {
           child: PillButton(
             label: context.l10n.dailyClaim,
             icon: CarbonIcons.gift,
-            color: const Color(0xFFF5A623),
+            color: context.gameColors.orange,
             onPressed: () => takeBananas(context),
           ),
         ),
@@ -83,18 +82,16 @@ class _Day extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SheetCard(
         selected: today,
-        accent: const Color(0xFFF5A623),
-        color: today ? const Color(0xFFFFF4D6) : background,
+        accent: context.gameColors.orange,
+        color: today
+            ? context.gameColors.cream
+            : context.colorScheme.surfaceContainerLow,
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Column(
           children: [
             Text(
               label,
-              style: buttonTextStyle.copyWith(
-                color: background2,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
+              style: context.textTheme.labelMedium?.copyWith(fontSize: 14),
             ),
             const SizedBox(height: 6),
             Opacity(
@@ -103,10 +100,10 @@ class _Day extends StatelessWidget {
             ),
             Text(
               '×10',
-              style: buttonTextStyle.copyWith(
-                color: background2.withValues(alpha: today ? 1 : 0.5),
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
+              style: context.textTheme.labelMedium?.copyWith(
+                color: today
+                    ? context.colorScheme.onSurface
+                    : context.colorScheme.onSurfaceVariant,
               ),
             ),
           ],

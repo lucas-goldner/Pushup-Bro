@@ -141,8 +141,5 @@ ThemeData buildTheme(Brightness brightness) {
   );
 }
 
-final lightTheme = buildTheme(Brightness.light);
-final darkTheme = buildTheme(Brightness.dark);
-
-@Deprecated('Use context.theme (lightTheme or darkTheme by the appearance)')
-final theme = lightTheme;
+final ThemeData lightTheme = buildTheme(Brightness.light);
+final ThemeData darkTheme = buildTheme(Brightness.dark);
