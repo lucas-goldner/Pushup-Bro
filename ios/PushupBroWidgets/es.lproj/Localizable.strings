@@ -1,0 +1,40 @@
+/* Widget gallery */
+"gallery.streak.name" = "Racha";
+"gallery.streak.description" = "Tu racha de flexiones, día tras día.";
+"gallery.today.name" = "Hoy";
+"gallery.today.description" = "Tus flexiones de hoy hacia tu meta diaria.";
+"gallery.trek.name" = "Ruta Selvática";
+"gallery.trek.description" = "La próxima fase que te espera en la ruta.";
+"gallery.week.name" = "Esta semana";
+"gallery.week.description" = "Tus flexiones de cada uno de los últimos siete días.";
+
+/* Streak */
+"streak.label" = "Racha";
+"streak.dayInARow" = "día seguido";
+"streak.daysInARow" = "días seguidos";
+
+/* Today */
+"today.label" = "Hoy";
+"today.toGo" = "Faltan %ld. Komo te está mirando.";
+"today.goalDone" = "Meta cumplida. Carlos está orgulloso.";
+
+/* Jungle Trek */
+"trek.label" = "Ruta Selvática · Siguiente";
+"trek.labelDone" = "Ruta Selvática";
+"trek.stageWaves" = "Fase %1$ld · %2$ld oleadas";
+"trek.stageWave" = "Fase %ld · 1 oleada";
+"trek.stageBoss" = "Fase %ld · Jefe final";
+"trek.fight" = "Pelear";
+"trek.allClearedTitle" = "Todas las fases superadas";
+"trek.allClearedHint" = "Vuelve por las tres estrellas";
+"trek.replay" = "Otra vez";
+
+/* This week */
+"week.label" = "Esta semana";
+"week.total" = "%ld flexiones";
+"week.totalOne" = "1 flexión";
+"week.activeDays" = "Flexiones en %ld de 7 días";
+
+/* Without Pro */
+"locked.title" = "Los widgets necesitan Pro";
+"locked.hint" = "Toca para desbloquear";

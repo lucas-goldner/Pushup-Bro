@@ -1,0 +1,40 @@
+/* Widget gallery */
+"gallery.streak.name" = "Serie";
+"gallery.streak.description" = "Deine Liegestütz-Serie, Tag für Tag.";
+"gallery.today.name" = "Heute";
+"gallery.today.description" = "Deine Liegestütze heute auf dem Weg zum Tagesziel.";
+"gallery.trek.name" = "Dschungel-Trek";
+"gallery.trek.description" = "Die nächste Etappe, die auf dich wartet.";
+"gallery.week.name" = "Diese Woche";
+"gallery.week.description" = "Deine Liegestütze an jedem der letzten sieben Tage.";
+
+/* Streak */
+"streak.label" = "Serie";
+"streak.dayInARow" = "Tag am Stück";
+"streak.daysInARow" = "Tage am Stück";
+
+/* Today */
+"today.label" = "Heute";
+"today.toGo" = "Noch %ld. Komo schaut zu.";
+"today.goalDone" = "Ziel geschafft. Carlos ist stolz.";
+
+/* Jungle Trek */
+"trek.label" = "Dschungel-Trek · Als Nächstes";
+"trek.labelDone" = "Dschungel-Trek";
+"trek.stageWaves" = "Etappe %1$ld · %2$ld Wellen";
+"trek.stageWave" = "Etappe %ld · 1 Welle";
+"trek.stageBoss" = "Etappe %ld · Bosskampf";
+"trek.fight" = "Kämpfen";
+"trek.allClearedTitle" = "Alle Etappen geschafft";
+"trek.allClearedHint" = "Hol dir überall drei Sterne";
+"trek.replay" = "Nochmal";
+
+/* This week */
+"week.label" = "Diese Woche";
+"week.total" = "%ld Liegestütze";
+"week.totalOne" = "1 Liegestütz";
+"week.activeDays" = "Liegestütze an %ld von 7 Tagen";
+
+/* Without Pro */
+"locked.title" = "Widgets brauchen Pro";
+"locked.hint" = "Tippen zum Freischalten";
