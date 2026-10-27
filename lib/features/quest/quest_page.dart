@@ -20,6 +20,7 @@ import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
+import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_state.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
@@ -315,6 +316,7 @@ class _QuestPageState extends State<QuestPage> {
     final speaker = speaking && _line < _lines.length ? _lines[_line].$1 : null;
     world.carlos.talking = speaker == Character.carlos;
     world.guest.talking = speaker != null && speaker != Character.carlos;
+    aimGorillasAtCameraWindow(_lastCamera, _viewSize);
     world.update(deltaSeconds);
 
     // Cheers while Carlos works.
@@ -555,15 +557,15 @@ class _QuestPageState extends State<QuestPage> {
           ),
           if (context.watch<SharedPreferencesCubit>().state.trackingMode ==
               TrackingMode.camera)
-            Positioned(
-              right: 16,
-              bottom: safe.bottom + (_started ? 96 : 150),
-              width: 120,
-              height: 160,
-              child: CameraTrackerView(
-                active: _started,
-                onDown: context.read<PushupCubit>().down,
-                onUp: () => context.read<PushupCubit>().up(_volume ?? 10),
+            Positioned.fill(
+              child: CameraWindow(
+                topInset: 60,
+                bottomInset: _started ? 80 : 134,
+                child: CameraTrackerView(
+                  active: _started,
+                  onDown: context.read<PushupCubit>().down,
+                  onUp: () => context.read<PushupCubit>().up(_volume ?? 10),
+                ),
               ),
             ),
         ];

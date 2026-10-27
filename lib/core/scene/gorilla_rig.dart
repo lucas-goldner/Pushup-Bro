@@ -164,6 +164,9 @@ class GorillaRig {
         ..visible = true
         ..scale = _shut;
     }
+    for (final eye in [..._eyesOpen, ..._eyesClosed]) {
+      _eyeHomes[eye] = eye.position.clone();
+    }
     final slots = {_hatSlot, _eyewearSlot, _outfitSlot, ..._forearmSlots};
     final groups = [_gorillaHead, _lizardHead, _tail];
     skinMeshes(root, skip: {...slots, ...groups});
@@ -177,6 +180,10 @@ class GorillaRig {
 
   /// Place, rotate and scale this node to put the gorilla in a scene.
   final Node root = Node(name: 'gorilla');
+
+  /// A point in the world every gorilla turns its head and eyes to (the
+  /// camera window, while the camera counts pushups); null to look ahead.
+  static vm.Vector3? lookTarget;
 
   /// What the gorilla should be doing; the pose eases into it.
   GorillaActivity activity = GorillaActivity.idle;
@@ -249,6 +256,10 @@ class GorillaRig {
   late final Node _tail;
   late final List<Node> _eyesOpen;
   late final List<Node> _eyesClosed;
+  final Map<Node, vm.Vector3> _eyeHomes = {};
+  double _lookWeight = 0;
+  double _lookYaw = 0;
+  double _lookNod = 0;
   final _upperArms = <Node>[];
   final _forearms = <Node>[];
   final _hands = <Node>[];
@@ -557,12 +568,41 @@ class GorillaRig {
             weight,
           ),
     ]);
+    _aim(deltaSeconds);
     _apply(pose);
     _blink();
     for (final spinner in _spinners) {
       spinner.rotation =
           vm.Quaternion.axisAngle(vm.Vector3(0, 1, 0), _time * 9);
     }
+  }
+
+  /// Turns towards [lookTarget]: where it is from the head, in the
+  /// gorilla's own space, eased in and out.
+  void _aim(double deltaSeconds) {
+    final target = lookTarget;
+    // Lying on the bench it can't look round.
+    final able = target != null &&
+        _weights[GorillaActivity.benchPress]! < 0.5 &&
+        root.visible;
+    _lookWeight = springTo(_lookWeight, able ? 1 : 0, deltaSeconds, 4);
+    if (!able) return;
+    final inverse = vm.Matrix4.copy(root.globalTransform)..invert();
+    final local = inverse.transformed3(target) - _head.position;
+    final flat = math.sqrt(local.x * local.x + local.z * local.z);
+    if (flat < 1e-4) return;
+    _lookYaw = springTo(
+      _lookYaw,
+      math.atan2(local.x, local.z).clamp(-1.3, 1.3),
+      deltaSeconds,
+      8,
+    );
+    _lookNod = springTo(
+      _lookNod,
+      -math.atan2(local.y, flat).clamp(-0.7, 0.7),
+      deltaSeconds,
+      8,
+    );
   }
 
   void _apply(_Pose pose) {
@@ -581,10 +621,15 @@ class GorillaRig {
       ..scale = vm.Vector3.all(breath);
 
     // A neckless chibi head, sitting on top of (or in front of) the body.
+    // Looking round turns the head most of the way; the eyes do the rest.
+    final headYaw = pose.headYaw +
+        (_lookYaw.clamp(-0.9, 0.9) * 0.7 - pose.headYaw) * _lookWeight;
+    final headNod = pose.headNod +
+        (_lookNod.clamp(-0.5, 0.5) * 0.7 - pose.headNod) * _lookWeight;
     final facing = vm.Vector3(
-      math.sin(pose.headYaw) * math.cos(pose.headNod),
-      -math.sin(pose.headNod),
-      math.cos(pose.headYaw) * math.cos(pose.headNod),
+      math.sin(headYaw) * math.cos(headNod),
+      -math.sin(headNod),
+      math.cos(headYaw) * math.cos(headNod),
     );
     _head
       ..position = shoulders + along * 0.2 + vm.Vector3(0, 0.1, 0)
@@ -628,6 +673,14 @@ class GorillaRig {
   void _blink() {
     // A quick blink every ~3.4 seconds.
     final closed = (_time % 3.4) < 0.14;
+    final glance = vm.Vector3(
+      math.sin(_lookYaw).clamp(-1.0, 1.0) * 0.016,
+      -math.sin(_lookNod).clamp(-1.0, 1.0) * 0.012,
+      0,
+    )..scale(_lookWeight);
+    for (final MapEntry(key: eye, value: home) in _eyeHomes.entries) {
+      eye.position = home + glance;
+    }
     // Eyes are skinned parts, so they're hidden by shrinking them away.
     for (final eye in _eyesOpen) {
       eye.scale = closed ? _shut : _open;

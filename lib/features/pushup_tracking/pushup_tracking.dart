@@ -14,6 +14,7 @@ import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
+import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_state.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/news_cubit.dart';
@@ -201,15 +202,18 @@ class _PushupTrackingState extends State<PushupTracking> {
                   TrackingMode>(
                 selector: (state) => state.trackingMode,
                 builder: (context, mode) => mode == TrackingMode.camera
-                    ? Positioned(
-                        right: 16,
-                        top: MediaQuery.paddingOf(context).top + 210,
-                        width: 150,
-                        height: 200,
-                        child: CameraTrackerView(
-                          onDown: context.read<PushupCubit>().down,
-                          onUp: () =>
-                              context.read<PushupCubit>().up(future.data ?? 10),
+                    ? Positioned.fill(
+                        child: CameraWindow(
+                          size: const Size(150, 200),
+                          corner: Alignment.topRight,
+                          topInset: 180,
+                          bottomInset: 90,
+                          child: CameraTrackerView(
+                            onDown: context.read<PushupCubit>().down,
+                            onUp: () => context
+                                .read<PushupCubit>()
+                                .up(future.data ?? 10),
+                          ),
                         ),
                       )
                     : const SizedBox.shrink(),

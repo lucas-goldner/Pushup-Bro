@@ -23,6 +23,7 @@ import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
+import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_state.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
@@ -87,6 +88,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
   TrekWorld? _world;
   Size _viewSize = Size.zero;
   double? _lastCameraTime;
+  Camera? _lastCamera;
   bool _white = true;
 
   vm.Vector3 _cameraTarget = vm.Vector3(0, 0.6, -2);
@@ -179,17 +181,17 @@ class _TrekStagePageState extends State<TrekStagePage> {
   Widget _cameraWindow(EdgeInsets safe, {required bool active}) =>
       context.watch<SharedPreferencesCubit>().state.trackingMode ==
               TrackingMode.camera
-          ? Positioned(
-              right: 16,
-              top: active ? null : safe.top + 140,
-              bottom: active ? safe.bottom + 24 : null,
-              width: 120,
-              height: 160,
-              child: CameraTrackerView(
+          ? Positioned.fill(
+              child: CameraWindow(
                 key: _cameraKey,
-                active: active,
-                onDown: context.read<PushupCubit>().down,
-                onUp: () => context.read<PushupCubit>().up(_volume ?? 10),
+                corner: active ? Alignment.bottomRight : Alignment.topRight,
+                topInset: 124,
+                bottomInset: 8,
+                child: CameraTrackerView(
+                  active: active,
+                  onDown: context.read<PushupCubit>().down,
+                  onUp: () => context.read<PushupCubit>().up(_volume ?? 10),
+                ),
               ),
             )
           : const SizedBox.shrink();
@@ -460,6 +462,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
     if (world == null) return;
     final speaking = _phase == _Phase.intro || _phase == _Phase.outro;
     final speaker = speaking && _line < _lines.length ? _lines[_line].$1 : null;
+    aimGorillasAtCameraWindow(_lastCamera, _viewSize);
     world.location.carlos.talking = speaker == Character.carlos;
     world.location.guest.talking = speaker == Character.coco;
     for (final foe in _battle.foes) {
@@ -552,6 +555,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
       position: _cameraPosition + shake,
       target: _cameraTarget.clone(),
     );
+    _lastCamera = camera;
     // Pin the health bars with the camera this frame renders with.
     final world = _world;
     if (world != null) {
