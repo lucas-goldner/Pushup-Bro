@@ -688,5 +688,9 @@
   "lookingForYou": "Get into the camera's view",
   "settingsMusic": "Music",
   "settingsSounds": "Sounds",
-  "licenses": "Licenses"
+  "licenses": "Licenses",
+  "appearanceTitle": "Appearance",
+  "appearanceSystem": "System",
+  "appearanceLight": "Light",
+  "appearanceDark": "Dark"
 }

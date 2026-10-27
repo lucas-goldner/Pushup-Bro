@@ -541,5 +541,9 @@
   "lookingForYou": "Stell dich ins Kamerabild",
   "settingsMusic": "Musik",
   "settingsSounds": "Sounds",
-  "licenses": "Lizenzen"
+  "licenses": "Lizenzen",
+  "appearanceTitle": "Darstellung",
+  "appearanceSystem": "System",
+  "appearanceLight": "Hell",
+  "appearanceDark": "Dunkel"
 }

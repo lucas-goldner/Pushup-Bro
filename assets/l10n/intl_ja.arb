@@ -541,5 +541,9 @@
   "lookingForYou": "カメラに映ってね",
   "settingsMusic": "音楽",
   "settingsSounds": "効果音",
-  "licenses": "ライセンス"
+  "licenses": "ライセンス",
+  "appearanceTitle": "外観",
+  "appearanceSystem": "システム",
+  "appearanceLight": "ライト",
+  "appearanceDark": "ダーク"
 }

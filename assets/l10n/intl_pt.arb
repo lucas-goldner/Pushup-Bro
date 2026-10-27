@@ -541,5 +541,9 @@
   "lookingForYou": "Fique na frente da câmera",
   "settingsMusic": "Música",
   "settingsSounds": "Sons",
-  "licenses": "Licenças"
+  "licenses": "Licenças",
+  "appearanceTitle": "Aparência",
+  "appearanceSystem": "Sistema",
+  "appearanceLight": "Claro",
+  "appearanceDark": "Escuro"
 }

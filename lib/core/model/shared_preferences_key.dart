@@ -5,5 +5,6 @@ enum SharedPreferencesKey {
   joined,
   firstTimeIslandVisited,
   trackingMode,
-  musicVolume;
+  musicVolume,
+  appearance;
 }

@@ -19,6 +19,7 @@ import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/string_ext.dart';
 import 'package:pushup_bro/core/flavor.dart';
+import 'package:pushup_bro/core/model/appearance.dart';
 import 'package:pushup_bro/core/model/environment.dart';
 import 'package:pushup_bro/core/model/shared_preferences_key.dart';
 import 'package:pushup_bro/core/platform/system_locale.dart';
@@ -171,27 +172,51 @@ class Main extends StatelessWidget {
           dbCubit,
           gameInventoryCubit,
         ),
-        builder: (context, snapshot) => BlocSelector<SharedPreferencesCubit,
-            SharedPreferencesState, Locale?>(
-          selector: (state) => state.language,
-          builder: (builder, locale) => Theme(
-            data: theme,
-            child: CupertinoApp(
-              debugShowCheckedModeBanner: Flavor.getCurrentEnvironment ==
-                  Environment.dev.getFlavorName(),
-              key: const Key('MainApp'),
-              localizationsDelegates: const [
-                S.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-              ],
-              locale: locale,
-              supportedLocales: S.delegate.supportedLocales,
-              onGenerateRoute: generateRoutes,
-            ),
+        builder: (context, snapshot) =>
+            BlocBuilder<SharedPreferencesCubit, SharedPreferencesState>(
+          buildWhen: (previous, current) =>
+              previous.language != current.language ||
+              previous.appearance != current.appearance,
+          builder: (context, prefs) => _ThemedApp(
+            appearance: prefs.appearance,
+            locale: prefs.language,
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The app in light or dark mode, by the appearance setting and the phone.
+class _ThemedApp extends StatelessWidget {
+  const _ThemedApp({required this.appearance, required this.locale});
+
+  final Appearance appearance;
+  final Locale? locale;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness =
+        appearance.resolve(MediaQuery.platformBrightnessOf(context));
+    final themeData = brightness == Brightness.dark ? darkTheme : lightTheme;
+
+    return Theme(
+      data: themeData,
+      child: CupertinoApp(
+        debugShowCheckedModeBanner:
+            Flavor.getCurrentEnvironment == Environment.dev.getFlavorName(),
+        key: const Key('MainApp'),
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        locale: locale,
+        supportedLocales: S.delegate.supportedLocales,
+        theme: MaterialBasedCupertinoThemeData(materialTheme: themeData),
+        onGenerateRoute: generateRoutes,
+        builder: (context, child) => Theme(data: themeData, child: child!),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:pushup_bro/core/model/appearance.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
 
 class SharedPreferencesState extends Equatable {
@@ -10,6 +11,7 @@ class SharedPreferencesState extends Equatable {
     this.firstTimeIslandVisited,
     this.trackingMode = TrackingMode.airpods,
     this.musicVolume = 7,
+    this.appearance = Appearance.system,
   });
   final Locale? language;
   final int? volumeLevel;
@@ -22,6 +24,9 @@ class SharedPreferencesState extends Equatable {
   /// The game music's volume, 0 to 10 (sound effects use [volumeLevel]).
   final int musicVolume;
 
+  /// Light or dark mode, or following the phone.
+  final Appearance appearance;
+
   @override
   List<Object?> get props => [
         language,
@@ -30,6 +35,7 @@ class SharedPreferencesState extends Equatable {
         firstTimeIslandVisited,
         trackingMode,
         musicVolume,
+        appearance,
       ];
 }
 
@@ -51,5 +57,6 @@ class SharedPreferencesLoaded extends SharedPreferencesState {
     super.firstTimeIslandVisited = true,
     super.trackingMode,
     super.musicVolume,
+    super.appearance,
   });
 }

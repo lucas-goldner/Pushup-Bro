@@ -3,13 +3,14 @@ import 'dart:ui' show ImageFilter;
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 /// The app's sheet: a rounded card that springs up from the bottom over a
 /// softly blurred backdrop, headed by a coloured badge, a title and an
-/// optional close button. Its top is washed in [accent].
+/// optional close button. Its top is washed in [accent] (the theme's
+/// secondary colour by default).
 ///
 /// Lay it over a screen in a [Stack]; it sizes to its content, up to
 /// [maxHeightFactor] of the screen.
@@ -21,7 +22,7 @@ class IslandSheet extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onClose,
-    this.accent = accentColor,
+    this.accent,
     this.maxHeightFactor = 0.82,
     this.scrollable = true,
     super.key,
@@ -35,7 +36,7 @@ class IslandSheet extends StatelessWidget {
   final Widget child;
   final Widget? trailing;
   final VoidCallback? onClose;
-  final Color accent;
+  final Color? accent;
   final double maxHeightFactor;
 
   /// Whether the content scrolls inside the sheet; turn off for content
@@ -55,7 +56,8 @@ class IslandSheet extends StatelessWidget {
                 builder: (context, t, _) => BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 6 * t, sigmaY: 6 * t),
                   child: ColoredBox(
-                    color: background2.withValues(alpha: 0.3 * t),
+                    color: context.colorScheme.scrim
+                        .withValues(alpha: (context.isDark ? 0.5 : 0.3) * t),
                   ),
                 ),
               ),
@@ -79,6 +81,8 @@ class IslandSheet extends StatelessWidget {
 
   Widget _card(BuildContext context) {
     final media = MediaQuery.of(context);
+    final scheme = context.colorScheme;
+    final accent = this.accent ?? scheme.secondary;
 
     return ConstrainedBox(
       constraints: BoxConstraints(
@@ -91,15 +95,17 @@ class IslandSheet extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color.alphaBlend(accent.withValues(alpha: 0.14), Colors.white),
-              Colors.white,
+              Color.alphaBlend(context.tint(accent), scheme.surface),
+              scheme.surface,
             ],
             stops: const [0, 0.28],
           ),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(PBRadius.sheet)),
           boxShadow: [
             BoxShadow(
-              color: background2.withValues(alpha: 0.22),
+              color:
+                  scheme.shadow.withValues(alpha: context.isDark ? 0.5 : 0.22),
               blurRadius: 40,
               offset: const Offset(0, -6),
             ),
@@ -119,14 +125,14 @@ class IslandSheet extends StatelessWidget {
                     width: 44,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: background2.withValues(alpha: 0.14),
+                      color: scheme.onSurface.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 14, 10),
-                  child: _header(),
+                  child: _header(context, accent),
                 ),
                 Flexible(
                   child: scrollable
@@ -147,7 +153,7 @@ class IslandSheet extends StatelessWidget {
     );
   }
 
-  Widget _header() => Row(
+  Widget _header(BuildContext context, Color accent) => Row(
         children: [
           if (badge != null) ...[
             SheetBadge(badge!, color: accent),
@@ -160,20 +166,13 @@ class IslandSheet extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: pageTitleTextStyle.copyWith(
-                    fontSize: 24,
-                    color: background2,
-                    height: 1.1,
-                  ),
+                  style: context.textTheme.headlineMedium,
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     subtitle!,
-                    style: defaultTextStyle.copyWith(
-                      fontSize: 14,
-                      color: background2.withValues(alpha: 0.55),
-                    ),
+                    style: context.textTheme.bodySmall,
                   ),
                 ],
               ],
@@ -189,27 +188,33 @@ class IslandSheet extends StatelessWidget {
 class SheetBadge extends StatelessWidget {
   const SheetBadge(
     this.emoji, {
-    this.color = accentColor,
+    this.color,
     this.size = 52,
     super.key,
   });
 
   final String emoji;
-  final Color color;
+  final Color? color;
   final double size;
 
   @override
-  Widget build(BuildContext context) => Container(
-        width: size,
-        height: size,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Color.alphaBlend(color.withValues(alpha: 0.22), Colors.white),
-          borderRadius: BorderRadius.circular(size * 0.34),
-          border: Border.all(color: color.withValues(alpha: 0.35), width: 1.5),
+  Widget build(BuildContext context) {
+    final color = this.color ?? context.colorScheme.secondary;
+
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Color.alphaBlend(
+          color.withValues(alpha: 0.2),
+          context.colorScheme.surface,
         ),
-        child: Text(emoji, style: TextStyle(fontSize: size * 0.5)),
-      );
+        borderRadius: BorderRadius.circular(size * 0.34),
+      ),
+      child: Text(emoji, style: TextStyle(fontSize: size * 0.5)),
+    );
+  }
 }
 
 /// The sheet's round close button.
@@ -220,15 +225,19 @@ class SheetCloseButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-        color: background2.withValues(alpha: 0.06),
+        color: context.colorScheme.surfaceContainer,
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onPressed,
-          child: const SizedBox(
+          child: SizedBox(
             width: 40,
             height: 40,
-            child: Icon(CarbonIcons.close, color: background2, size: 20),
+            child: Icon(
+              CarbonIcons.close,
+              color: context.colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
           ),
         ),
       );
@@ -240,7 +249,7 @@ class SheetCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.selected = false,
-    this.accent = accentColor,
+    this.accent,
     this.padding = const EdgeInsets.all(14),
     this.color,
     super.key,
@@ -249,39 +258,49 @@ class SheetCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final bool selected;
-  final Color accent;
+  final Color? accent;
   final EdgeInsets padding;
   final Color? color;
 
   @override
-  Widget build(BuildContext context) => AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: color ?? background,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: selected ? accent : Colors.transparent,
-            width: 2.5,
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: accent.withValues(alpha: 0.25),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : null,
+  Widget build(BuildContext context) {
+    final accent = this.accent ?? context.colorScheme.secondary;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        color: color ??
+            (selected
+                ? Color.alphaBlend(
+                    context.tint(accent),
+                    context.colorScheme.surface,
+                  )
+                : context.colorScheme.surfaceContainerLow),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: selected ? accent : Colors.transparent,
+          width: 2,
         ),
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: onTap,
-            child: Padding(padding: padding, child: child),
-          ),
+        boxShadow: selected
+            ? [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.25),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Padding(padding: padding, child: child),
         ),
-      );
+      ),
+    );
+  }
 }
 
 /// A price in bananas, as a small pill.
@@ -296,7 +315,7 @@ class BananaPrice extends StatelessWidget {
         height: 28,
         padding: const EdgeInsets.only(left: 4, right: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -306,10 +325,11 @@ class BananaPrice extends StatelessWidget {
             const SizedBox(width: 3),
             Text(
               '$price',
-              style: buttonTextStyle.copyWith(
-                color: affordable ? background2 : const Color(0xFFE5534B),
-                fontWeight: FontWeight.w700,
+              style: context.textTheme.labelMedium?.copyWith(
                 fontSize: 14,
+                color: affordable
+                    ? context.colorScheme.onSurface
+                    : context.gameColors.red,
               ),
             ),
           ],
@@ -319,38 +339,38 @@ class BananaPrice extends StatelessWidget {
 
 /// A small status pill, e.g. "Owned" or "Wearing".
 class SheetTag extends StatelessWidget {
-  const SheetTag(this.label, {this.color = accentColor, this.icon, super.key});
+  const SheetTag(this.label, {this.color, this.icon, super.key});
 
   final String label;
-  final Color color;
+  final Color? color;
   final IconData? icon;
 
   @override
-  Widget build(BuildContext context) => Container(
-        height: 28,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 14, color: color),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              label,
-              style: buttonTextStyle.copyWith(
-                color: color,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-              ),
-            ),
+  Widget build(BuildContext context) {
+    final color = this.color ?? context.colorScheme.secondary;
+
+    return Container(
+      height: 28,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: context.tint(color),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 4),
           ],
-        ),
-      );
+          Text(
+            label,
+            style: context.textTheme.labelMedium?.copyWith(color: color),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Plays the sheet's pop as it opens.

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/string_ext.dart';
+import 'package:pushup_bro/core/model/appearance.dart';
 import 'package:pushup_bro/core/model/shared_preferences_key.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/platform/system_locale.dart';
@@ -129,7 +130,11 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
       SharedPreferencesKey.musicVolume,
     );
     final volume = await getVolume();
+    final appearance = await _sharedPreferencesProvider.getSharedPrefString(
+      SharedPreferencesKey.appearance,
+    );
     _update(
+      appearance: Appearance.byName(appearance),
       trackingMode: TrackingMode.byName(mode),
       musicVolume: music ?? 7,
       volumeLevel: volume,
@@ -152,6 +157,14 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
     _update(musicVolume: volume);
   }
 
+  Future<void> setAppearance(Appearance appearance) async {
+    await _sharedPreferencesProvider.writeStringToSharedPrefs(
+      SharedPreferencesKey.appearance,
+      appearance.name,
+    );
+    _update(appearance: appearance);
+  }
+
   /// Emits the loaded state with the given fields changed, keeping the rest.
   void _update({
     Locale? language,
@@ -160,6 +173,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
     bool? firstTimeIslandVisited,
     TrackingMode? trackingMode,
     int? musicVolume,
+    Appearance? appearance,
   }) =>
       emit(
         SharedPreferencesLoaded(
@@ -171,6 +185,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
               firstTimeIslandVisited ?? state.firstTimeIslandVisited,
           trackingMode: trackingMode ?? state.trackingMode,
           musicVolume: musicVolume ?? state.musicVolume,
+          appearance: appearance ?? state.appearance,
         ),
       );
 }

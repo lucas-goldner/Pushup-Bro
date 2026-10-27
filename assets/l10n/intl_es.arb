@@ -541,5 +541,9 @@
   "lookingForYou": "Ponte delante de la cámara",
   "settingsMusic": "Música",
   "settingsSounds": "Sonidos",
-  "licenses": "Licencias"
+  "licenses": "Licencias",
+  "appearanceTitle": "Apariencia",
+  "appearanceSystem": "Sistema",
+  "appearanceLight": "Claro",
+  "appearanceDark": "Oscuro"
 }
