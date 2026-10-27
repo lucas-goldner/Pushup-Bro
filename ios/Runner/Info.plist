@@ -35,6 +35,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Count your pushups by watching your form through the camera. The video never leaves your phone.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Measure airpods movement to track pushups</string>
 	<key>UIApplicationSceneManifest</key>

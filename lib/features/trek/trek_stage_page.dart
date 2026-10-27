@@ -5,12 +5,15 @@ import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart' hide Material;
+import 'package:pushup_bro/core/audio/game_audio.dart';
+import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
+import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
@@ -19,10 +22,12 @@ import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
+import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_state.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_state.dart';
+import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker.dart';
 import 'package:pushup_bro/features/quest/scene/location_world.dart';
 import 'package:pushup_bro/features/quest/widgets/dialog_box.dart';
 import 'package:pushup_bro/features/trek/model/battle.dart';
@@ -156,11 +161,38 @@ class _TrekStagePageState extends State<TrekStagePage> {
     if (_line < _lines.length - 1) {
       setState(() => _line++);
     } else if (_phase == _Phase.intro) {
+      GameAudio.instance.play(Sfx.ready);
       setState(() => _phase = _Phase.ready);
     } else if (_phase == _Phase.outro) {
       setState(() => _phase = _Phase.results);
     }
   }
+
+  TrackingMode get _trackingMode =>
+      context.read<SharedPreferencesCubit>().state.trackingMode;
+
+  /// Keeps the camera running between getting ready and the fight.
+  final GlobalKey _cameraKey = GlobalKey();
+
+  /// The camera window, while the camera counts: a preview to line up in
+  /// while getting ready, counting once the fight is on.
+  Widget _cameraWindow(EdgeInsets safe, {required bool active}) =>
+      context.watch<SharedPreferencesCubit>().state.trackingMode ==
+              TrackingMode.camera
+          ? Positioned(
+              right: 16,
+              top: active ? null : safe.top + 140,
+              bottom: active ? safe.bottom + 24 : null,
+              width: 120,
+              height: 160,
+              child: CameraTrackerView(
+                key: _cameraKey,
+                active: active,
+                onDown: context.read<PushupCubit>().down,
+                onUp: () => context.read<PushupCubit>().up(_volume ?? 10),
+              ),
+            )
+          : const SizedBox.shrink();
 
   void _startListening() {
     if (_listening) return;
@@ -169,7 +201,10 @@ class _TrekStagePageState extends State<TrekStagePage> {
       ..resetAndReturnCurrentPushupSet();
     _counted = 0;
     _downSince = null;
-    context.read<AirPodsTrackerCubit>().getAirPodsMotionData();
+    // The camera counts on its own; only AirPods need their stream.
+    if (_trackingMode == TrackingMode.airpods) {
+      context.read<AirPodsTrackerCubit>().getAirPodsMotionData();
+    }
     _pushupSubscription = pushupCubit.stream.listen(_onPushupState);
     _world?.tracking = true;
   }
@@ -193,6 +228,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
   final List<PushupSet> _sets = [];
 
   void _fight() {
+    GameAudio.instance.play(Sfx.fight);
     _startListening();
     setState(() => _phase = _Phase.fight);
   }
@@ -222,6 +258,20 @@ class _TrekStagePageState extends State<TrekStagePage> {
       hit,
       onLand: () {
         if (!mounted) return;
+        final audio = GameAudio.instance
+          ..play(
+            switch (hit.kind) {
+              RepKind.normal => Sfx.hitNormal,
+              RepKind.held => Sfx.hitHeld,
+              RepKind.quick => Sfx.hitQuick,
+            },
+          );
+        if (hit.superEffective) audio.play(Sfx.superEffective, gain: 0.8);
+        if (hit.weak) audio.play(Sfx.weak);
+        if (hit.critical) audio.play(Sfx.crit);
+        if (hit.combo >= 2) audio.play(Sfx.combo, gain: 0.7);
+        if (hit.defeated) audio.play(Sfx.defeatEnemy);
+        if (hit.phase != null) audio.play(Sfx.roar);
         final at = _anchors[hit.foe] ??
             Offset(_viewSize.width / 2, _viewSize.height / 3);
         _popups.add(
@@ -276,7 +326,9 @@ class _TrekStagePageState extends State<TrekStagePage> {
     if (_phase != _Phase.fight) return;
     _stopListening();
     if (_battle.won) {
+      GameAudio.instance.play(Sfx.defeatEnemy);
       await Future<void>.delayed(const Duration(milliseconds: 900));
+      GameAudio.instance.play(Sfx.victory);
       await _claimRewards();
       if (!mounted) return;
       setState(() {
@@ -284,8 +336,10 @@ class _TrekStagePageState extends State<TrekStagePage> {
         _line = 0;
       });
     } else {
+      GameAudio.instance.play(Sfx.waveClear);
       await Future<void>.delayed(const Duration(milliseconds: 900));
       if (!mounted) return;
+      GameAudio.instance.play(Sfx.rest);
       _battle.rest();
       setState(() {
         _phase = _Phase.rest;
@@ -302,6 +356,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
   }
 
   void _knockOut() {
+    GameAudio.instance.play(Sfx.defeat, gain: 1.4);
     _stopListening();
     setState(() => _phase = _Phase.knockedOut);
   }
@@ -362,6 +417,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
 
   Future<void> _leave() async {
     _stopListening();
+    GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (mounted) Navigator.of(context).pop();
@@ -416,11 +472,15 @@ class _TrekStagePageState extends State<TrekStagePage> {
     if (_phase == _Phase.fight) {
       final events = _battle.tick(deltaSeconds);
       for (final foe in events.strikes) {
+        GameAudio.instance
+          ..play(Sfx.enemyAttack)
+          ..play(Sfx.hurt, gain: 0.8);
         world.strike(foe);
         _shake = 1;
         _hurt = 1;
       }
       for (final foe in events.colorShifts) {
+        GameAudio.instance.play(Sfx.pop);
         world.recolor(foe);
         _showBanner(context.l10n.enemyColourChanges, foe.color.color);
       }
@@ -506,6 +566,17 @@ class _TrekStagePageState extends State<TrekStagePage> {
 
   @override
   Widget build(BuildContext context) {
+    MusicScope.set(
+      context,
+      switch (_phase) {
+        _Phase.ready ||
+        _Phase.fight ||
+        _Phase.rest =>
+          _stage.boss ? MusicTrack.boss : MusicTrack.battle,
+        _Phase.results => MusicTrack.victory,
+        _ => MusicTrack.story,
+      },
+    );
     final (top, bottom) = skyFor(_stage.location);
 
     return BlocListener<AirPodsTrackerCubit, AirPodsTrackerState>(
@@ -707,15 +778,21 @@ class _TrekStagePageState extends State<TrekStagePage> {
             left: 16,
             right: 16,
             bottom: safe.bottom + 28,
-            child: Center(
-              child: PillButton(
-                label: l.trekStartFight,
-                icon: CarbonIcons.lightning,
-                color: const Color(0xFFE5534B),
-                onPressed: _fight,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const TrackingModePicker(onDark: true),
+                const SizedBox(height: 12),
+                PillButton(
+                  label: l.trekStartFight,
+                  icon: CarbonIcons.lightning,
+                  color: const Color(0xFFE5534B),
+                  onPressed: _fight,
+                ),
+              ],
             ),
           ),
+          _cameraWindow(safe, active: false),
         ];
       case _Phase.fight:
         return [
@@ -732,6 +809,7 @@ class _TrekStagePageState extends State<TrekStagePage> {
               reps: _battle.reps,
             ),
           ),
+          _cameraWindow(safe, active: true),
         ];
       case _Phase.rest:
         return [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 
@@ -41,7 +42,10 @@ class PillButton extends StatelessWidget {
           type: MaterialType.transparency,
           child: InkWell(
             borderRadius: BorderRadius.circular(30),
-            onTap: onPressed,
+            onTap: () {
+              GameAudio.instance.play(Sfx.tap);
+              onPressed();
+            },
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: compact ? 18 : 32),
               child: Row(

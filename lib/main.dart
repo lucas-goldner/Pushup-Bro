@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/constants.dart';
 import 'package:pushup_bro/core/cubit/active_effects_cubit.dart';
 import 'package:pushup_bro/core/cubit/booster_item_cubit.dart';
@@ -94,6 +95,17 @@ class Main extends StatelessWidget {
     );
     await sharedPreferencesCubit.getLanguage();
     await sharedPreferencesCubit.getFirstTimeIslandVisited();
+    await sharedPreferencesCubit.loadWorkoutSettings();
+    // Sounds follow the volumes in the settings.
+    final audio = GameAudio.instance
+      ..sfxVolume = sharedPreferencesCubit.state.volumeLevel ?? 10
+      ..musicVolume = sharedPreferencesCubit.state.musicVolume;
+    sharedPreferencesCubit.stream.listen((state) {
+      audio
+        ..sfxVolume = state.volumeLevel ?? 10
+        ..musicVolume = state.musicVolume;
+    });
+    await audio.init();
     await dbProvider.loadDB();
     await dbCubit.getUser();
     await gameInventoryCubit.fetchInventory();

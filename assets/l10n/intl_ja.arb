@@ -527,5 +527,19 @@
   "jungleTabStory": "ストーリー",
   "trekContinue": "つづける",
   "trekNextUp": "次：{stage}",
-  "trekAllCleared": "全ステージクリア！続きは近日公開！"
+  "trekAllCleared": "全ステージクリア！続きは近日公開！",
+  "cameraStepBack": "全身が映るように少し下がって",
+  "cameraHipsUp": "腰を上げて、まっすぐに",
+  "cameraHipsDown": "腰を少し下げて",
+  "cameraUnavailable": "カメラにアクセスできません。iPhoneの設定で許可してください。",
+  "cameraStarting": "カメラを起動中…",
+  "trackingAirpods": "AirPods",
+  "trackingCamera": "カメラ",
+  "trackingTitle": "腕立て伏せの計測",
+  "trackingCameraTip": "スマホを横2メートルほどの床に立てて、カメラが横から映せるようにしてね。",
+  "trackingAirpodsTip": "AirPodsをつけてね。頭の動きで腕立て伏せを数えるよ。",
+  "lookingForYou": "カメラに映ってね",
+  "settingsMusic": "音楽",
+  "settingsSounds": "効果音",
+  "licenses": "ライセンス"
 }

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
@@ -79,6 +80,7 @@ class IslandSceneState extends State<IslandScene> {
     final world = _world;
     if (world == null || world.running) return;
     widget.onJourneyChanged?.call(true);
+    GameAudio.instance.play(Sfx.whoosh);
     world.runToJungle(() => _diving = true);
   }
 

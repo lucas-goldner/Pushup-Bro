@@ -1,8 +1,13 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
+import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/model/website_links.dart';
 import 'package:pushup_bro/core/provider/url_launch_provider.dart';
+import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker.dart';
 import 'package:pushup_bro/features/settings/view/settings_language.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
 import 'package:pushup_bro/features/settings/widgets/info_item.dart';
@@ -28,8 +33,8 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) => SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
             const SizedBox(
               height: 80,
@@ -59,7 +64,39 @@ class _SettingsState extends State<Settings> {
               () => navigateToSettingPage(VolumeSetting.routeName),
             ),
             const SizedBox(
+              height: 20,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: Text(
+                context.l10n.trackingTitle,
+                style: context.textTheme.titleSmall,
+                textAlign: TextAlign.start,
+              ),
+            ),
+            const SizedBox(
               height: 12,
+            ),
+            const Center(child: TrackingModePicker()),
+            const SizedBox(
+              height: 8,
+            ),
+            BlocSelector<SharedPreferencesCubit, SharedPreferencesState,
+                TrackingMode>(
+              selector: (state) => state.trackingMode,
+              builder: (context, mode) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  mode == TrackingMode.camera
+                      ? context.l10n.trackingCameraTip
+                      : context.l10n.trackingAirpodsTip,
+                  textAlign: TextAlign.center,
+                  style: context.textTheme.bodySmall,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
             ),
             Padding(
               padding: const EdgeInsets.only(left: 16),
@@ -104,12 +141,14 @@ class _SettingsState extends State<Settings> {
             const SizedBox(
               height: 8,
             ),
-            // TODO(License): Create license page
-            // InfoItem(
-            //   'Credits',
-            //   CarbonIcons.credentials,
-            //   () => openBrowser(createURI('lucas-goldner.com')),
-            // ),
+            InfoItem(
+              context.l10n.licenses,
+              CarbonIcons.credentials,
+              () => showLicensePage(
+                context: context,
+                applicationName: 'Pushup Bro',
+              ),
+            ),
           ],
         ),
       );

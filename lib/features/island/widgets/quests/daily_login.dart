@@ -1,6 +1,7 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
@@ -21,6 +22,7 @@ class DailyLogin extends StatelessWidget {
     final gameInvCubit = context.read<GameInventoryCubit>();
     await gameInvCubit.fetchInventory();
     final inv = gameInvCubit.state.inventory;
+    GameAudio.instance.play(Sfx.banana);
     await gameInvCubit.updateInventory(
       inv.copyWith(
         bananas: inv.bananas + 10,

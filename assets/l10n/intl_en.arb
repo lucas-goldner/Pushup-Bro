@@ -674,5 +674,19 @@
       }
     }
   },
-  "trekAllCleared": "Every stage cleared. More coming soon!"
+  "trekAllCleared": "Every stage cleared. More coming soon!",
+  "cameraStepBack": "Step back so I can see all of you",
+  "cameraHipsUp": "Lift your hips: keep a straight line",
+  "cameraHipsDown": "Lower your hips a little",
+  "cameraUnavailable": "No camera access. Allow it in the iPhone's Settings.",
+  "cameraStarting": "Starting the camera…",
+  "trackingAirpods": "AirPods",
+  "trackingCamera": "Camera",
+  "trackingTitle": "Pushup tracking",
+  "trackingCameraTip": "Prop your phone up on the floor about two metres to your side, so the camera sees you from the side.",
+  "trackingAirpodsTip": "Put on your AirPods: the motion of your head counts the pushups.",
+  "lookingForYou": "Get into the camera's view",
+  "settingsMusic": "Music",
+  "settingsSounds": "Sounds",
+  "licenses": "Licenses"
 }

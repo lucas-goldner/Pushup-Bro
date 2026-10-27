@@ -5,6 +5,7 @@ import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
+import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker.dart';
 
 /// The challenge's heads-up display: the goal at the top, the score in a
 /// ring with the clock or hold meter under it, and Start / Finish.
@@ -119,12 +120,15 @@ class ChallengeHud extends StatelessWidget {
               color: accentColor,
               onPressed: onFinish,
             )
-          else
+          else ...[
+            const TrackingModePicker(onDark: true),
+            const SizedBox(height: 12),
             PillButton(
               label: context.l10n.questStartChallenge,
               icon: CarbonIcons.play_filled_alt,
               onPressed: onStart,
             ),
+          ],
         ],
       ),
     );

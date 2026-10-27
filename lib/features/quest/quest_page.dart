@@ -5,10 +5,13 @@ import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart' hide Material;
+import 'package:pushup_bro/core/audio/game_audio.dart';
+import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
@@ -16,6 +19,7 @@ import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
+import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_state.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
@@ -149,7 +153,11 @@ class _QuestPageState extends State<QuestPage> {
   void _start() {
     final pushupCubit = context.read<PushupCubit>()
       ..resetAndReturnCurrentPushupSet();
-    context.read<AirPodsTrackerCubit>().getAirPodsMotionData();
+    // The camera counts on its own; only AirPods need their stream.
+    if (context.read<SharedPreferencesCubit>().state.trackingMode ==
+        TrackingMode.airpods) {
+      context.read<AirPodsTrackerCubit>().getAirPodsMotionData();
+    }
     _pushupSubscription = pushupCubit.stream.listen(_onPushupState);
     _world?.tracking = true;
     setState(() => _started = true);
@@ -157,6 +165,8 @@ class _QuestPageState extends State<QuestPage> {
     _clock = Timer.periodic(const Duration(milliseconds: 100), (_) {
       if (!mounted) return;
       final down = _downSince;
+      final before = _remaining;
+      final wasHolding = _holding;
       setState(() {
         if (rule is TimedRule) {
           _remaining = math.max(0, _remaining - 0.1);
@@ -165,6 +175,18 @@ class _QuestPageState extends State<QuestPage> {
             ? 0
             : DateTime.now().difference(down).inMilliseconds / 1000;
       });
+      // Tick down the last five seconds, and chime when a hold is long
+      // enough.
+      if (rule is TimedRule &&
+          _remaining < 5 &&
+          before.ceil() != _remaining.ceil()) {
+        GameAudio.instance.play(Sfx.tick);
+      }
+      if (rule is HoldRule &&
+          wasHolding < rule.seconds &&
+          _holding >= rule.seconds) {
+        GameAudio.instance.play(Sfx.hold);
+      }
       if (rule is TimedRule && _remaining <= 0) unawaited(_finish());
     });
   }
@@ -224,6 +246,7 @@ class _QuestPageState extends State<QuestPage> {
     );
     airpods.stopListening();
     if (!mounted) return;
+    GameAudio.instance.play(won ? Sfx.questComplete : Sfx.defeat, gain: 1.2);
     _world
       ?..stageCutscene()
       ..guest.cheering = won;
@@ -243,6 +266,7 @@ class _QuestPageState extends State<QuestPage> {
       context.read<AirPodsTrackerCubit>().stopListening();
       context.read<PushupCubit>().resetAndReturnCurrentPushupSet();
     }
+    GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (mounted) Navigator.of(context).pop(_won);
@@ -370,6 +394,14 @@ class _QuestPageState extends State<QuestPage> {
 
   @override
   Widget build(BuildContext context) {
+    MusicScope.set(
+      context,
+      switch (_phase) {
+        _Phase.challenge => MusicTrack.challenge,
+        _Phase.results when _won => MusicTrack.victory,
+        _ => MusicTrack.story,
+      },
+    );
     final (top, bottom) = skyFor(_quest.location);
 
     return BlocListener<AirPodsTrackerCubit, AirPodsTrackerState>(
@@ -521,6 +553,19 @@ class _QuestPageState extends State<QuestPage> {
               onFinish: _finish,
             ),
           ),
+          if (context.watch<SharedPreferencesCubit>().state.trackingMode ==
+              TrackingMode.camera)
+            Positioned(
+              right: 16,
+              bottom: safe.bottom + (_started ? 96 : 150),
+              width: 120,
+              height: 160,
+              child: CameraTrackerView(
+                active: _started,
+                onDown: context.read<PushupCubit>().down,
+                onUp: () => context.read<PushupCubit>().up(_volume ?? 10),
+              ),
+            ),
         ];
       case _Phase.results:
         return [

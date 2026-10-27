@@ -1,5 +1,6 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
@@ -37,13 +38,28 @@ class _DialogBoxState extends State<DialogBox>
     _typing = AnimationController(
       vsync: this,
       duration: _typingTime,
-    )..forward();
+    )
+      ..addListener(_blip)
+      ..forward();
+  }
+
+  int _blipped = 0;
+
+  /// A soft blip every few letters while the line types out.
+  void _blip() {
+    final length = widget.line.$2(S.current).length;
+    final shown = (length * _typing.value).round();
+    if (shown ~/ 3 > _blipped ~/ 3 && shown < length) {
+      GameAudio.instance.play(Sfx.blip);
+    }
+    _blipped = shown;
   }
 
   @override
   void didUpdateWidget(covariant DialogBox oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.line != widget.line) {
+      _blipped = 0;
       _typing
         ..duration = _typingTime
         ..forward(from: 0);
@@ -65,6 +81,7 @@ class _DialogBoxState extends State<DialogBox>
     if (_typing.isAnimating) {
       _typing.value = 1;
     } else {
+      GameAudio.instance.play(Sfx.next);
       widget.onNext();
     }
   }

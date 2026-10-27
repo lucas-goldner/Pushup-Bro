@@ -1,5 +1,6 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/cosmetic_names.dart';
 import 'package:pushup_bro/core/model/cosmetics.dart';
@@ -33,6 +34,32 @@ class TrekResult extends StatefulWidget {
 
 class _TrekResultState extends State<TrekResult> {
   bool _stats = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // The rewards' sounds, in the order they appear.
+    final reward = widget.reward;
+    final audio = GameAudio.instance
+      ..playRepeated(Sfx.star, reward?.stars ?? 1);
+    if (reward == null) return;
+    Future<void>.delayed(
+      const Duration(milliseconds: 1100),
+      () => audio.play(Sfx.banana),
+    );
+    if (reward.levelsGained > 0) {
+      Future<void>.delayed(
+        const Duration(milliseconds: 1600),
+        () => audio.play(Sfx.levelUp),
+      );
+    }
+    if (reward.loot != null) {
+      Future<void>.delayed(
+        const Duration(milliseconds: 2300),
+        () => audio.play(Sfx.unlock),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

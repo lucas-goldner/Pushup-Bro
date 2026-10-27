@@ -4,6 +4,7 @@ import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/active_effects_cubit.dart';
 import 'package:pushup_bro/core/cubit/active_effects_state.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
@@ -177,6 +178,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
 
     await gameInventoryCubit.fetchInventory();
     final currentInventory = gameInventoryCubit.state.inventory;
+    GameAudio.instance.play(Sfx.banana);
     await gameInventoryCubit.updateInventory(
       currentInventory.copyWith(
         bananas: currentInventory.bananas + widget.pushupSet.pushups.length,

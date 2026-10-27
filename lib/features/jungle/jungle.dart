@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
@@ -53,12 +54,14 @@ class _JungleState extends State<Jungle> {
   }
 
   Future<void> _leave() async {
+    GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (mounted) Navigator.of(context).pop();
   }
 
   Future<void> _trek() async {
+    GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (!mounted) return;
@@ -67,6 +70,7 @@ class _JungleState extends State<Jungle> {
   }
 
   Future<void> _play(JungleQuest quest, {required bool replay}) async {
+    GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (!mounted) return;

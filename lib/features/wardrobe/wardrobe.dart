@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
@@ -86,6 +87,7 @@ class _WardrobeState extends State<Wardrobe> {
   }
 
   void _tap(GameInventory inventory, Cosmetic cosmetic) {
+    GameAudio.instance.play(Sfx.equip);
     final look = inventory.monkeys.first.look;
     if (inventory.owns(cosmetic.id)) {
       setState(() => _tryingOn = null);
@@ -96,6 +98,7 @@ class _WardrobeState extends State<Wardrobe> {
   }
 
   Future<void> _buy(GameInventory inventory, Cosmetic cosmetic) async {
+    GameAudio.instance.play(Sfx.purchase);
     await _save(
       inventory,
       look: inventory.monkeys.first.look.wearing(cosmetic),

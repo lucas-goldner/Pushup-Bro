@@ -527,5 +527,19 @@
   "jungleTabStory": "História",
   "trekContinue": "Continuar",
   "trekNextUp": "Próxima: {stage}",
-  "trekAllCleared": "Todas as etapas concluídas. Mais em breve!"
+  "trekAllCleared": "Todas as etapas concluídas. Mais em breve!",
+  "cameraStepBack": "Afaste-se para que eu veja você inteiro",
+  "cameraHipsUp": "Suba o quadril: mantenha uma linha reta",
+  "cameraHipsDown": "Abaixe um pouco o quadril",
+  "cameraUnavailable": "Sem acesso à câmera. Permita nos Ajustes do iPhone.",
+  "cameraStarting": "Iniciando a câmera…",
+  "trackingAirpods": "AirPods",
+  "trackingCamera": "Câmera",
+  "trackingTitle": "Contagem de flexões",
+  "trackingCameraTip": "Apoie o celular no chão a uns dois metros ao seu lado, para a câmera ver você de perfil.",
+  "trackingAirpodsTip": "Coloque seus AirPods: o movimento da sua cabeça conta as flexões.",
+  "lookingForYou": "Fique na frente da câmera",
+  "settingsMusic": "Música",
+  "settingsSounds": "Sons",
+  "licenses": "Licenças"
 }

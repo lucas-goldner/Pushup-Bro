@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_text_styles.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
@@ -44,6 +45,7 @@ class IslandSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Stack(
         children: [
+          const _PopOnShow(),
           Positioned.fill(
             child: GestureDetector(
               onTap: onClose,
@@ -349,4 +351,23 @@ class SheetTag extends StatelessWidget {
           ],
         ),
       );
+}
+
+/// Plays the sheet's pop as it opens.
+class _PopOnShow extends StatefulWidget {
+  const _PopOnShow();
+
+  @override
+  State<_PopOnShow> createState() => _PopOnShowState();
+}
+
+class _PopOnShowState extends State<_PopOnShow> {
+  @override
+  void initState() {
+    super.initState();
+    GameAudio.instance.play(Sfx.pop);
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }

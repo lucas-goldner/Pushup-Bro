@@ -1,5 +1,7 @@
 import 'package:circular_clip_route/circular_clip_route.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
+import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/features/debug/debug.dart';
 import 'package:pushup_bro/features/friends/friends.dart';
 import 'package:pushup_bro/features/island/island.dart';
@@ -25,16 +27,22 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
     switch (settings.name) {
       PushupTracking.routeName => _revealCircular(
           settings.arguments as BuildContext?,
-          const PageContainer(
-            PushupTracking(),
-            menuTab: MenuTabInfo.pushupTracking,
+          const MusicScope(
+            track: MusicTrack.home,
+            child: PageContainer(
+              PushupTracking(),
+              menuTab: MenuTabInfo.pushupTracking,
+            ),
           ),
         ),
       Progress.routeName => _revealCircular(
           settings.arguments as BuildContext?,
-          const PageContainer(
-            Progress(),
-            menuTab: MenuTabInfo.progress,
+          const MusicScope(
+            track: MusicTrack.home,
+            child: PageContainer(
+              Progress(),
+              menuTab: MenuTabInfo.progress,
+            ),
           ),
         ),
       Friends.routeName => _revealCircular(
@@ -46,31 +54,43 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
         ),
       Leaderboard.routeName => _revealCircular(
           settings.arguments as BuildContext?,
-          const PageContainer(
-            Leaderboard(),
-            menuTab: MenuTabInfo.leaderbaord,
+          const MusicScope(
+            track: MusicTrack.home,
+            child: PageContainer(
+              Leaderboard(),
+              menuTab: MenuTabInfo.leaderbaord,
+            ),
           ),
         ),
       Settings.routeName => _revealCircular(
           settings.arguments as BuildContext?,
-          const PageContainer(
-            Settings(),
-            menuTab: MenuTabInfo.settings,
+          const MusicScope(
+            track: MusicTrack.home,
+            child: PageContainer(
+              Settings(),
+              menuTab: MenuTabInfo.settings,
+            ),
           ),
         ),
       Island.routeName => _revealCircular(
           settings.arguments as BuildContext?,
-          const PageContainer(
-            Island(),
-            menuTab: MenuTabInfo.island,
-            showTitle: false,
+          const MusicScope(
+            track: MusicTrack.island,
+            child: PageContainer(
+              Island(),
+              menuTab: MenuTabInfo.island,
+              showTitle: false,
+            ),
           ),
         ),
       Debug.routeName => _revealCircular(
           settings.arguments as BuildContext?,
-          const PageContainer(
-            Debug(),
-            menuTab: MenuTabInfo.debug,
+          const MusicScope(
+            track: MusicTrack.home,
+            child: PageContainer(
+              Debug(),
+              menuTab: MenuTabInfo.debug,
+            ),
           ),
         ),
       // The island and the jungle fade through white themselves, so the
@@ -79,7 +99,10 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
           settings: settings,
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
-          pageBuilder: (context, _, __) => const Jungle(),
+          pageBuilder: (context, _, __) => const MusicScope(
+            track: MusicTrack.jungle,
+            child: Jungle(),
+          ),
         ),
       QuestPage.routeName => PageRouteBuilder(
           settings: settings,
@@ -88,21 +111,29 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
           pageBuilder: (context, _, __) {
             final (quest, replay) = settings.arguments! as (JungleQuest, bool);
 
-            return QuestPage(quest: quest, replay: replay);
+            return MusicScope(
+              track: MusicTrack.story,
+              child: QuestPage(quest: quest, replay: replay),
+            );
           },
         ),
       TrekMapPage.routeName => PageRouteBuilder(
           settings: settings,
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
-          pageBuilder: (context, _, __) => const TrekMapPage(),
+          pageBuilder: (context, _, __) => const MusicScope(
+            track: MusicTrack.story,
+            child: TrekMapPage(),
+          ),
         ),
       TrekStagePage.routeName => PageRouteBuilder(
           settings: settings,
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
-          pageBuilder: (context, _, __) =>
-              TrekStagePage(stage: settings.arguments! as TrekStage),
+          pageBuilder: (context, _, __) => MusicScope(
+            track: MusicTrack.story,
+            child: TrekStagePage(stage: settings.arguments! as TrekStage),
+          ),
         ),
       Wardrobe.routeName => CupertinoPageRoute(
           settings: settings,
@@ -116,9 +147,12 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
         ),
       _ => _revealCircular(
           settings.arguments as BuildContext?,
-          const PageContainer(
-            PushupTracking(),
-            menuTab: MenuTabInfo.pushupTracking,
+          const MusicScope(
+            track: MusicTrack.home,
+            child: PageContainer(
+              PushupTracking(),
+              menuTab: MenuTabInfo.pushupTracking,
+            ),
           ),
         ),
     };
@@ -128,9 +162,12 @@ Route<CupertinoPageRoute<Widget>> navigateToPushupTracking(
 ) =>
     _revealCircular(
       context,
-      const PageContainer(
-        PushupTracking(),
-        menuTab: MenuTabInfo.pushupTracking,
+      const MusicScope(
+        track: MusicTrack.home,
+        child: PageContainer(
+          PushupTracking(),
+          menuTab: MenuTabInfo.pushupTracking,
+        ),
       ),
     );
 

@@ -1,6 +1,7 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
@@ -36,6 +37,7 @@ class _ShopMenuState extends State<ShopMenu> {
         inventory.boughtItems.contains(building)) {
       return;
     }
+    GameAudio.instance.play(Sfx.purchase);
     await gameInvCubit.updateInventory(
       inventory.copyWith(
         bananas: inventory.bananas - building.price,

@@ -5,6 +5,7 @@ import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
@@ -78,6 +79,7 @@ class _TrekMapPageState extends State<TrekMapPage> {
   }
 
   Future<void> _play(TrekStage stage) async {
+    GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (!mounted) return;
@@ -89,6 +91,7 @@ class _TrekMapPageState extends State<TrekMapPage> {
   }
 
   Future<void> _leave() async {
+    GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 400));
     if (mounted) Navigator.of(context).pop();
