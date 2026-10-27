@@ -86,6 +86,7 @@
 		76401D56A2D84D456867791A /* pt-BR */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		78E0A7A72DC9AD7400C4905E /* FlutterGeneratedPluginSwiftPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FlutterGeneratedPluginSwiftPackage; path = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
+		7DC294FD385A0C6FC87C2E9D /* Widgets.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Widgets.xcconfig; sourceTree = "<group>"; };
 		8064DBECCB20120DC6B0CAA9 /* PushupBroWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PushupBroWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
@@ -176,6 +177,7 @@
 				9740EEB21CF90195004384FC /* Debug.xcconfig */,
 				7AFA3C8E1D35360C0083082E /* Release.xcconfig */,
 				9740EEB31CF90195004384FC /* Generated.xcconfig */,
+				7DC294FD385A0C6FC87C2E9D /* Widgets.xcconfig */,
 			);
 			name = Flutter;
 			sourceTree = "<group>";
@@ -469,7 +471,7 @@
 /* Begin XCBuildConfiguration section */
 		17D383EB7FCD9083887CA4CA /* Release-prod */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			baseConfigurationReference = 7DC294FD385A0C6FC87C2E9D /* Widgets.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
@@ -843,7 +845,7 @@
 		};
 		52DB2F6A19C120A4FA518DA8 /* Profile-prod */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			baseConfigurationReference = 7DC294FD385A0C6FC87C2E9D /* Widgets.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
@@ -877,7 +879,7 @@
 		};
 		7F70049001EDF71475B94969 /* Profile-dev */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			baseConfigurationReference = 7DC294FD385A0C6FC87C2E9D /* Widgets.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
@@ -1085,7 +1087,7 @@
 		};
 		AC30102725D4C6E060F3E2D5 /* Debug-prod */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
+			baseConfigurationReference = 7DC294FD385A0C6FC87C2E9D /* Widgets.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
@@ -1119,7 +1121,7 @@
 		};
 		D4AEA198B2321409D2D52EE0 /* Release-dev */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
+			baseConfigurationReference = 7DC294FD385A0C6FC87C2E9D /* Widgets.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
@@ -1153,7 +1155,7 @@
 		};
 		F97129A7CF7B5B1E7D6EE9CF /* Debug-dev */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
+			baseConfigurationReference = 7DC294FD385A0C6FC87C2E9D /* Widgets.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;

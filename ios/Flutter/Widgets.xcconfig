@@ -1,0 +1,3 @@
+// The widget extension needs the app's version from Flutter, but not the
+// app's CocoaPods settings: it links no plugins.
+#include "Generated.xcconfig"
