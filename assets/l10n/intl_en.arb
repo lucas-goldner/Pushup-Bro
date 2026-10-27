@@ -692,5 +692,217 @@
   "appearanceTitle": "Appearance",
   "appearanceSystem": "System",
   "appearanceLight": "Light",
-  "appearanceDark": "Dark"
+  "appearanceDark": "Dark",
+  "reminderDailyTitle1": "Carlos is on the mat",
+  "reminderDailyBody1": "Your daily pushups are waiting. Ten minutes, bro.",
+  "reminderDailyTitle2": "King Komo thinks you skipped today",
+  "reminderDailyBody2": "Prove him wrong. One set is enough.",
+  "reminderDailyTitle3": "Your mat misses you",
+  "reminderDailyBody3": "It has been lying there all day. Give it a few pushups.",
+  "reminderDailyTitle4": "Bananas don't earn themselves",
+  "reminderDailyBody4": "A quick set and Carlos gets his snack.",
+  "reminderStreakTitle": "Your streak is at risk",
+  "reminderStreakBody": "{days} days in a row. Don't let it end at {days}!",
+  "@reminderStreakBody": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reminderQuestTitle": "A new jungle quest is waiting",
+  "reminderQuestBody": "Today: {quest}. Bananas inside.",
+  "@reminderQuestBody": {
+    "placeholders": {
+      "quest": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderFreeLastDayTitle": "Tomorrow is your last free day",
+  "reminderFreeLastDayBody": "Jungle Trek, the island and the wardrobe stay open one more day.",
+  "reminderFreeHoursLeftTitle": "{hours} hours left with everything",
+  "@reminderFreeHoursLeftTitle": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "reminderFreeHoursLeftBody": "Get Pro to keep the jungle, the island and the wardrobe.",
+  "reminderComebackTitle": "Carlos ate all the bananas",
+  "reminderComebackBody": "Come stop him. One set is all it takes.",
+  "reminderPageTitle": "Reminders",
+  "reminderDailyToggle": "Daily reminder",
+  "reminderToggleFooter": "Carlos pings you once a day at your time, only on days you haven't trained yet.",
+  "reminderTime": "Time",
+  "reminderTimeDone": "Done",
+  "reminderWhatWeSend": "What Pushup Bro sends",
+  "reminderKindDaily": "Daily reminder at your time",
+  "reminderKindStreak": "Streak at risk, an hour before midnight",
+  "reminderKindQuest": "A new jungle quest at 9:00",
+  "reminderKindFreeDays": "When your free days are ending",
+  "reminderKindComeback": "A comeback nudge after 3 quiet days",
+  "reminderDeniedTitle": "Notifications are off",
+  "reminderDeniedHint": "Turn them on in the Settings app under Pushup Bro > Notifications.",
+  "reminderOpenSettings": "Open Settings",
+  "proFreeDaysLeft": "{count, plural, =1{1 free day left} other{{count} free days left}}",
+  "@proFreeDaysLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "proFreeHoursLeft": "Free: {hours} h left",
+  "@proFreeHoursLeft": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "proFreeDaysOver": "Free days are over",
+  "proPaywallHeadlineTrial": "Your pushups,",
+  "proPaywallHeadlineTrialAccent": "an adventure",
+  "proPaywallHeadlineEnded": "Keep the",
+  "proPaywallHeadlineEndedAccent": "adventure going",
+  "proPaywallSubTrial": "Everything is open for your free days.",
+  "proPaywallSubEnded": "The gym stays free. Everything else waits for you.",
+  "proFeatureTrek": "Jungle Trek",
+  "proFeatureQuests": "Daily quests",
+  "proFeatureIsland": "Monkey Island",
+  "proFeatureWardrobe": "Wardrobe",
+  "proFeatureCoach": "Camera coach",
+  "proFeatureWidgets": "Widgets & icons",
+  "proCaptionTrek": "Battle King Komo with real pushups",
+  "proCaptionQuests": "A new jungle quest every day",
+  "proCaptionIsland": "Build up Monkey Island",
+  "proCaptionWardrobe": "Dress Carlos up",
+  "proCaptionCoach": "Camera coach counts every rep",
+  "proCaptionWidgets": "Widgets and new app icons",
+  "proSceneQuestTitle": "Hold every pushup for 3 seconds",
+  "proSceneQuestLeft": "0:45 left",
+  "proSceneFurs": "13 furs",
+  "proSceneStreak": "STREAK",
+  "proSceneStreakDays": "days with Carlos",
+  "proPlanWeekly": "Weekly",
+  "proPlanYearly": "Yearly",
+  "proPlanLifetime": "Lifetime",
+  "proPerWeek": "per week",
+  "proPricePerWeek": "{price} a week",
+  "@proPricePerWeek": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proPricePerYear": "{price} a year",
+  "@proPricePerYear": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proPriceOnce": "{price} once",
+  "@proPriceOnce": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proPayOnce": "pay once",
+  "proTagFlexible": "Flexible",
+  "proTagSave": "Save {percent}%",
+  "@proTagSave": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "proTagForever": "Forever",
+  "proBilledWeekly": "Billed weekly",
+  "proJustPerWeek": "Just {price} a week",
+  "@proJustPerWeek": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proEveryFeatureForever": "Every feature, forever",
+  "proCancelAnytime": "Cancel anytime",
+  "proOneTimePayment": "One-time payment",
+  "proGymStaysFree": "Gym stays free",
+  "proRestore": "Restore",
+  "proTerms": "Terms",
+  "proPrivacy": "Privacy",
+  "proTermsWeekly": "Renews every week at {price} until you cancel. Cancel anytime in Settings at least 24 hours before renewal.",
+  "@proTermsWeekly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proTermsYearly": "Renews every year at {price} until you cancel. Cancel anytime in Settings at least 24 hours before renewal.",
+  "@proTermsYearly": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proTermsLifetime": "A one-time purchase. No subscription, nothing renews.",
+  "proCtaTrial": "Keep everything after day 3",
+  "proCtaEnded": "Unlock everything",
+  "proPurchaseFailed": "That didn't go through. Please try again in a moment.",
+  "proStoreUnavailable": "The store isn't available right now. Please try again later.",
+  "proRestoreNothing": "We couldn't find a Pushup Bro Pro purchase to restore.",
+  "proClose": "Close",
+  "proReplay": "Replay",
+  "proTrialStartBubble": "Everything is open, bro!",
+  "proTrialStartTitle": "Three days of",
+  "proTrialStartTitleAccent": "everything",
+  "proTrialStartBody": "Jungle Trek, daily quests, the island, the wardrobe and the camera coach. No card needed.",
+  "proTrialStartToday": "TODAY",
+  "proTrialStartDay": "Day {day}",
+  "@proTrialStartDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "proTrialStartReminder": "We'll remind you before they end. The gym stays free, forever.",
+  "proTrialStartCta": "Let's go, Carlos",
+  "proTrialEndingTitle": "Last free day",
+  "proTrialEndingBody": "In {hours} h the jungle, the island and the wardrobe lock. The gym stays open.",
+  "@proTrialEndingBody": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "proTrialEndingGym": "Gym and workouts",
+  "proTrialEndingTrek": "Jungle Trek and quests",
+  "proTrialEndingIsland": "Island, shop and wardrobe",
+  "proFree": "Free",
+  "proBadge": "Pro",
+  "proTrialEndingCta": "Keep everything",
+  "proTrialEndingDecline": "Just the gym for me",
+  "proLockJungleTitle": "The jungle is a Pro place",
+  "proLockJungleBody": "Jungle Trek, daily quests and King Komo live in here. The gym stays free.",
+  "proLockShopTitle": "The shop opens with Pro",
+  "proLockShopBody": "Spend your bananas on buildings, hats and capes for Carlos.",
+  "proLockCarlosTitle": "Carlos wants to hang out",
+  "proLockCarlosBody": "Wave, dance and dress him up on the island with Pro.",
+  "proMostPicked": "MOST PICKED",
+  "proSeeAllPlans": "See all plans",
+  "proJustLooking": "Just looking"
 }

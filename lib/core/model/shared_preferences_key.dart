@@ -7,5 +7,9 @@ enum SharedPreferencesKey {
   trackingMode,
   musicVolume,
   appearance,
-  proFreeSince;
+  proFreeSince,
+  proFreeDaysWelcomeSeen,
+  proLastFreeDaySeen,
+  reminderEnabled,
+  reminderMinutes;
 }
