@@ -28,6 +28,7 @@ import 'package:pushup_bro/core/provider/db_provider.dart';
 import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/core/style/theme.dart';
 import 'package:pushup_bro/features/menu/model/routes.dart';
+import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/news_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
@@ -77,6 +78,7 @@ class Main extends StatelessWidget {
     DBProvider dbProvider,
     DBCubit dbCubit,
     GameInventoryCubit gameInventoryCubit,
+    ProCubit proCubit,
   ) async {
     await initializeDateFormatting();
     if (!kIsWeb) {
@@ -110,6 +112,8 @@ class Main extends StatelessWidget {
     await dbProvider.loadDB();
     await dbCubit.getUser();
     await gameInventoryCubit.fetchInventory();
+    // The free days start on the first launch; the store loads alongside.
+    unawaited(proCubit.load());
   }
 
   @override
@@ -133,6 +137,7 @@ class Main extends StatelessWidget {
     final newsCubit = NewsCubit();
     final featureSwitchCubit = FeatureSwitchCubit();
     final gameInventoryCubit = GameInventoryCubit(dbProvider);
+    final proCubit = ProCubit(sharedPreferencesProvider);
 
     return MultiBlocProvider(
       providers: [
@@ -163,6 +168,9 @@ class Main extends StatelessWidget {
         BlocProvider<GameInventoryCubit>(
           create: (context) => gameInventoryCubit,
         ),
+        BlocProvider<ProCubit>(
+          create: (context) => proCubit,
+        ),
       ],
       child: FutureBuilder(
         future: _initConfig(
@@ -171,6 +179,7 @@ class Main extends StatelessWidget {
           dbProvider,
           dbCubit,
           gameInventoryCubit,
+          proCubit,
         ),
         builder: (context, snapshot) =>
             BlocBuilder<SharedPreferencesCubit, SharedPreferencesState>(
