@@ -13,6 +13,7 @@ import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
+import 'package:pushup_bro/features/pro/widgets/free_days_home_chip.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
@@ -139,6 +140,7 @@ class _PushupTrackingState extends State<PushupTracking> {
                   PushupTrackingTopRow(
                     toggleNewsVisibility: toggleNewsVisibility,
                   ),
+                  FreeDaysHomeChip(visible: !started),
                   const SizedBox(height: 24),
                   SizedBox(
                     height: 140,

@@ -14,6 +14,8 @@ import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/features/island/scene/island_world.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
+import 'package:pushup_bro/features/pro/model/pro_feature.dart';
+import 'package:pushup_bro/features/pro/widgets/lock_pin.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
@@ -40,11 +42,21 @@ List<String> _greetings(S l) =>
 /// [IslandSceneState.goToJungle]) and he runs in, the camera dives after
 /// him and everything fades to white before the jungle screen opens.
 class IslandScene extends StatefulWidget {
-  const IslandScene({this.onJourneyChanged, super.key});
+  const IslandScene({
+    this.onJourneyChanged,
+    this.locked = false,
+    this.onLockedTap,
+    super.key,
+  });
 
   /// Called with true when Carlos sets off for the jungle and with false
   /// once he is back on the island.
   final ValueChanged<bool>? onJourneyChanged;
+
+  /// Without Pro the island can only be looked at: lock pins float over
+  /// the jungle, the shop and Carlos, and tapping them calls [onLockedTap].
+  final bool locked;
+  final ValueChanged<ProLockPlace>? onLockedTap;
 
   @override
   State<IslandScene> createState() => IslandSceneState();
@@ -78,10 +90,14 @@ class IslandSceneState extends State<IslandScene> {
   final ValueNotifier<Offset?> _bubbleAnchor = ValueNotifier(null);
   String _bubble = '';
 
+  /// Where the lock pins sit on screen while the island is locked.
+  final ValueNotifier<Map<ProLockPlace, Offset>> _pins = ValueNotifier({});
+
   @override
   void dispose() {
     _whiteout.dispose();
     _bubbleAnchor.dispose();
+    _pins.dispose();
     super.dispose();
   }
 
@@ -116,6 +132,19 @@ class IslandSceneState extends State<IslandScene> {
     );
     final nearCarlos =
         carlos != null && (carlos - details.localPosition).distance < 56;
+    if (widget.locked) {
+      final place = nearCarlos || (hit != null && world.isCarlos(hit.node))
+          ? ProLockPlace.carlos
+          : hit == null
+              ? null
+              : world.isJungle(hit.node)
+                  ? ProLockPlace.jungle
+                  : world.isBuilding(hit.node)
+                      ? ProLockPlace.shop
+                      : null;
+      if (place != null) widget.onLockedTap?.call(place);
+      return;
+    }
     if (nearCarlos || (hit != null && world.isCarlos(hit.node))) {
       world.greet(camera.position - world.gorilla.root.position);
       setState(
@@ -181,6 +210,7 @@ class IslandSceneState extends State<IslandScene> {
     _bubbleAnchor.value = greeting && world != null && camera != null
         ? camera.worldToScreen(world.carlosHead, _viewSize)
         : null;
+    _placePins(world, camera);
     if (running) {
       // Swing round so the jungle is straight ahead.
       final nearest = (_yaw / (math.pi * 2)).roundToDouble() * math.pi * 2;
@@ -193,6 +223,22 @@ class IslandSceneState extends State<IslandScene> {
     }
     _focus = springTo(_focus, running ? 1 : 0, deltaSeconds, 2);
     world?.update(deltaSeconds);
+  }
+
+  void _placePins(IslandWorld? world, Camera? camera) {
+    if (!widget.locked || world == null || camera == null) {
+      if (_pins.value.isNotEmpty) _pins.value = {};
+      return;
+    }
+    _pins.value = {
+      for (final (place, spot) in [
+        (ProLockPlace.jungle, world.jungleSpot),
+        (ProLockPlace.shop, world.shopSpot),
+        (ProLockPlace.carlos, world.carlosHead + vm.Vector3(0, 0.45, 0)),
+      ])
+        if (camera.worldToScreen(spot, _viewSize) case final point?)
+          place: point,
+    };
   }
 
   Camera _camera(Duration elapsed) {
@@ -293,6 +339,28 @@ class IslandSceneState extends State<IslandScene> {
                       ),
                     ),
                   ),
+                  if (widget.locked)
+                    Positioned.fill(
+                      child: ValueListenableBuilder<Map<ProLockPlace, Offset>>(
+                        valueListenable: _pins,
+                        builder: (context, pins, _) => Stack(
+                          children: [
+                            for (final MapEntry(key: place, value: point)
+                                in pins.entries)
+                              Positioned(
+                                left: point.dx - _pinSize(place) / 2,
+                                top: point.dy - _pinSize(place) / 2,
+                                child: LockPin(
+                                  size: _pinSize(place),
+                                  phase: place.index / 3,
+                                  label: _pinLabel(context, place),
+                                  onTap: () => widget.onLockedTap?.call(place),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                   Positioned.fill(
                     child: IgnorePointer(
                       child: ValueListenableBuilder<double>(
@@ -313,3 +381,11 @@ class IslandSceneState extends State<IslandScene> {
         ),
       );
 }
+
+double _pinSize(ProLockPlace place) => place == ProLockPlace.jungle ? 48 : 40;
+
+String _pinLabel(BuildContext context, ProLockPlace place) => switch (place) {
+      ProLockPlace.jungle => context.l10n.proLockJungleTitle,
+      ProLockPlace.shop => context.l10n.proLockShopTitle,
+      ProLockPlace.carlos => context.l10n.proLockCarlosTitle,
+    };

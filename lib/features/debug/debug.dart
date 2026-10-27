@@ -15,6 +15,10 @@ import 'package:pushup_bro/core/model/pushup.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pb_button.dart';
+import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
+import 'package:pushup_bro/features/pro/model/pro_state.dart';
+import 'package:pushup_bro/features/pro/notices/free_days_sheets.dart';
+import 'package:pushup_bro/features/pro/paywall/show_paywall.dart';
 
 class Debug extends StatefulWidget {
   const Debug({super.key});
@@ -164,6 +168,58 @@ class _DebugState extends State<Debug> {
               PBButton(
                 'Add 100 Bananas',
                 callback: add100Bananas,
+                expanded: true,
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Pushup Bro Pro Debug',
+                style: context.textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 12),
+              BlocSelector<ProCubit, ProState, bool>(
+                selector: (state) => state.simulateLocked,
+                builder: (context, locked) => SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Simulate free days over',
+                    style: context.textTheme.titleSmall,
+                  ),
+                  value: locked,
+                  onChanged: (value) =>
+                      context.read<ProCubit>().simulateLocked(locked: value),
+                ),
+              ),
+              const SizedBox(height: 12),
+              PBButton(
+                'Show paywall',
+                callback: () => showPaywall(context),
+                expanded: true,
+              ),
+              const SizedBox(height: 12),
+              PBButton(
+                'Show free days welcome',
+                callback: () async {
+                  final pro = context.read<ProCubit>();
+                  await showFreeDaysWelcome(
+                    context,
+                    freeSince: pro.state.freeSince ?? pro.now,
+                    now: pro.now,
+                  );
+                },
+                expanded: true,
+              ),
+              const SizedBox(height: 12),
+              PBButton(
+                'Show last free day',
+                callback: () async {
+                  if (await showLastFreeDay(
+                        context,
+                        left: const Duration(hours: 9),
+                      ) &&
+                      context.mounted) {
+                    await showPaywall(context);
+                  }
+                },
                 expanded: true,
               ),
             ],

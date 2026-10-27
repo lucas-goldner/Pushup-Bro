@@ -16,6 +16,7 @@ import 'package:pushup_bro/core/style/extensions/game_colors_theme_extension.dar
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
+import 'package:pushup_bro/features/pro/pro_access.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/trek_stage_page.dart';
 import 'package:pushup_bro/features/trek/widgets/rest_panel.dart';
@@ -115,6 +116,7 @@ class _TrekMapPageState extends State<TrekMapPage> {
   }
 
   Future<void> _play(TrekStage stage) async {
+    if (!await ensureProAccess(context) || !mounted) return;
     GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));

@@ -27,12 +27,17 @@ import 'package:pushup_bro/core/provider/audio_player_provider.dart';
 import 'package:pushup_bro/core/provider/db_provider.dart';
 import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/core/style/theme.dart';
+import 'package:pushup_bro/features/app_icon/app_icon_guard.dart';
 import 'package:pushup_bro/features/menu/model/routes.dart';
 import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/news_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/provider/airpods_motion_provider.dart';
+import 'package:pushup_bro/features/reminders/cubit/reminders_cubit.dart';
+import 'package:pushup_bro/features/reminders/data/reminder_service.dart';
+import 'package:pushup_bro/features/reminders/reminders_scope.dart';
+import 'package:pushup_bro/features/widgets/widget_sync.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 
 void main() {
@@ -111,6 +116,8 @@ class Main extends StatelessWidget {
     await audio.init();
     await dbProvider.loadDB();
     await dbCubit.getUser();
+    // Reminders and widgets plan from the saved sets.
+    await dbCubit.getAllPushupSets();
     await gameInventoryCubit.fetchInventory();
     // The free days start on the first launch; the store loads alongside.
     unawaited(proCubit.load());
@@ -138,6 +145,8 @@ class Main extends StatelessWidget {
     final featureSwitchCubit = FeatureSwitchCubit();
     final gameInventoryCubit = GameInventoryCubit(dbProvider);
     final proCubit = ProCubit(sharedPreferencesProvider);
+    final remindersCubit =
+        RemindersCubit(sharedPreferencesProvider, LocalReminderService());
 
     return MultiBlocProvider(
       providers: [
@@ -170,6 +179,9 @@ class Main extends StatelessWidget {
         ),
         BlocProvider<ProCubit>(
           create: (context) => proCubit,
+        ),
+        BlocProvider<RemindersCubit>(
+          create: (context) => remindersCubit,
         ),
       ],
       child: FutureBuilder(
@@ -225,7 +237,14 @@ class _ThemedApp extends StatelessWidget {
         supportedLocales: S.delegate.supportedLocales,
         theme: MaterialBasedCupertinoThemeData(materialTheme: themeData),
         onGenerateRoute: generateRoutes,
-        builder: (context, child) => Theme(data: themeData, child: child!),
+        // Below Localizations: these read translated strings.
+        builder: (context, child) => WidgetSyncScope(
+          child: AppIconProGuard(
+            child: RemindersScope(
+              child: Theme(data: themeData, child: child!),
+            ),
+          ),
+        ),
       ),
     );
   }

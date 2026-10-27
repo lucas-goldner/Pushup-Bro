@@ -138,6 +138,17 @@ class IslandWorld {
   /// Whether [node] is part of the jungle: a tree, a rock, the hill...
   bool isJungle(Node node) => _within(node, jungle.root);
 
+  /// Whether [node] is part of a building, the food truck included.
+  bool isBuilding(Node node) =>
+      _buildings.values.any((building) => _within(node, building));
+
+  /// Above the food truck, where the shop's lock pin floats.
+  vm.Vector3 get shopSpot =>
+      _buildings[ShopBuyables.none]!.position + vm.Vector3(0, 1.6, 0);
+
+  /// Above the jungle's trees, where its lock pin floats.
+  vm.Vector3 get jungleSpot => jungleCenter + vm.Vector3(0, 2.6, 0);
+
   /// Stops Carlos's laps for [seconds] to turn towards [toward] (a world
   /// direction, usually the camera) and wave.
   void greet(vm.Vector3 toward, {double seconds = 3.4}) {

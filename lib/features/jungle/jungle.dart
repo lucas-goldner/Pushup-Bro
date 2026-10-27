@@ -13,6 +13,7 @@ import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/jungle/widgets/jungle_scene.dart';
 import 'package:pushup_bro/features/jungle/widgets/quest_card.dart';
+import 'package:pushup_bro/features/pro/pro_access.dart';
 import 'package:pushup_bro/features/quest/quest_page.dart';
 import 'package:pushup_bro/features/trek/trek_map_page.dart';
 import 'package:pushup_bro/features/trek/widgets/trek_card.dart';
@@ -60,6 +61,7 @@ class _JungleState extends State<Jungle> {
   }
 
   Future<void> _trek() async {
+    if (!await ensureProAccess(context) || !mounted) return;
     GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));
@@ -69,6 +71,7 @@ class _JungleState extends State<Jungle> {
   }
 
   Future<void> _play(JungleQuest quest, {required bool replay}) async {
+    if (!await ensureProAccess(context) || !mounted) return;
     GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
     await Future<void>.delayed(const Duration(milliseconds: 450));

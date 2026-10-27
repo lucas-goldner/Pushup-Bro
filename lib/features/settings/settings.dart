@@ -8,7 +8,10 @@ import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/model/website_links.dart';
 import 'package:pushup_bro/core/provider/url_launch_provider.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
+import 'package:pushup_bro/features/app_icon/app_icon_page.dart';
+import 'package:pushup_bro/features/pro/paywall/show_paywall.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker.dart';
+import 'package:pushup_bro/features/reminders/reminders_page.dart';
 import 'package:pushup_bro/features/settings/view/settings_language.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
 import 'package:pushup_bro/features/settings/widgets/appearance_picker.dart';
@@ -56,6 +59,25 @@ class _SettingsState extends State<Settings> {
                 CarbonIcons.volume_up,
                 () => navigateToSettingPage(VolumeSetting.routeName),
                 color: game.orange,
+              ),
+              Settingsitem(
+                context.l10n.reminderPageTitle,
+                CarbonIcons.notification,
+                () => RemindersPage.open(context),
+                color: game.jungle,
+              ),
+              if (AppIconPage.isAvailable)
+                Settingsitem(
+                  context.l10n.appIconTitle,
+                  CarbonIcons.apps,
+                  () => AppIconPage.open(context),
+                  color: game.purple,
+                ),
+              Settingsitem(
+                context.l10n.proSettingsTitle,
+                CarbonIcons.star_filled,
+                () => showPaywall(context),
+                color: game.banana,
               ),
             ],
           ),
