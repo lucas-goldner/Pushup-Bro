@@ -60,6 +60,7 @@ flutter:
     - assets/audio/sfx/
     - assets/fonts/
     - assets/images/
+    - assets/images/app_icons/
     - assets/images/island/
     - assets/images/island/accessories/
     - assets/images/island/quests/
@@ -111,6 +112,11 @@ flutter_intl:
 flutter_gen:
   output: lib/generated/
   line_length: 80
+  assets:
+    exclude:
+      # Played by name through GameAudio ("super" is no valid getter).
+      - assets/audio/sfx/**
+      - assets/audio/music/**
 
   integrations:
     rive: true
