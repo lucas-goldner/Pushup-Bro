@@ -169,7 +169,7 @@ class _PaywallPageState extends State<PaywallPage>
 
   Future<void> _open(WebsiteLinks link) async {
     try {
-      await _launcher.launchUri(Uri(scheme: 'https', path: link.link));
+      await _launcher.launchUri(Uri.parse('https://${link.link}'));
     } on Object catch (e) {
       debugPrint('Could not open ${link.link}: $e');
     }

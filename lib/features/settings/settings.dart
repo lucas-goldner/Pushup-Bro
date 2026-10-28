@@ -32,7 +32,7 @@ class _SettingsState extends State<Settings> {
 
   void openBrowser(Uri uri) => _launchProvider.launchUri(uri);
 
-  Uri createURI(String path) => Uri(scheme: 'https', path: path);
+  Uri createURI(String link) => Uri.parse('https://$link');
 
   void navigateToSettingPage(String routeName) =>
       Navigator.of(context).pushNamed(routeName);
