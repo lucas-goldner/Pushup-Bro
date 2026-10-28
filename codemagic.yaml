@@ -4,6 +4,8 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
+      groups:
+        - revenuecat
       flutter: 3.47.5
       xcode: latest
       cocoapods: default
@@ -31,11 +33,20 @@ workflows:
         script: |
           xcode-project use-profiles
 
+      - name: Check the RevenueCat key
+        script: |
+          if [[ "$REVENUECAT_APPLE_API_KEY" != appl_* ]]; then
+            echo "REVENUECAT_APPLE_API_KEY is missing or isn't an Apple key (appl_...)."
+            echo "Add it as a secret in the 'revenuecat' environment group in Codemagic."
+            exit 1
+          fi
+
       - name: Build iOS app
         script: |
           flutter build ipa --release \
             --flavor prod \
             -t lib/flavor/main_prod.dart \
+            --dart-define=REVENUECAT_APPLE_API_KEY=$REVENUECAT_APPLE_API_KEY \
             --build-number=$(($BUILD_NUMBER + 2)) \
             --export-options-plist=/Users/builder/export_options.plist
 

@@ -2,7 +2,7 @@ name: pushup_bro
 description: Track your pushups with ease using the sensors in your AirPods!
 publish_to: "none"
 
-version: 2.1.0+5
+version: 2.0.0+5
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
