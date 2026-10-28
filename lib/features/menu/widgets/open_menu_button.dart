@@ -1,6 +1,6 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/features/menu/widgets/menu_circle_button.dart';
 
 class OpenMenuButton extends StatelessWidget {
   const OpenMenuButton(this.toggle, {required this.open, super.key});
@@ -23,17 +23,7 @@ class OpenMenuButton extends StatelessWidget {
             opacity: open ? 0.0 : 1.0,
             curve: const Interval(0.25, 1, curve: Curves.easeInOut),
             duration: const Duration(milliseconds: 250),
-            child: FloatingActionButton(
-              shape: const CircleBorder(),
-              splashColor: Colors.transparent,
-              hoverColor: Colors.transparent,
-              enableFeedback: false,
-              backgroundColor: context.colorScheme.onSecondary,
-              onPressed: toggle,
-              child: const Icon(
-                CarbonIcons.menu,
-              ),
-            ),
+            child: MenuCircleButton(icon: CarbonIcons.menu, onTap: toggle),
           ),
         ),
       );

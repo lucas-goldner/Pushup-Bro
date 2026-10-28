@@ -10,7 +10,7 @@ class CalendarHeader extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: Text(
           DateFormat.yMMMM().format(day),
-          style: context.textTheme.titleSmall,
+          style: context.textTheme.headlineSmall,
         ),
       );
 }

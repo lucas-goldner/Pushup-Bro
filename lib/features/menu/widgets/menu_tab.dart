@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 
+/// A menu entry: a floating white pill with a tinted icon and the title.
 class MenuTab extends StatelessWidget {
   const MenuTab({
     required this.drawerController,
@@ -35,29 +37,36 @@ class MenuTab extends StatelessWidget {
         child: GestureDetector(
           onTap: () => menuInfo.navigate(context),
           child: Padding(
-            padding: const EdgeInsets.only(top: 16, right: 8),
-            child: DecoratedBox(
+            padding: const EdgeInsets.only(top: PBSpace.md, right: 8),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(10, 10, 20, 10),
               decoration: BoxDecoration(
-                color: context.colorScheme.onSecondary,
-                borderRadius: BorderRadius.circular(12),
+                color: context.colorScheme.surface,
+                borderRadius: BorderRadius.circular(PBRadius.pill),
+                boxShadow: context.cardShadow,
               ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                child: Row(
-                  children: [
-                    Icon(menuInfo.icon),
-                    const SizedBox(
-                      width: 12,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: context.tint(context.colorScheme.secondary),
+                      shape: BoxShape.circle,
                     ),
-                    Text(
-                      menuInfo.getMenuTitle(context),
-                      style: context.textTheme.titleSmall?.copyWith(
-                        color: context.colorScheme.surfaceBright,
-                      ),
+                    child: Icon(
+                      menuInfo.icon,
+                      size: 18,
+                      color: context.colorScheme.secondary,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: PBSpace.md),
+                  Text(
+                    menuInfo.getMenuTitle(context),
+                    style: context.textTheme.titleMedium,
+                  ),
+                ],
               ),
             ),
           ),

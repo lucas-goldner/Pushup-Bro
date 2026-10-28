@@ -3,5 +3,13 @@ enum SharedPreferencesKey {
   volume,
   language,
   joined,
-  firstTimeIslandVisited;
+  firstTimeIslandVisited,
+  trackingMode,
+  musicVolume,
+  appearance,
+  proFreeSince,
+  proFreeDaysWelcomeSeen,
+  proLastFreeDaySeen,
+  reminderEnabled,
+  reminderMinutes;
 }

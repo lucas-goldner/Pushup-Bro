@@ -7,3 +7,5 @@
 */
 
 CFBundleDisplayName = "Flexões Mano";
+NSCameraUsageDescription = "Conta suas flexões observando sua postura pela câmera. O vídeo nunca sai do seu celular.";
+NSMotionUsageDescription = "Mede o movimento dos AirPods para contar flexões";

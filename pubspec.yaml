@@ -2,7 +2,7 @@ name: pushup_bro
 description: Track your pushups with ease using the sensors in your AirPods!
 publish_to: "none"
 
-version: 2.0.0+4
+version: 2.1.0+5
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -10,6 +10,7 @@ environment:
 dependencies:
   animated_flip_counter: ^0.3.4
   audioplayers: ^6.8.1
+  camera: ^0.12.1
   carbon_icons:
     path: packages/carbon_icons_patched
   carousel_slider: ^5.1.2
@@ -22,9 +23,11 @@ dependencies:
   flutter_airpods:
     path: packages/flutter_airpods
   flutter_bloc: ^9.1.1
+  flutter_local_notifications: ^22.3.2
   flutter_localizations:
     sdk: flutter
   flutter_scene: ^0.24.3
+  flutter_timezone: ^5.1.1
   hooks: ^2.2.0
   intl: ^0.20.2
   intl_utils: ^2.8.1
@@ -32,9 +35,11 @@ dependencies:
   mmkv: ^2.4.2
   modal_bottom_sheet: ^3.0.0-pre
   path_provider: ^2.0.12
+  purchases_flutter: ^10.17.0
   rive: ^0.14.11
   shared_preferences: ^2.0.17
   table_calendar: ^3.0.8
+  timezone: ^0.11.2
   url_launcher: ^6.1.9
   vector_math: ^2.4.3
 
@@ -49,13 +54,16 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audio/
+    - assets/audio/music/
+    - assets/audio/sfx/
     - assets/fonts/
     - assets/images/
+    - assets/images/app_icons/
     - assets/images/island/
     - assets/images/island/accessories/
     - assets/images/island/quests/
     - assets/images/island/quests/intro/
-    - assets/images/island/quests/jungle/
+    - assets/images/trek/
     - assets/rive/
     - flutter_scene_generated/
     - path: flutter_scene_generated/metal_ios/
@@ -84,6 +92,14 @@ flutter:
           weight: 400
         - asset: assets/fonts/Satoshi-Light.ttf
           weight: 300
+    - family: Cabinet Grotesk
+      fonts:
+        - asset: assets/fonts/CabinetGrotesk-Extrabold.ttf
+          weight: 800
+        - asset: assets/fonts/CabinetGrotesk-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/CabinetGrotesk-Medium.ttf
+          weight: 500
 
 flutter_intl:
   enabled: true
@@ -94,6 +110,11 @@ flutter_intl:
 flutter_gen:
   output: lib/generated/
   line_length: 80
+  assets:
+    exclude:
+      # Played by name through GameAudio ("super" is no valid getter).
+      - assets/audio/sfx/**
+      - assets/audio/music/**
 
   integrations:
     rive: true

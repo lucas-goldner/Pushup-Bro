@@ -15,7 +15,6 @@ import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/model/user.dart';
 import 'package:pushup_bro/core/provider/db_provider.dart';
 import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/theme.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/finished_pushup_sheet/finished_set_bottom_sheet.dart';
 import 'package:pushup_bro/generated/l10n.dart';
@@ -97,7 +96,7 @@ void main() {
   });
 
   /// Mirrors the real app shell in lib/main.dart: a dark `CupertinoApp`
-  /// under the app's Material [theme].
+  /// under the app's Material [lightTheme].
   Widget wrapInApp(Widget child) => MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => activeEffectsCubit),
@@ -109,7 +108,7 @@ void main() {
           ),
         ],
         child: Theme(
-          data: theme,
+          data: lightTheme,
           child: CupertinoApp(
             localizationsDelegates: const [
               S.delegate,
@@ -142,7 +141,7 @@ void main() {
       );
       await tester.pumpAndSettle(const Duration(seconds: 3));
 
-      expect(sheetMaterial(tester).color, background);
+      expect(sheetMaterial(tester).color, lightTheme.colorScheme.surface);
     });
 
     testWidgets('text contrasts with the surface', (tester) async {

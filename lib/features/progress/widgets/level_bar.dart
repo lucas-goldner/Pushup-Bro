@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/progress/model/level_scalings.dart';
 
+/// The level and the experience towards the next one, over a thick
+/// rounded bar.
 class LevelBar extends StatelessWidget {
   LevelBar({
     required this.level,
@@ -18,36 +21,33 @@ class LevelBar extends StatelessWidget {
   final double _barWidth;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        LinearProgressIndicator(
-          value: _barWidth,
-          backgroundColor: context.colorScheme.onPrimary,
-          valueColor: AlwaysStoppedAnimation<Color>(
-            context.colorScheme.inversePrimary,
+  Widget build(BuildContext context) => Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                context.l10n.level(level),
+                style: context.textTheme.titleSmall,
+              ),
+              const Spacer(),
+              Text(
+                '$experience / ${LevelScaler().getLevelScaling(level)}',
+                style: context.textTheme.bodySmall,
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Text(
-              context.l10n.level(level),
-              style: context.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: context.colorScheme.onPrimary,
+          const SizedBox(height: PBSpace.sm),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(PBRadius.pill),
+            child: LinearProgressIndicator(
+              value: _barWidth,
+              minHeight: 8,
+              backgroundColor: context.colorScheme.surfaceContainerHigh,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                context.colorScheme.secondary,
               ),
             ),
-            const Spacer(),
-            Text(
-              '$experience / ${LevelScaler().getLevelScaling(level)}',
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.colorScheme.onPrimary,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+          ),
+        ],
+      );
 }

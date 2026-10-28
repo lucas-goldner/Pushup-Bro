@@ -1,31 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 
+/// The island's quest sheets. The jungle's daily quests live in
+/// `features/jungle/model/jungle_quest.dart`.
 enum QuestType {
   intro(dismissable: false),
   dailyLogin(dismissable: false),
-  jungleQuest(dismissable: true),
-  community(dismissable: true),
-  doubleValue(dismissable: false, canAppearAsJungleQuest: true),
-  fastPushups(dismissable: false, canAppearAsJungleQuest: true),
-  longPushups(dismissable: false, canAppearAsJungleQuest: true);
+  community(dismissable: true);
 
-  const QuestType({
-    required this.dismissable,
-    this.canAppearAsJungleQuest = false,
-  });
+  const QuestType({required this.dismissable});
 
   final bool dismissable;
-  final bool canAppearAsJungleQuest;
 
   String getLocalizedTitle(BuildContext context) => switch (this) {
-        intro => 'Intro Quest',
-        community => 'Coming together',
-        dailyLogin => 'Daily Login',
-        jungleQuest => 'Jungle Quest',
-        _ => 'Nothingburger',
+        intro => context.l10n.questIntroTitle,
+        community => context.l10n.questCommunityTitle,
+        dailyLogin => context.l10n.questDailyTitle,
       };
-
-  List<QuestType> get jungleQuests => QuestType.values
-      .where((questType) => questType.canAppearAsJungleQuest)
-      .toList();
 }

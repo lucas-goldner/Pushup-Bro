@@ -41,13 +41,14 @@ class PBCalendar extends StatelessWidget {
         startingDayOfWeek: StartingDayOfWeek.monday,
         headerStyle: HeaderStyle(
           formatButtonVisible: false,
+          titleCentered: true,
           leftChevronIcon: Icon(
             CarbonIcons.chevron_left,
-            color: context.colorScheme.inversePrimary,
+            color: context.colorScheme.onSurface,
           ),
           rightChevronIcon: Icon(
             CarbonIcons.chevron_right,
-            color: context.colorScheme.inversePrimary,
+            color: context.colorScheme.onSurface,
           ),
         ),
         calendarBuilders: CalendarBuilders(

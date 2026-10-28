@@ -7,11 +7,15 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
+import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
+import 'package:pushup_bro/core/model/tracking_mode.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
-import 'package:pushup_bro/features/island/model/shop_buyables.dart';
+import 'package:pushup_bro/features/pro/widgets/free_days_home_chip.dart';
+import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
+import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_state.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/news_cubit.dart';
@@ -23,6 +27,7 @@ import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_counter.dart'
 import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_stage.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_tracking_bottom_row.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_tracking_top_row.dart';
+import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 import 'package:rive/rive.dart';
 
@@ -52,7 +57,9 @@ class _PushupTrackingState extends State<PushupTracking> {
       });
       unawaited(openBottomSheet(pushups));
     } else {
-      airpodsCubit.getAirPodsMotionData();
+      // The camera counts on its own; only AirPods need their stream.
+      final mode = context.read<SharedPreferencesCubit>().state.trackingMode;
+      if (mode == TrackingMode.airpods) airpodsCubit.getAirPodsMotionData();
       if (newsVisible) {
         setState(() => newsVisible = false);
       }
@@ -103,13 +110,16 @@ class _PushupTrackingState extends State<PushupTracking> {
         future: BlocProvider.of<SharedPreferencesCubit>(context).getVolume(),
         builder: (context, future) => Stack(
           children: [
-            const Positioned.fill(
+            Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFFDDE6FF), background],
+                    colors: [
+                      context.colorScheme.secondaryContainer,
+                      context.colorScheme.surfaceContainerLow,
+                    ],
                   ),
                 ),
               ),
@@ -120,7 +130,7 @@ class _PushupTrackingState extends State<PushupTracking> {
                 selector: (state) => state.inventory.monkeys.first,
                 builder: (context, monkey) => PushupStage(
                   tracking: started,
-                  partyHat: monkey.accessory == ShopBuyables.accessoryPartyHat,
+                  look: monkey.look,
                 ),
               ),
             ),
@@ -130,6 +140,7 @@ class _PushupTrackingState extends State<PushupTracking> {
                   PushupTrackingTopRow(
                     toggleNewsVisibility: toggleNewsVisibility,
                   ),
+                  FreeDaysHomeChip(visible: !started),
                   const SizedBox(height: 24),
                   SizedBox(
                     height: 140,
@@ -150,7 +161,12 @@ class _PushupTrackingState extends State<PushupTracking> {
                       buildWhen: (previous, current) =>
                           previous.isListening != current.isListening,
                       builder: (context, airPodsState) {
-                        if (airPodsState.isListening && started) {
+                        final camera = context
+                                .watch<SharedPreferencesCubit>()
+                                .state
+                                .trackingMode ==
+                            TrackingMode.camera;
+                        if (started && (camera || airPodsState.isListening)) {
                           return BlocSelector<PushupCubit, PushupState, int>(
                             selector: (state) => state.pushups.length,
                             builder: (context, pushups) =>
@@ -158,16 +174,35 @@ class _PushupTrackingState extends State<PushupTracking> {
                           );
                         }
 
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 48),
-                          child: Text(
-                            started
-                                ? context.l10n.lookingForAirpods
-                                : context.l10n.readyCaption,
-                            textAlign: TextAlign.center,
-                            style: context.textTheme.bodyMedium?.copyWith(
-                              color: primaryColor.withValues(alpha: 0.6),
-                              height: 1.4,
+                        return Align(
+                          alignment: Alignment.topCenter,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: PBSpace.xxl,
+                            ),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: context.colorScheme.surface,
+                                borderRadius:
+                                    BorderRadius.circular(PBRadius.lg),
+                                boxShadow: context.cardShadow,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: PBSpace.xl,
+                                  vertical: PBSpace.lg,
+                                ),
+                                child: Text(
+                                  started
+                                      ? context.l10n.lookingForAirpods
+                                      : context.l10n.readyCaption,
+                                  textAlign: TextAlign.center,
+                                  style: context.textTheme.bodyMedium?.copyWith(
+                                    color: context.colorScheme.onSurfaceVariant,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         );
@@ -175,6 +210,10 @@ class _PushupTrackingState extends State<PushupTracking> {
                     ),
                   ),
                   const Spacer(),
+                  if (!started) ...[
+                    const TrackingModePicker(),
+                    const SizedBox(height: 14),
+                  ],
                   PushupTrackingBottomRow(
                     toggleListeningUpdates: toggleListeningUpdates,
                   ),
@@ -182,6 +221,27 @@ class _PushupTrackingState extends State<PushupTracking> {
                 ],
               ),
             ),
+            if (started)
+              BlocSelector<SharedPreferencesCubit, SharedPreferencesState,
+                  TrackingMode>(
+                selector: (state) => state.trackingMode,
+                builder: (context, mode) => mode == TrackingMode.camera
+                    ? Positioned.fill(
+                        child: CameraWindow(
+                          size: const Size(150, 200),
+                          corner: Alignment.topRight,
+                          topInset: 180,
+                          bottomInset: 90,
+                          child: CameraTrackerView(
+                            onDown: context.read<PushupCubit>().down,
+                            onUp: () => context
+                                .read<PushupCubit>()
+                                .up(future.data ?? 10),
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
             NewsBanner(newsVisible: newsVisible),
             if (finished)
               IgnorePointer(

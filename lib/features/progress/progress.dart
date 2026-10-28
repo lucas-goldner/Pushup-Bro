@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/user.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pb_button.dart';
 import 'package:pushup_bro/features/progress/widgets/last_seven_day_pushups.dart';
 import 'package:pushup_bro/features/progress/widgets/profile.dart';
@@ -44,13 +45,13 @@ class _ProgressState extends State<Progress> {
             bottom: false,
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: 16,
+                horizontal: PBSpace.lg,
               ),
               child: Column(
                 children: [
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 72),
                   const Profile(name: 'Your name', imageUrl: ''),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: PBSpace.lg),
                   Row(
                     children: [
                       const Spacer(),
@@ -61,7 +62,7 @@ class _ProgressState extends State<Progress> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: PBSpace.lg),
                   const Expanded(child: LastSevenDayPushups()),
                 ],
               ),

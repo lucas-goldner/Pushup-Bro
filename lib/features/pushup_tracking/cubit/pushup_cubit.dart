@@ -21,28 +21,34 @@ class PushupCubit extends Cubit<PushupState> {
     return PushupSet(pushups, 0);
   }
 
+  /// Feeds one AirPods motion sample: a sharp drop starts a pushup, a sharp
+  /// rise finishes it.
   void listenForPushupEvents(DeviceMotionData? deviceMotionData, int volume) {
     final userAccelerationY = deviceMotionData?.userAcceleration.y ?? 0;
 
     if (state.inPushup) {
-      if (_checkForUpwardsMovement(userAccelerationY)) {
-        final newPushup = Pushup(completedAt: DateTime.now());
-        final pushups = [...state.pushups, newPushup];
-        final pushupSoundFilePath =
-            Assets.audio.pushupSound.replaceFirstMapped('assets/', (_) => '');
-
-        unawaited(_audioPlayer.setVolumeLevel(volume / 10.toDouble()));
-        unawaited(_audioPlayer.playSound(pushupSoundFilePath));
-
-        emit(
-          state.copyWith(pushups: pushups, inPushup: false),
-        );
-      }
-    } else {
-      if (_checkForDownwardsMovement(userAccelerationY)) {
-        emit(state.copyWith(pushups: state.pushups, inPushup: true));
-      }
+      if (_checkForUpwardsMovement(userAccelerationY)) up(volume);
+    } else if (_checkForDownwardsMovement(userAccelerationY)) {
+      down();
     }
+  }
+
+  /// The body went down into a pushup (from either tracker).
+  void down() {
+    if (state.inPushup) return;
+    emit(state.copyWith(pushups: state.pushups, inPushup: true));
+  }
+
+  /// The body came back up: one more pushup, with its sound at [volume]
+  /// (0 to 10).
+  void up(int volume) {
+    if (!state.inPushup) return;
+    final pushups = [...state.pushups, Pushup(completedAt: DateTime.now())];
+    final pushupSoundFilePath =
+        Assets.audio.pushupSound.replaceFirstMapped('assets/', (_) => '');
+    unawaited(_audioPlayer.setVolumeLevel(volume / 10.toDouble()));
+    unawaited(_audioPlayer.playSound(pushupSoundFilePath));
+    emit(state.copyWith(pushups: pushups, inPushup: false));
   }
 
   bool _checkForDownwardsMovement(num userAccelerationY) =>

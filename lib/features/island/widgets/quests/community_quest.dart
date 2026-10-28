@@ -28,12 +28,9 @@ class CommunityQuest extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                '''
-Let's work together to reach the goal of 10,000 bananas!
-If we reach the goal, we will unlock a new area on the island!
-''',
-                textAlign: TextAlign.left,
-                style: context.textTheme.headlineSmall,
+                context.l10n.communityText,
+                textAlign: TextAlign.center,
+                style: context.textTheme.bodyLarge?.copyWith(height: 1.45),
               ),
             ),
           ],

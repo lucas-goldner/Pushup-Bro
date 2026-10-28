@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/style/pb_colors.dart';
 
 class ItemColorsThemeExtensions
     extends ThemeExtension<ItemColorsThemeExtensions> {
@@ -7,12 +8,15 @@ class ItemColorsThemeExtensions
     required this.friendBoost,
   });
 
-  factory ItemColorsThemeExtensions.build() {
-    return const ItemColorsThemeExtensions(
-      doubleBoost: Color(0xFFfffcfc),
-      friendBoost: Color(0xFFffecc4),
-    );
-  }
+  factory ItemColorsThemeExtensions.light() => const ItemColorsThemeExtensions(
+        doubleBoost: PBPalette.white,
+        friendBoost: PBPalette.cream,
+      );
+
+  factory ItemColorsThemeExtensions.dark() => const ItemColorsThemeExtensions(
+        doubleBoost: PBPalette.navy700,
+        friendBoost: PBPalette.creamDark,
+      );
 
   final Color doubleBoost;
   final Color friendBoost;

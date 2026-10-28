@@ -1,0 +1,40 @@
+/* Widget gallery */
+"gallery.streak.name" = "連続記録";
+"gallery.streak.description" = "腕立て伏せの連続日数を毎日チェック。";
+"gallery.today.name" = "今日";
+"gallery.today.description" = "今日の腕立て伏せと1日の目標。";
+"gallery.trek.name" = "ジャングル探検";
+"gallery.trek.description" = "次に待っているステージ。";
+"gallery.week.name" = "今週";
+"gallery.week.description" = "直近7日間の毎日の腕立て伏せ。";
+
+/* Streak */
+"streak.label" = "連続記録";
+"streak.dayInARow" = "日連続";
+"streak.daysInARow" = "日連続";
+
+/* Today */
+"today.label" = "今日";
+"today.toGo" = "あと%ld回。コモが見てるぞ。";
+"today.goalDone" = "目標達成！カルロスも誇らしげ。";
+
+/* Jungle Trek */
+"trek.label" = "ジャングル探検 · 次";
+"trek.labelDone" = "ジャングル探検";
+"trek.stageWaves" = "ステージ%1$ld · %2$ldウェーブ";
+"trek.stageWave" = "ステージ%ld · 1ウェーブ";
+"trek.stageBoss" = "ステージ%ld · ボス戦";
+"trek.fight" = "バトル";
+"trek.allClearedTitle" = "全ステージクリア";
+"trek.allClearedHint" = "スター3つを目指そう";
+"trek.replay" = "もう一度";
+
+/* This week */
+"week.label" = "今週";
+"week.total" = "%ld回";
+"week.totalOne" = "1回";
+"week.activeDays" = "7日中%ld日 腕立て伏せ";
+
+/* Without Pro */
+"locked.title" = "ウィジェットはPro限定";
+"locked.hint" = "タップして解放";

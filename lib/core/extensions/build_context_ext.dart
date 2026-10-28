@@ -20,4 +20,9 @@ extension BuildContextExtension on BuildContext {
       extension<ItemColorsThemeExtensions>();
   GameColorsThemeExtension get gameColorsTheme =>
       extension<GameColorsThemeExtension>();
+
+  /// The game's colours for the current light or dark mode.
+  GameColorsThemeExtension get gameColors =>
+      extension<GameColorsThemeExtension>();
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 import 'package:pushup_bro/features/menu/widgets/closing_menu_button.dart';
 import 'package:pushup_bro/features/menu/widgets/menu_tabs.dart';
@@ -12,9 +13,18 @@ const _buttonDelayTime = Duration(milliseconds: 150);
 const _buttonTime = Duration(milliseconds: 500);
 
 class PBAppBar extends StatefulWidget {
-  const PBAppBar(this.title, this.toggelOpacity, {super.key});
+  const PBAppBar(
+    this.title,
+    this.toggelOpacity, {
+    this.overScene = false,
+    super.key,
+  });
   final String? title;
   final VoidCallback toggelOpacity;
+
+  /// Over a bright 3D scene the title sits on a floating card, so it reads
+  /// in dark mode too.
+  final bool overScene;
 
   @override
   State<PBAppBar> createState() => _PBAppBarState();
@@ -106,16 +116,36 @@ class _PBAppBarState extends State<PBAppBar> with TickerProviderStateMixin {
           ),
           Visibility(
             visible: widget.title != null,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  widget.title ?? '',
-                  style: context.textTheme.titleLarge?.copyWith(
-                    color: context.colorScheme.primary,
-                  ),
-                ),
-              ],
+            child: SizedBox(
+              height: 56,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (widget.overScene)
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(PBRadius.pill),
+                        boxShadow: context.cardShadow,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 6,
+                        ),
+                        child: Text(
+                          widget.title ?? '',
+                          style: context.textTheme.headlineSmall,
+                        ),
+                      ),
+                    )
+                  else
+                    Text(
+                      widget.title ?? '',
+                      style: context.textTheme.headlineLarge,
+                    ),
+                ],
+              ),
             ),
           ),
         ],

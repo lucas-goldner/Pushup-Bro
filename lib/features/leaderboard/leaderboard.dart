@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/extensions/list_ext.dart';
 import 'package:pushup_bro/core/model/user.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/leaderboard/widgets/leaderboard_profile.dart';
 
 class Leaderboard extends StatelessWidget {
@@ -33,41 +34,38 @@ class Leaderboard extends StatelessWidget {
 
     return SafeArea(
       bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 64),
-            const SearchBar(
+      child: Column(
+        children: [
+          const SizedBox(height: 64),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: PBSpace.lg),
+            child: SearchBar(
               hintText: 'Search',
             ),
-            Flexible(
-              child: ListView(
-                children: [
-                  ...leaderBoardUsers.mapIndexed(
-                    (index, user) => Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: LeaderboardProfile(
-                            user: user,
-                            ranking: index + 1,
-                          ),
-                        ),
-                        const Divider(
-                          indent: 60,
-                          endIndent: 16,
-                        ),
-                      ],
+          ),
+          Flexible(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                PBSpace.lg,
+                PBSpace.lg,
+                PBSpace.lg,
+                PBSpace.xxl,
+              ),
+              children: [
+                ...leaderBoardUsers.mapIndexed(
+                  (index, user) => Padding(
+                    padding: const EdgeInsets.only(bottom: PBSpace.md),
+                    child: LeaderboardProfile(
+                      user: user,
+                      ranking: index + 1,
+                      highlight: user.name == 'YOU',
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:pushup_bro/features/island/model/game_menu_type.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
 import 'package:pushup_bro/features/island/widgets/banana_counter.dart';
 import 'package:pushup_bro/features/island/widgets/community_goal.dart';
+import 'package:pushup_bro/features/pro/widgets/just_looking_pill.dart';
 
 class IslandTopBar extends StatelessWidget {
   const IslandTopBar({
     required this.openQuest,
+    this.locked = false,
+    this.onJustLooking,
     super.key,
   });
 
-  final void Function({
-    required GameMenuType gameMenuType,
-    required QuestType questType,
-  }) openQuest;
+  final void Function(QuestType questType) openQuest;
+
+  /// Without Pro, a "Just looking" pill takes the community goal's place.
+  final bool locked;
+  final VoidCallback? onJustLooking;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -22,12 +25,12 @@ class IslandTopBar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Spacer(),
-            CommunityGoal(
-              openMenu: () => openQuest(
-                gameMenuType: GameMenuType.quest,
-                questType: QuestType.community,
+            if (locked)
+              JustLookingPill(onTap: onJustLooking)
+            else
+              CommunityGoal(
+                openMenu: () => openQuest(QuestType.community),
               ),
-            ),
             const SizedBox(width: 8),
             const BananaCounter(),
             const SizedBox(width: 12),

@@ -1,0 +1,40 @@
+/* Widget gallery */
+"gallery.streak.name" = "Streak";
+"gallery.streak.description" = "Your pushup streak, day after day.";
+"gallery.today.name" = "Today";
+"gallery.today.description" = "Today's pushups towards your daily goal.";
+"gallery.trek.name" = "Jungle Trek";
+"gallery.trek.description" = "The next stage waiting on the trail.";
+"gallery.week.name" = "This week";
+"gallery.week.description" = "Your pushups on each of the last seven days.";
+
+/* Streak */
+"streak.label" = "Streak";
+"streak.dayInARow" = "day in a row";
+"streak.daysInARow" = "days in a row";
+
+/* Today */
+"today.label" = "Today";
+"today.toGo" = "%ld to go. Komo is watching.";
+"today.goalDone" = "Goal done. Carlos is proud.";
+
+/* Jungle Trek */
+"trek.label" = "Jungle Trek · Next";
+"trek.labelDone" = "Jungle Trek";
+"trek.stageWaves" = "Stage %1$ld · %2$ld waves";
+"trek.stageWave" = "Stage %ld · 1 wave";
+"trek.stageBoss" = "Stage %ld · Boss fight";
+"trek.fight" = "Fight";
+"trek.allClearedTitle" = "Every stage cleared";
+"trek.allClearedHint" = "Go back for three stars";
+"trek.replay" = "Replay";
+
+/* This week */
+"week.label" = "This week";
+"week.total" = "%ld pushups";
+"week.totalOne" = "1 pushup";
+"week.activeDays" = "Pushups on %ld of 7 days";
+
+/* Without Pro */
+"locked.title" = "Widgets need Pro";
+"locked.hint" = "Tap to unlock";

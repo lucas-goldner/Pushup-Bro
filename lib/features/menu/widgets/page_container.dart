@@ -10,10 +10,14 @@ class PageContainer extends StatefulWidget {
     this.pageContent, {
     this.menuTab,
     bool? showTitle,
+    this.overScene = false,
     super.key,
   }) : _showTitle = showTitle ?? true;
 
   final Widget pageContent;
+
+  /// Whether the page is a 3D scene, so the title floats on a card.
+  final bool overScene;
   final MenuTabInfo? menuTab;
   final bool _showTitle;
 
@@ -32,7 +36,7 @@ class _PageContainerState extends State<PageContainer> {
 
   @override
   Widget build(BuildContext context) => CupertinoPageScaffold(
-        backgroundColor: context.colorScheme.surface,
+        backgroundColor: context.colorScheme.surfaceContainerLow,
         child: Stack(
           children: [
             Stack(
@@ -75,6 +79,7 @@ class _PageContainerState extends State<PageContainer> {
                   child: PBAppBar(
                     titleVisible ? widget.menuTab?.getMenuTitle(context) : '',
                     _changeOpacity,
+                    overScene: widget.overScene,
                   ),
                 ),
               ],

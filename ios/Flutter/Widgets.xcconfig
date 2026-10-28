@@ -1,0 +1,3 @@
+// The widget extension only needs the app's version from Flutter, not the
+// app's own build settings.
+#include "Generated.xcconfig"

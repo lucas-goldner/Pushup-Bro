@@ -5,6 +5,7 @@ import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/extensions/datetime_ext.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pb_button.dart';
 
 class LastSevenDayPushups extends StatefulWidget {
@@ -15,10 +16,6 @@ class LastSevenDayPushups extends StatefulWidget {
 }
 
 class _LineChartSample2State extends State<LastSevenDayPushups> {
-  List<Color> gradientColors = [
-    const Color(0xff23b6e6),
-    const Color(0xff02d39a),
-  ];
   bool showTotal = false;
 
   @override
@@ -29,16 +26,48 @@ class _LineChartSample2State extends State<LastSevenDayPushups> {
 
           return Column(
             children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: AspectRatio(
-                  aspectRatio: 1.5,
-                  child: LineChart(
-                    showTotal ? mainData(pushups) : lastSevenDaysData(pushups),
-                  ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(
+                  PBSpace.md,
+                  PBSpace.lg,
+                  PBSpace.xl,
+                  PBSpace.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(PBRadius.lg),
+                  boxShadow: context.cardShadow,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: PBSpace.md,
+                        bottom: PBSpace.md,
+                      ),
+                      child: Text(
+                        (showTotal
+                                ? context.l10n.total
+                                : context.l10n.lastSevenDays)
+                            .toUpperCase(),
+                        style: context.textTheme.labelSmall?.copyWith(
+                          color: context.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    AspectRatio(
+                      aspectRatio: 1.5,
+                      child: LineChart(
+                        showTotal
+                            ? mainData(pushups)
+                            : lastSevenDaysData(pushups),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: PBSpace.xl),
               Row(
                 children: [
                   Expanded(
@@ -56,12 +85,69 @@ class _LineChartSample2State extends State<LastSevenDayPushups> {
         },
       );
 
+  /// The line in the theme's secondary colour, fading out below.
+  LineChartBarData _line(List<FlSpot> spots) {
+    final color = context.colorScheme.secondary;
+
+    return LineChartBarData(
+      spots: spots,
+      isCurved: true,
+      color: color,
+      barWidth: 4,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+          radius: 4,
+          color: context.colorScheme.surface,
+          strokeWidth: 3,
+          strokeColor: color,
+        ),
+      ),
+      belowBarData: BarAreaData(
+        show: true,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            color.withValues(alpha: 0.3),
+            color.withValues(alpha: 0),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Hairline horizontal grid and no frame.
+  FlGridData get _grid => FlGridData(
+        drawVerticalLine: false,
+        getDrawingHorizontalLine: (value) => FlLine(
+          color: context.colorScheme.outlineVariant,
+          strokeWidth: 1,
+        ),
+      );
+
+  /// Tooltips in the inverse surface, readable in both modes.
+  LineTouchData get _touch => LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          getTooltipColor: (spot) => context.colorScheme.inverseSurface,
+          getTooltipItems: (spots) => [
+            for (final spot in spots)
+              LineTooltipItem(
+                spot.y.toInt().toString(),
+                context.textTheme.labelMedium!.copyWith(
+                  color: context.colorScheme.onInverseSurface,
+                ),
+              ),
+          ],
+        ),
+      );
+
   Widget bottomTitleWidgets(
     BuildContext context,
     double value,
     TitleMeta meta,
   ) {
-    final style = context.textTheme.bodyMedium;
+    final style = context.textTheme.bodySmall;
 
     Widget text;
     switch (value.toInt()) {
@@ -84,7 +170,7 @@ class _LineChartSample2State extends State<LastSevenDayPushups> {
   }
 
   Widget leftTitleWidgets(BuildContext context, double value, TitleMeta meta) {
-    final style = context.textTheme.bodyMedium;
+    final style = context.textTheme.bodySmall;
     String text;
     switch (value.toInt()) {
       case 10:
@@ -113,7 +199,7 @@ class _LineChartSample2State extends State<LastSevenDayPushups> {
         meta: meta,
         child: Text(
           value.toInt().toString(),
-          style: context.textTheme.bodyMedium,
+          style: context.textTheme.bodySmall,
         ),
       );
 
@@ -150,9 +236,12 @@ class _LineChartSample2State extends State<LastSevenDayPushups> {
         maxX: 12,
         minY: 0,
         maxY: pushups.monthWithMostPushups.pushups.toDouble() + 10,
+        gridData: _grid,
+        borderData: FlBorderData(show: false),
+        lineTouchData: _touch,
         lineBarsData: [
-          LineChartBarData(
-            spots: pushups.stackedPerMonth
+          _line(
+            pushups.stackedPerMonth
                 .map(
                   (e) => FlSpot(
                     e.month.toDouble(),
@@ -160,19 +249,6 @@ class _LineChartSample2State extends State<LastSevenDayPushups> {
                   ),
                 )
                 .toList(),
-            isCurved: true,
-            gradient: LinearGradient(
-              colors: gradientColors,
-            ),
-            isStrokeCapRound: true,
-            belowBarData: BarAreaData(
-              show: true,
-              gradient: LinearGradient(
-                colors: gradientColors
-                    .map((color) => color.withValues(alpha: 0.3))
-                    .toList(),
-              ),
-            ),
           ),
         ],
       );
@@ -214,9 +290,12 @@ class _LineChartSample2State extends State<LastSevenDayPushups> {
       maxX: lastSevenDays.last.day.toDouble(),
       minY: 0,
       maxY: 100,
+      gridData: _grid,
+      borderData: FlBorderData(show: false),
+      lineTouchData: _touch,
       lineBarsData: [
-        LineChartBarData(
-          spots: lastSevenDaysPushups
+        _line(
+          lastSevenDaysPushups
               .map(
                 (pushups) => FlSpot(
                   pushups.day.toDouble(),
@@ -224,19 +303,6 @@ class _LineChartSample2State extends State<LastSevenDayPushups> {
                 ),
               )
               .toList(),
-          isCurved: true,
-          gradient: LinearGradient(
-            colors: gradientColors,
-          ),
-          isStrokeCapRound: true,
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: gradientColors
-                  .map((color) => color.withValues(alpha: 0.3))
-                  .toList(),
-            ),
-          ),
         ),
       ],
     );

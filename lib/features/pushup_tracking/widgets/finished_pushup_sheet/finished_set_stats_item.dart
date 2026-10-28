@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
-import 'package:pushup_bro/core/style/pb_text_styles.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 
+/// A soft inner card with a tinted icon tile and a stat about the set.
 class FinishedSetStatsItem extends StatelessWidget {
   const FinishedSetStatsItem({
     required this.icon,
@@ -13,33 +14,30 @@ class FinishedSetStatsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    final accent = context.colorScheme.secondary;
+
+    return Container(
+      padding: const EdgeInsets.all(PBSpace.md),
       decoration: BoxDecoration(
-        border: Border.all(color: background2),
-        borderRadius: BorderRadius.circular(10),
+        color: context.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(PBRadius.md),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 16,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              icon,
-              size: 28,
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: context.tint(accent),
+              borderRadius: BorderRadius.circular(PBRadius.sm),
             ),
-            const SizedBox(
-              height: 4,
-            ),
-            Text(
-              text,
-              style: defaultTextStyle,
-              textAlign: TextAlign.start,
-            ),
-          ],
-        ),
+            child: Icon(icon, size: 20, color: accent),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(text, style: context.textTheme.titleSmall),
+          ),
+        ],
       ),
     );
   }

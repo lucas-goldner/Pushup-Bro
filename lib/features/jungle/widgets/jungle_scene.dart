@@ -1,19 +1,20 @@
 import 'dart:math' as math;
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
-import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 /// Matches the bottom of the jungle screen's gradient, so the fog melts
-/// into the backdrop.
-const jungleMist = Color(0xFFBFE3C4);
+/// into the backdrop: a pale, misty leaf green.
+Color jungleMistOf(BuildContext context) =>
+    Color.lerp(context.gameColors.leaf, context.gameColors.onGame, 0.635)!;
 
 /// A clearing deep in the jungle. Carlos wanders in through the gate and
 /// sits down in the middle while parrots circle overhead.
@@ -31,10 +32,14 @@ class _JungleSceneState extends State<JungleScene> {
   double _time = 0;
 
   void _populate(Scene scene) {
-    final jungle = _jungle = JunglePatch(radius: 4.2, clearing: true, seed: 11);
+    final jungle = _jungle = JunglePatch(
+      radius: 4.2,
+      clearing: true,
+      seed: 11,
+      fixed: true,
+    );
     final inventory = context.read<GameInventoryCubit>().state.inventory;
-    _carlos.partyHat = inventory.monkeys.isNotEmpty &&
-        inventory.monkeys.first.accessory == ShopBuyables.accessoryPartyHat;
+    _carlos.look = inventory.monkeys.first.look;
     scene
       ..directionalLight = DirectionalLight(
         direction: vm.Vector3(-0.4, -1, -0.3),
@@ -49,7 +54,7 @@ class _JungleSceneState extends State<JungleScene> {
         ambientOcclusionIntensity: 0.9,
         fogEnabled: true,
         fogMode: FogMode.linear,
-        fogColor: linearColor(jungleMist).xyz,
+        fogColor: linearColor(jungleMistOf(context)).xyz,
         fogStart: 12,
         fogEnd: 30,
       )

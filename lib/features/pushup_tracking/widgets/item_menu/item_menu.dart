@@ -9,6 +9,7 @@ import 'package:pushup_bro/core/cubit/booster_item_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/active_effects.dart';
 import 'package:pushup_bro/core/model/booster_items.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/item_menu/item_friend_menu.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/item_menu/item_menu_item.dart';
 
@@ -115,8 +116,8 @@ class _ExpandableItemMenuButtonState extends State<_ExpandableItemMenuButton>
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: context.colorScheme.surface,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [context.shadow],
+            borderRadius: BorderRadius.circular(PBRadius.pill),
+            boxShadow: context.cardShadow,
           ),
           child: SizedBox(
             width: 56,
@@ -125,8 +126,8 @@ class _ExpandableItemMenuButtonState extends State<_ExpandableItemMenuButton>
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: Icon(
-                  Icons.close,
-                  color: context.colorScheme.primary,
+                  CarbonIcons.close,
+                  color: context.colorScheme.onSurface,
                 ),
               ),
             ),
@@ -171,15 +172,19 @@ class _ExpandableItemMenuButtonState extends State<_ExpandableItemMenuButton>
             duration: const Duration(milliseconds: 250),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(PBRadius.pill),
+                boxShadow: context.glow(context.colorScheme.shadow),
               ),
               child: IconButton.filled(
+                style: IconButton.styleFrom(
+                  backgroundColor: context.colorScheme.primary,
+                ),
                 padding: const EdgeInsets.all(12),
                 iconSize: 32,
                 onPressed: _toggle,
                 icon: Icon(
                   CarbonIcons.upgrade,
-                  color: context.colorScheme.surface,
+                  color: context.colorScheme.onPrimary,
                 ),
               ),
             ),

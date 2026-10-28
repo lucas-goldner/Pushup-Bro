@@ -11,16 +11,15 @@ class CalendarStatItem extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: context.colorScheme.inversePrimary,
+            size: 18,
+            color: context.colorScheme.secondary,
           ),
           const SizedBox(
-            width: 8,
+            width: 6,
           ),
           Text(
             text,
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: context.colorScheme.surfaceBright,
-            ),
+            style: context.textTheme.titleSmall,
           ),
         ],
       );

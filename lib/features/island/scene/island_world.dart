@@ -5,6 +5,7 @@ import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/nature_kit.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
+import 'package:pushup_bro/core/scene/static_batch.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
@@ -17,7 +18,6 @@ const _grass = Color(0xFF8CCB6E);
 const _white = Color(0xFFFAF8F4);
 const _navy = Color(0xFF17203A);
 const _glass = Color(0xFF7FC4E8);
-const _banana = Color(0xFFF5C343);
 
 const sandTop = 0.22;
 const grassTop = 0.36;
@@ -60,6 +60,9 @@ class IslandWorld {
       ..add(jungle.root);
     for (final prop in _props()) {
       _scenery.add(prop);
+      // Each prop and building is moved as a whole when the island grows,
+      // so each is merged into a few meshes of its own.
+      bakeStatic(prop.node);
       root.add(prop.node);
     }
 
@@ -71,6 +74,7 @@ class IslandWorld {
       ShopBuyables.monkeyAdoption: _adoptionHut(),
     };
     for (final building in _buildings.values) {
+      bakeStatic(building);
       root.add(building..visible = false);
     }
     _buildings[ShopBuyables.none]!.visible = true;
@@ -96,6 +100,8 @@ class IslandWorld {
   double _builtRadius = _baseRadius;
   double _time = 0;
   double _lap = 0;
+  double _greeting = 0;
+  vm.Vector3 _greetToward = vm.Vector3(0, 0, 1);
 
   vm.Vector3? _runFrom;
   double _runProgress = 0;
@@ -119,10 +125,41 @@ class IslandWorld {
   /// Whether Carlos is on his way to the jungle.
   bool get running => _runFrom != null;
 
+  /// Whether Carlos is stopped, waving at the camera.
+  bool get greeting => _greeting > 0;
+
+  /// The top of Carlos's head, for hanging a speech bubble over it.
+  vm.Vector3 get carlosHead =>
+      gorilla.root.position + vm.Vector3(0, 1.05 * gorilla.root.scale.y, 0);
+
+  /// Whether [node] is part of Carlos.
+  bool isCarlos(Node node) => _within(node, gorilla.root);
+
   /// Whether [node] is part of the jungle: a tree, a rock, the hill...
-  bool isJungle(Node node) {
+  bool isJungle(Node node) => _within(node, jungle.root);
+
+  /// Whether [node] is part of a building, the food truck included.
+  bool isBuilding(Node node) =>
+      _buildings.values.any((building) => _within(node, building));
+
+  /// Above the food truck, where the shop's lock pin floats.
+  vm.Vector3 get shopSpot =>
+      _buildings[ShopBuyables.none]!.position + vm.Vector3(0, 1.6, 0);
+
+  /// Above the jungle's trees, where its lock pin floats.
+  vm.Vector3 get jungleSpot => jungleCenter + vm.Vector3(0, 2.6, 0);
+
+  /// Stops Carlos's laps for [seconds] to turn towards [toward] (a world
+  /// direction, usually the camera) and wave.
+  void greet(vm.Vector3 toward, {double seconds = 3.4}) {
+    if (running) return;
+    _greeting = seconds;
+    _greetToward = vm.Vector3(toward.x, 0, toward.z)..normalize();
+  }
+
+  static bool _within(Node node, Node ancestor) {
     for (Node? n = node; n != null; n = n.parent) {
-      if (identical(n, jungle.root)) return true;
+      if (identical(n, ancestor)) return true;
     }
 
     return false;
@@ -170,6 +207,14 @@ class IslandWorld {
     final runFrom = _runFrom;
     if (runFrom != null) {
       _updateRun(runFrom, deltaSeconds);
+    } else if (_greeting > 0) {
+      _greeting -= deltaSeconds;
+      gorilla
+        ..activity = GorillaActivity.wave
+        ..root.rotation = vm.Quaternion.fromTwoVectors(
+          vm.Vector3(0, 0, 1),
+          _greetToward,
+        );
     } else {
       _updateLap(deltaSeconds);
     }
@@ -439,19 +484,10 @@ class IslandWorld {
       ])
       // A giant banana on the roof.
       ..add(
-        meshNode(
-          TubeGeometry(
-            CatmullRomPath([
-              vm.Vector3(-0.42, 0.78, 0),
-              vm.Vector3(-0.2, 0.84, 0),
-              vm.Vector3(0.05, 0.86, 0),
-              vm.Vector3(0.28, 0.98, 0),
-            ]),
-            radius: 0.075,
-            stations: 20,
-          ),
-          matte(_banana, roughness: 0.55),
-        ),
+        banana()
+          ..scale = vm.Vector3.all(1.2)
+          ..position = vm.Vector3(-0.05, 0.74, 0)
+          ..rotation = vm.Quaternion.axisAngle(vm.Vector3(0, 0, 1), 0.12),
       );
   }
 

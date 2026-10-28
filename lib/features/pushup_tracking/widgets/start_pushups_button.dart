@@ -1,7 +1,6 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 
 class StartPushupsButton extends StatefulWidget {
@@ -25,7 +24,7 @@ class _StartPushupsButtonState extends State<StartPushupsButton> {
         label: buttonPressed ? context.l10n.finishSet : context.l10n.startPush,
         icon:
             buttonPressed ? CarbonIcons.checkmark : CarbonIcons.play_filled_alt,
-        color: buttonPressed ? accentColor : background2,
+        color: buttonPressed ? context.colorScheme.secondary : null,
         onPressed: () => switchButtonState(context),
       );
 }

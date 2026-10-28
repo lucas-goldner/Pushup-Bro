@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/string_ext.dart';
+import 'package:pushup_bro/core/model/appearance.dart';
 import 'package:pushup_bro/core/model/shared_preferences_key.dart';
+import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/platform/system_locale.dart';
 import 'package:pushup_bro/core/provider/shared_preferences_interface.dart';
 
@@ -20,12 +22,8 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
 
     final systemLanguage = await findSystemLocale();
 
-    emit(
-      SharedPreferencesLoaded(
-        language: Locale(selectedLanguage ?? systemLanguage.getLanguageCode()),
-        volumeLevel: state.volumeLevel,
-        firstPushupCompleted: state.firstPushupCompleted,
-      ),
+    _update(
+      language: Locale(selectedLanguage ?? systemLanguage.getLanguageCode()),
     );
 
     return selectedLanguage ?? systemLanguage.getLanguageCode();
@@ -61,13 +59,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
       locale.toLanguageTag(),
     );
 
-    emit(
-      SharedPreferencesLoaded(
-        language: locale,
-        volumeLevel: state.volumeLevel,
-        firstPushupCompleted: state.firstPushupCompleted,
-      ),
-    );
+    _update(language: locale);
   }
 
   Future<void> setVolume(int volume) async {
@@ -76,13 +68,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
       value: volume,
     );
 
-    emit(
-      SharedPreferencesLoaded(
-        language: state.language,
-        volumeLevel: volume,
-        firstPushupCompleted: state.firstPushupCompleted,
-      ),
-    );
+    _update(volumeLevel: volume);
   }
 
   Future<void> setFirstPushupCompleted({required bool completed}) async {
@@ -91,13 +77,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
       value: completed,
     );
 
-    emit(
-      SharedPreferencesLoaded(
-        language: state.language,
-        volumeLevel: state.volumeLevel,
-        firstPushupCompleted: completed,
-      ),
-    );
+    _update(firstPushupCompleted: completed);
   }
 
   Future<void> setFirstJoined() async {
@@ -127,9 +107,7 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
       SharedPreferencesKey.firstTimeIslandVisited,
       value: isFirstVisit,
     );
-    emit(
-      SharedPreferencesLoaded(firstTimeIslandVisited: isFirstVisit),
-    );
+    _update(firstTimeIslandVisited: isFirstVisit);
   }
 
   Future<bool> getFirstTimeIslandVisited() async {
@@ -138,10 +116,76 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
         ) ??
         true;
 
-    emit(
-      SharedPreferencesLoaded(firstTimeIslandVisited: isFirstVisit),
-    );
+    _update(firstTimeIslandVisited: isFirstVisit);
 
     return isFirstVisit;
   }
+
+  /// Loads how pushups are tracked and the music volume.
+  Future<void> loadWorkoutSettings() async {
+    final mode = await _sharedPreferencesProvider.getSharedPrefString(
+      SharedPreferencesKey.trackingMode,
+    );
+    final music = await _sharedPreferencesProvider.getSharedPrefInt(
+      SharedPreferencesKey.musicVolume,
+    );
+    final volume = await getVolume();
+    final appearance = await _sharedPreferencesProvider.getSharedPrefString(
+      SharedPreferencesKey.appearance,
+    );
+    _update(
+      appearance: Appearance.byName(appearance),
+      trackingMode: TrackingMode.byName(mode),
+      musicVolume: music ?? 7,
+      volumeLevel: volume,
+    );
+  }
+
+  Future<void> setTrackingMode(TrackingMode mode) async {
+    await _sharedPreferencesProvider.writeStringToSharedPrefs(
+      SharedPreferencesKey.trackingMode,
+      mode.name,
+    );
+    _update(trackingMode: mode);
+  }
+
+  Future<void> setMusicVolume(int volume) async {
+    await _sharedPreferencesProvider.writeIntToSharedPrefs(
+      SharedPreferencesKey.musicVolume,
+      value: volume,
+    );
+    _update(musicVolume: volume);
+  }
+
+  Future<void> setAppearance(Appearance appearance) async {
+    await _sharedPreferencesProvider.writeStringToSharedPrefs(
+      SharedPreferencesKey.appearance,
+      appearance.name,
+    );
+    _update(appearance: appearance);
+  }
+
+  /// Emits the loaded state with the given fields changed, keeping the rest.
+  void _update({
+    Locale? language,
+    int? volumeLevel,
+    bool? firstPushupCompleted,
+    bool? firstTimeIslandVisited,
+    TrackingMode? trackingMode,
+    int? musicVolume,
+    Appearance? appearance,
+  }) =>
+      emit(
+        SharedPreferencesLoaded(
+          language: language ?? state.language,
+          volumeLevel: volumeLevel ?? state.volumeLevel,
+          firstPushupCompleted:
+              firstPushupCompleted ?? state.firstPushupCompleted,
+          firstTimeIslandVisited:
+              firstTimeIslandVisited ?? state.firstTimeIslandVisited,
+          trackingMode: trackingMode ?? state.trackingMode,
+          musicVolume: musicVolume ?? state.musicVolume,
+          appearance: appearance ?? state.appearance,
+        ),
+      );
 }

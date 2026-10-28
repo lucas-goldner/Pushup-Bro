@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/core/style/pb_colors.dart';
 
 class ProgressThemeExtension extends ThemeExtension<ProgressThemeExtension> {
   ProgressThemeExtension({
@@ -10,10 +11,7 @@ class ProgressThemeExtension extends ThemeExtension<ProgressThemeExtension> {
       streakStarGradient: const LinearGradient(
         begin: Alignment.center,
         end: Alignment.bottomCenter,
-        colors: [
-          Color.fromARGB(204, 255, 191, 0),
-          Color.fromARGB(204, 224, 62, 76),
-        ],
+        colors: [PBPalette.banana, PBPalette.coral],
       ),
     );
   }

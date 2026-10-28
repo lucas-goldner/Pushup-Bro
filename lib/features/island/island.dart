@@ -5,13 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
-import 'package:pushup_bro/features/island/model/game_menu_type.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
 import 'package:pushup_bro/features/island/widgets/game_menu.dart';
 import 'package:pushup_bro/features/island/widgets/island_dock.dart';
 import 'package:pushup_bro/features/island/widgets/island_scene.dart';
 import 'package:pushup_bro/features/island/widgets/island_top_bar.dart';
 import 'package:pushup_bro/features/island/widgets/quest_dialog.dart';
+import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
+import 'package:pushup_bro/features/pro/model/pro_feature.dart';
+import 'package:pushup_bro/features/pro/model/pro_state.dart';
+import 'package:pushup_bro/features/pro/paywall/show_paywall.dart';
+import 'package:pushup_bro/features/pro/pro_access.dart';
+import 'package:pushup_bro/features/wardrobe/wardrobe.dart';
 
 class Island extends StatefulWidget {
   const Island({super.key});
@@ -24,29 +29,35 @@ class Island extends StatefulWidget {
 class _IslandState extends State<Island> {
   bool _menuVisible = false;
   bool _questVisible = false;
-  GameMenuType _gameMenuType = GameMenuType.shop;
   QuestType _quest = QuestType.intro;
   bool _firstTimeVisiting = false;
   bool _isNewDayVisible = false;
   bool _journeying = false;
   final _sceneKey = GlobalKey<IslandSceneState>();
 
-  void openMenu(GameMenuType gameMenuType) => setState(() {
-        _gameMenuType = gameMenuType;
-        _menuVisible = true;
-      });
+  /// Whether the island is view only (no Pro, free days over).
+  bool _locked(ProState state) =>
+      !state.hasAccess(context.read<ProCubit>().now);
+
+  /// Runs [action] once the player may use [place]; without Pro, its lock
+  /// sheet comes first.
+  Future<void> _guarded(ProLockPlace place, VoidCallback action) async {
+    if (!await ensureProAccess(context, place: place)) return;
+    if (mounted) action();
+  }
+
+  void openMenu() => setState(() => _menuVisible = true);
+
+  void openWardrobe() => Navigator.of(context).pushNamed(Wardrobe.routeName);
+
+  void _goToJungle() => _sceneKey.currentState?.goToJungle();
 
   void closeMenu() => setState(() {
         _menuVisible = false;
       });
 
-  void openQuest({
-    required GameMenuType gameMenuType,
-    required QuestType questType,
-  }) =>
-      setState(() {
+  void openQuest(QuestType questType) => setState(() {
         _quest = questType;
-        _gameMenuType = gameMenuType;
         _questVisible = true;
       });
 
@@ -95,16 +106,22 @@ class _IslandState extends State<Island> {
       !_journeying;
 
   @override
-  Widget build(BuildContext context) => Stack(
+  Widget build(BuildContext context) => BlocBuilder<ProCubit, ProState>(
+        builder: (context, pro) => _island(context, locked: _locked(pro)),
+      );
+
+  /// Locked, the island stays to look at: the HUD shows with locks and
+  /// the intro, daily login, shop and quests wait until it's unlocked.
+  Widget _island(BuildContext context, {required bool locked}) => Stack(
         children: [
-          const Positioned.fill(
+          Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xFF9CD6F2), islandHorizon],
-                  stops: [0, 0.55],
+                  colors: [islandSky(context).top, islandSky(context).horizon],
+                  stops: const [0, 0.55],
                 ),
               ),
             ),
@@ -112,50 +129,64 @@ class _IslandState extends State<Island> {
           Positioned.fill(
             child: IslandScene(
               key: _sceneKey,
+              locked: locked,
+              onLockedTap: (place) => _guarded(place, () {}),
               onJourneyChanged: (journeying) =>
                   setState(() => _journeying = journeying),
             ),
           ),
-          if (_hudVisible) ...[
-            IslandTopBar(openQuest: openQuest),
+          if (locked ? !_journeying : _hudVisible) ...[
+            IslandTopBar(
+              openQuest: (quest) => _guarded(
+                ProLockPlace.jungle,
+                () => openQuest(quest),
+              ),
+              locked: locked,
+              onJustLooking: () => showPaywall(context),
+            ),
             SafeArea(
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: IslandDock(
-                    onShop: () => openMenu(GameMenuType.shop),
-                    onAccessories: () => openMenu(GameMenuType.accessories),
-                    onCarlos: () => openMenu(GameMenuType.monkey),
-                    onJungle: () => _sceneKey.currentState?.goToJungle(),
+                    locked: locked,
+                    onShop: () => _guarded(ProLockPlace.shop, openMenu),
+                    onAccessories: () =>
+                        _guarded(ProLockPlace.carlos, openWardrobe),
+                    onCarlos: () => _guarded(ProLockPlace.carlos, openWardrobe),
+                    onJungle: () => _guarded(ProLockPlace.jungle, _goToJungle),
                   ),
                 ),
               ),
             ),
           ],
-          GameMenu(
-            closeMenu: closeMenu,
-            menuVisible: _menuVisible && !_firstTimeVisiting,
-            menuType: _gameMenuType,
-          ),
-          if (_questVisible)
-            QuestDialog(
-              questVisible: _questVisible,
-              onClose: closeQuest,
-              questType: _quest,
+          if (locked)
+            const SizedBox.shrink()
+          else ...[
+            GameMenu(
+              closeMenu: closeMenu,
+              menuVisible: _menuVisible && !_firstTimeVisiting,
             ),
-          if (_isNewDayVisible && !_firstTimeVisiting)
-            QuestDialog(
-              questVisible: _isNewDayVisible,
-              onClose: closeDailyLogin,
-              questType: QuestType.dailyLogin,
-            ),
-          if (_firstTimeVisiting)
-            QuestDialog(
-              questVisible: _menuVisible,
-              onClose: firstTimeVisiting,
-              questType: QuestType.intro,
-            ),
+            if (_questVisible)
+              QuestDialog(
+                questVisible: _questVisible,
+                onClose: closeQuest,
+                questType: _quest,
+              ),
+            if (_isNewDayVisible && !_firstTimeVisiting)
+              QuestDialog(
+                questVisible: _isNewDayVisible,
+                onClose: closeDailyLogin,
+                questType: QuestType.dailyLogin,
+              ),
+            if (_firstTimeVisiting)
+              QuestDialog(
+                questVisible: _menuVisible,
+                onClose: firstTimeVisiting,
+                questType: QuestType.intro,
+              ),
+          ],
         ],
       );
 }

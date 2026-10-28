@@ -7,3 +7,5 @@
 */
 
 CFBundleDisplayName = "Pushup Kumpel";
+NSCameraUsageDescription = "Zählt deine Liegestütze, indem die Kamera deine Haltung beobachtet. Das Video verlässt nie dein Handy.";
+NSMotionUsageDescription = "Misst die Bewegung deiner AirPods, um Liegestütze zu zählen";

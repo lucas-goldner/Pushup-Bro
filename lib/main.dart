@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/constants.dart';
 import 'package:pushup_bro/core/cubit/active_effects_cubit.dart';
 import 'package:pushup_bro/core/cubit/booster_item_cubit.dart';
@@ -18,6 +19,7 @@ import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
 import 'package:pushup_bro/core/extensions/string_ext.dart';
 import 'package:pushup_bro/core/flavor.dart';
+import 'package:pushup_bro/core/model/appearance.dart';
 import 'package:pushup_bro/core/model/environment.dart';
 import 'package:pushup_bro/core/model/shared_preferences_key.dart';
 import 'package:pushup_bro/core/platform/system_locale.dart';
@@ -25,11 +27,17 @@ import 'package:pushup_bro/core/provider/audio_player_provider.dart';
 import 'package:pushup_bro/core/provider/db_provider.dart';
 import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/core/style/theme.dart';
+import 'package:pushup_bro/features/app_icon/app_icon_guard.dart';
 import 'package:pushup_bro/features/menu/model/routes.dart';
+import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/news_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/provider/airpods_motion_provider.dart';
+import 'package:pushup_bro/features/reminders/cubit/reminders_cubit.dart';
+import 'package:pushup_bro/features/reminders/data/reminder_service.dart';
+import 'package:pushup_bro/features/reminders/reminders_scope.dart';
+import 'package:pushup_bro/features/widgets/widget_sync.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 
 void main() {
@@ -75,6 +83,7 @@ class Main extends StatelessWidget {
     DBProvider dbProvider,
     DBCubit dbCubit,
     GameInventoryCubit gameInventoryCubit,
+    ProCubit proCubit,
   ) async {
     await initializeDateFormatting();
     if (!kIsWeb) {
@@ -94,9 +103,24 @@ class Main extends StatelessWidget {
     );
     await sharedPreferencesCubit.getLanguage();
     await sharedPreferencesCubit.getFirstTimeIslandVisited();
+    await sharedPreferencesCubit.loadWorkoutSettings();
+    // Sounds follow the volumes in the settings.
+    final audio = GameAudio.instance
+      ..sfxVolume = sharedPreferencesCubit.state.volumeLevel ?? 10
+      ..musicVolume = sharedPreferencesCubit.state.musicVolume;
+    sharedPreferencesCubit.stream.listen((state) {
+      audio
+        ..sfxVolume = state.volumeLevel ?? 10
+        ..musicVolume = state.musicVolume;
+    });
+    await audio.init();
     await dbProvider.loadDB();
     await dbCubit.getUser();
+    // Reminders and widgets plan from the saved sets.
+    await dbCubit.getAllPushupSets();
     await gameInventoryCubit.fetchInventory();
+    // The free days start on the first launch; the store loads alongside.
+    unawaited(proCubit.load());
   }
 
   @override
@@ -120,6 +144,9 @@ class Main extends StatelessWidget {
     final newsCubit = NewsCubit();
     final featureSwitchCubit = FeatureSwitchCubit();
     final gameInventoryCubit = GameInventoryCubit(dbProvider);
+    final proCubit = ProCubit(sharedPreferencesProvider);
+    final remindersCubit =
+        RemindersCubit(sharedPreferencesProvider, LocalReminderService());
 
     return MultiBlocProvider(
       providers: [
@@ -150,6 +177,12 @@ class Main extends StatelessWidget {
         BlocProvider<GameInventoryCubit>(
           create: (context) => gameInventoryCubit,
         ),
+        BlocProvider<ProCubit>(
+          create: (context) => proCubit,
+        ),
+        BlocProvider<RemindersCubit>(
+          create: (context) => remindersCubit,
+        ),
       ],
       child: FutureBuilder(
         future: _initConfig(
@@ -158,25 +191,57 @@ class Main extends StatelessWidget {
           dbProvider,
           dbCubit,
           gameInventoryCubit,
+          proCubit,
         ),
-        builder: (context, snapshot) => BlocSelector<SharedPreferencesCubit,
-            SharedPreferencesState, Locale?>(
-          selector: (state) => state.language,
-          builder: (builder, locale) => Theme(
-            data: theme,
-            child: CupertinoApp(
-              debugShowCheckedModeBanner: Flavor.getCurrentEnvironment ==
-                  Environment.dev.getFlavorName(),
-              key: const Key('MainApp'),
-              localizationsDelegates: const [
-                S.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-              ],
-              locale: locale,
-              supportedLocales: S.delegate.supportedLocales,
-              onGenerateRoute: generateRoutes,
+        builder: (context, snapshot) =>
+            BlocBuilder<SharedPreferencesCubit, SharedPreferencesState>(
+          buildWhen: (previous, current) =>
+              previous.language != current.language ||
+              previous.appearance != current.appearance,
+          builder: (context, prefs) => _ThemedApp(
+            appearance: prefs.appearance,
+            locale: prefs.language,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The app in light or dark mode, by the appearance setting and the phone.
+class _ThemedApp extends StatelessWidget {
+  const _ThemedApp({required this.appearance, required this.locale});
+
+  final Appearance appearance;
+  final Locale? locale;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness =
+        appearance.resolve(MediaQuery.platformBrightnessOf(context));
+    final themeData = brightness == Brightness.dark ? darkTheme : lightTheme;
+
+    return Theme(
+      data: themeData,
+      child: CupertinoApp(
+        debugShowCheckedModeBanner:
+            Flavor.getCurrentEnvironment == Environment.dev.getFlavorName(),
+        key: const Key('MainApp'),
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+        ],
+        locale: locale,
+        supportedLocales: S.delegate.supportedLocales,
+        theme: MaterialBasedCupertinoThemeData(materialTheme: themeData),
+        onGenerateRoute: generateRoutes,
+        // Below Localizations: these read translated strings.
+        builder: (context, child) => WidgetSyncScope(
+          child: AppIconProGuard(
+            child: RemindersScope(
+              child: Theme(data: themeData, child: child!),
             ),
           ),
         ),

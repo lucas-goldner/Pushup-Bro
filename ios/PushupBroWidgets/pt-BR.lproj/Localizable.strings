@@ -1,0 +1,40 @@
+/* Widget gallery */
+"gallery.streak.name" = "Sequência";
+"gallery.streak.description" = "Sua sequência de flexões, dia após dia.";
+"gallery.today.name" = "Hoje";
+"gallery.today.description" = "Suas flexões de hoje rumo à meta diária.";
+"gallery.trek.name" = "Trilha na Selva";
+"gallery.trek.description" = "A próxima fase esperando na trilha.";
+"gallery.week.name" = "Esta semana";
+"gallery.week.description" = "Suas flexões em cada um dos últimos sete dias.";
+
+/* Streak */
+"streak.label" = "Sequência";
+"streak.dayInARow" = "dia seguido";
+"streak.daysInARow" = "dias seguidos";
+
+/* Today */
+"today.label" = "Hoje";
+"today.toGo" = "Faltam %ld. O Komo está de olho.";
+"today.goalDone" = "Meta batida. O Carlos está orgulhoso.";
+
+/* Jungle Trek */
+"trek.label" = "Trilha na Selva · Próxima";
+"trek.labelDone" = "Trilha na Selva";
+"trek.stageWaves" = "Fase %1$ld · %2$ld ondas";
+"trek.stageWave" = "Fase %ld · 1 onda";
+"trek.stageBoss" = "Fase %ld · Chefão";
+"trek.fight" = "Lutar";
+"trek.allClearedTitle" = "Todas as fases vencidas";
+"trek.allClearedHint" = "Volte para pegar as três estrelas";
+"trek.replay" = "Jogar de novo";
+
+/* This week */
+"week.label" = "Esta semana";
+"week.total" = "%ld flexões";
+"week.totalOne" = "1 flexão";
+"week.activeDays" = "Flexões em %ld de 7 dias";
+
+/* Without Pro */
+"locked.title" = "Widgets precisam do Pro";
+"locked.hint" = "Toque para desbloquear";

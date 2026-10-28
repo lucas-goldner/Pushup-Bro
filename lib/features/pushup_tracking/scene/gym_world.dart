@@ -2,9 +2,12 @@ import 'dart:math' as math;
 import 'dart:ui' show Color;
 
 import 'package:flutter_scene/scene.dart';
+import 'package:pushup_bro/core/model/monkey_look.dart';
+import 'package:pushup_bro/core/scene/costumes.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/nature_kit.dart' show yaw;
 import 'package:pushup_bro/core/scene/scene_kit.dart';
+import 'package:pushup_bro/core/scene/static_batch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 const _wall = Color(0xFFEEF1F7);
@@ -125,7 +128,7 @@ class GymWorld {
       ..addAll(_equipment());
     root
       ..add(_view)
-      ..add(_mat(_accent, vm.Vector3.zero()))
+      ..add(_carlosMat)
       ..add(carlos.root);
 
     for (final (i, look) in _buddies.indexed) {
@@ -169,12 +172,43 @@ class GymWorld {
         ),
       );
     }
+    // Each weight is lifted as a whole: merge its parts together.
+    for (final buddy in _crew) {
+      for (final weight in buddy.weights) {
+        bakeStatic(weight.node);
+      }
+    }
+    // The room and the stations never move: merge them into a few meshes,
+    // leaving the buddies, their weights and their mats live.
+    bakeStatic(
+      _view,
+      keep: {
+        for (final buddy in _crew) ...[
+          buddy.rig.root,
+          buddy.roll,
+          buddy.mat,
+          for (final weight in buddy.weights) weight.node,
+        ],
+      },
+      shadowStatic: true,
+    );
   }
 
   final Node root = Node(name: 'gym');
 
   /// The player's gorilla, in front of everyone.
   final GorillaRig carlos = GorillaRig();
+  final Node _carlosMat = buildMat(const MonkeyLook())
+    ..position = vm.Vector3(0, 0, -0.1);
+
+  /// Dresses Carlos and lays out his mat in his look.
+  MonkeyLook get carlosLook => carlos.look;
+  set carlosLook(MonkeyLook look) {
+    if (look == carlos.look) return;
+    carlos.look = look;
+    _carlosMat.mesh = buildMat(look).mesh;
+  }
+
   final _crew = <_GymBuddy>[];
   late final Node _view;
 
