@@ -1,4 +1,7 @@
+import AVFoundation
+import Accelerate
 import Flutter
+import StoreKit
 import UIKit
 import UserNotifications
 import Vision
@@ -9,6 +12,8 @@ import WidgetKit
   private var appIconSwitcher: AppIconSwitcher?
   private var widgetBridge: WidgetBridge?
   private var poseVision: PoseVision?
+  private var storeReview: StoreReview?
+  private var recapVideo: RecapVideo?
 
   override func application(
     _ application: UIApplication,
@@ -29,6 +34,12 @@ import WidgetKit
     }
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "PoseVision") {
       poseVision = PoseVision(messenger: registrar.messenger())
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "StoreReview") {
+      storeReview = StoreReview(messenger: registrar.messenger())
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RecapVideo") {
+      recapVideo = RecapVideo(messenger: registrar.messenger())
     }
   }
 }
@@ -56,6 +67,28 @@ final class WidgetBridge {
       if defaults.string(forKey: WidgetBridge.snapshotKey) != json {
         defaults.set(json, forKey: WidgetBridge.snapshotKey)
         WidgetCenter.shared.reloadAllTimelines()
+      }
+      result(nil)
+    }
+  }
+}
+
+/// Shows the App Store rating prompt (lib/core/platform/store_review.dart).
+/// iOS decides whether it really appears.
+final class StoreReview {
+  private let channel: FlutterMethodChannel
+
+  init(messenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(name: "pushup_bro/review", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "request" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let scene = UIApplication.shared.connectedScenes
+        .first { $0.activationState == .foregroundActive } as? UIWindowScene
+      if let scene = scene {
+        AppStore.requestReview(in: scene)
       }
       result(nil)
     }
@@ -269,5 +302,247 @@ final class PoseVision {
       }
     }
     return (data: Data(out), width: outWidth, height: outHeight)
+  }
+}
+
+/// Makes the share videos (lib/features/share/): Flutter sends each frame as
+/// RGBA bytes, AVAssetWriter encodes them as H.264, and the sound cues are
+/// mixed in with AVMutableComposition. Also opens the share sheet.
+final class RecapVideo {
+  private let channel: FlutterMethodChannel
+  private var writer: AVAssetWriter?
+  private var input: AVAssetWriterInput?
+  private var adaptor: AVAssetWriterInputPixelBufferAdaptor?
+  private var url: URL?
+  private var size = CGSize.zero
+  private var fps: Int32 = 24
+  private var frame: Int64 = 0
+
+  init(messenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(name: "pushup_bro/recap_video", binaryMessenger: messenger)
+    channel.setMethodCallHandler { [weak self] call, result in
+      guard let self = self else { return }
+      switch call.method {
+      case "start":
+        self.start(call.arguments as? [String: Any], result: result)
+      case "frame":
+        self.append(call.arguments as? FlutterStandardTypedData, result: result)
+      case "finish":
+        self.finish(call.arguments as? [String: Any], result: result)
+      case "cancel":
+        self.reset(delete: true)
+        result(nil)
+      case "share":
+        self.share(call.arguments as? [String: Any], result: result)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+
+  private func start(_ args: [String: Any]?, result: FlutterResult) {
+    guard let args = args, let path = args["path"] as? String,
+      let width = args["width"] as? Int, let height = args["height"] as? Int,
+      let fps = args["fps"] as? Int
+    else {
+      result(FlutterError(code: "recap", message: "Missing arguments", details: nil))
+      return
+    }
+    reset(delete: false)
+    let url = URL(fileURLWithPath: path)
+    try? FileManager.default.removeItem(at: url)
+    do {
+      let writer = try AVAssetWriter(outputURL: url, fileType: .mp4)
+      let input = AVAssetWriterInput(
+        mediaType: .video,
+        outputSettings: [
+          AVVideoCodecKey: AVVideoCodecType.h264,
+          AVVideoWidthKey: width,
+          AVVideoHeightKey: height,
+          AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: 6_000_000],
+        ])
+      input.expectsMediaDataInRealTime = false
+      let adaptor = AVAssetWriterInputPixelBufferAdaptor(
+        assetWriterInput: input,
+        sourcePixelBufferAttributes: [
+          kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+          kCVPixelBufferWidthKey as String: width,
+          kCVPixelBufferHeightKey as String: height,
+        ])
+      writer.add(input)
+      guard writer.startWriting() else {
+        throw writer.error ?? NSError(domain: "recap", code: 1)
+      }
+      writer.startSession(atSourceTime: .zero)
+      self.writer = writer
+      self.input = input
+      self.adaptor = adaptor
+      self.url = url
+      self.size = CGSize(width: width, height: height)
+      self.fps = Int32(fps)
+      self.frame = 0
+      result(nil)
+    } catch {
+      result(FlutterError(code: "recap", message: error.localizedDescription, details: nil))
+    }
+  }
+
+  private func append(_ data: FlutterStandardTypedData?, result: FlutterResult) {
+    guard let data = data, let input = input, let adaptor = adaptor,
+      let pool = adaptor.pixelBufferPool
+    else {
+      result(FlutterError(code: "recap", message: "Not started", details: nil))
+      return
+    }
+    while !input.isReadyForMoreMediaData {
+      Thread.sleep(forTimeInterval: 0.005)
+    }
+    var buffer: CVPixelBuffer?
+    CVPixelBufferPoolCreatePixelBuffer(nil, pool, &buffer)
+    guard let pixels = buffer else {
+      result(FlutterError(code: "recap", message: "No pixel buffer", details: nil))
+      return
+    }
+    let width = Int(size.width)
+    let height = Int(size.height)
+    CVPixelBufferLockBaseAddress(pixels, [])
+    data.data.withUnsafeBytes { raw in
+      guard let source = raw.baseAddress else { return }
+      var from = vImage_Buffer(
+        data: UnsafeMutableRawPointer(mutating: source), height: vImagePixelCount(height),
+        width: vImagePixelCount(width), rowBytes: width * 4)
+      var to = vImage_Buffer(
+        data: CVPixelBufferGetBaseAddress(pixels), height: vImagePixelCount(height),
+        width: vImagePixelCount(width), rowBytes: CVPixelBufferGetBytesPerRow(pixels))
+      // RGBA from Flutter to the BGRA the encoder takes.
+      let map: [UInt8] = [2, 1, 0, 3]
+      _ = vImagePermuteChannels_ARGB8888(&from, &to, map, vImage_Flags(kvImageNoFlags))
+    }
+    CVPixelBufferUnlockBaseAddress(pixels, [])
+    let time = CMTime(value: frame, timescale: fps)
+    if adaptor.append(pixels, withPresentationTime: time) {
+      frame += 1
+      result(nil)
+    } else {
+      result(
+        FlutterError(
+          code: "recap", message: writer?.error?.localizedDescription ?? "Append failed",
+          details: nil))
+    }
+  }
+
+  private func finish(_ args: [String: Any]?, result: @escaping FlutterResult) {
+    guard let writer = writer, let input = input, let url = url else {
+      result(FlutterError(code: "recap", message: "Not started", details: nil))
+      return
+    }
+    let cues = (args?["cues"] as? [[String: Any]]) ?? []
+    let duration = CMTime(value: frame, timescale: fps)
+    input.markAsFinished()
+    writer.endSession(atSourceTime: duration)
+    writer.finishWriting { [weak self] in
+      guard let self = self else { return }
+      self.writer = nil
+      self.input = nil
+      self.adaptor = nil
+      guard writer.status == .completed else {
+        DispatchQueue.main.async {
+          result(
+            FlutterError(
+              code: "recap", message: writer.error?.localizedDescription ?? "Writing failed",
+              details: nil))
+        }
+        return
+      }
+      self.mix(video: url, cues: cues, duration: duration) { output in
+        DispatchQueue.main.async { result(output.path) }
+      }
+    }
+  }
+
+  /// Puts each sound at its time over the video. Falls back to the silent
+  /// video when anything goes wrong.
+  private func mix(
+    video: URL, cues: [[String: Any]], duration: CMTime, done: @escaping (URL) -> Void
+  ) {
+    let asset = AVURLAsset(url: video)
+    guard !cues.isEmpty, let videoTrack = asset.tracks(withMediaType: .video).first else {
+      done(video)
+      return
+    }
+    let composition = AVMutableComposition()
+    let range = CMTimeRange(start: .zero, duration: duration)
+    guard
+      let track = composition.addMutableTrack(
+        withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid),
+      (try? track.insertTimeRange(range, of: videoTrack, at: .zero)) != nil
+    else {
+      done(video)
+      return
+    }
+    for cue in cues {
+      guard let path = cue["path"] as? String, let time = cue["time"] as? Double else {
+        continue
+      }
+      let sound = AVURLAsset(url: URL(fileURLWithPath: path))
+      guard let soundTrack = sound.tracks(withMediaType: .audio).first,
+        let audio = composition.addMutableTrack(
+          withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
+      else { continue }
+      let at = CMTime(seconds: time, preferredTimescale: 600)
+      let length = CMTimeMinimum(sound.duration, CMTimeSubtract(duration, at))
+      guard CMTimeCompare(length, .zero) > 0 else { continue }
+      try? audio.insertTimeRange(
+        CMTimeRange(start: .zero, duration: length), of: soundTrack, at: at)
+    }
+    let output = video.deletingPathExtension().appendingPathExtension("final.mp4")
+    try? FileManager.default.removeItem(at: output)
+    guard
+      let export = AVAssetExportSession(
+        asset: composition, presetName: AVAssetExportPresetHighestQuality)
+    else {
+      done(video)
+      return
+    }
+    export.outputURL = output
+    export.outputFileType = .mp4
+    export.exportAsynchronously {
+      done(export.status == .completed ? output : video)
+    }
+  }
+
+  private func reset(delete: Bool) {
+    input?.markAsFinished()
+    writer?.cancelWriting()
+    if delete, let url = url { try? FileManager.default.removeItem(at: url) }
+    writer = nil
+    input = nil
+    adaptor = nil
+    frame = 0
+  }
+
+  private func share(_ args: [String: Any]?, result: @escaping FlutterResult) {
+    guard let path = args?["path"] as? String else {
+      result(FlutterError(code: "recap", message: "No file", details: nil))
+      return
+    }
+    var items: [Any] = [URL(fileURLWithPath: path)]
+    if let text = args?["text"] as? String { items.append(text) }
+    let scene = UIApplication.shared.connectedScenes
+      .first { $0.activationState == .foregroundActive } as? UIWindowScene
+    guard var top = scene?.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+      result(FlutterError(code: "recap", message: "No window", details: nil))
+      return
+    }
+    while let presented = top.presentedViewController { top = presented }
+    let sheet = UIActivityViewController(activityItems: items, applicationActivities: nil)
+    if let popover = sheet.popoverPresentationController {
+      popover.sourceView = top.view
+      popover.sourceRect = CGRect(
+        x: top.view.bounds.midX, y: top.view.bounds.midY, width: 0, height: 0)
+      popover.permittedArrowDirections = []
+    }
+    sheet.completionWithItemsHandler = { _, _, _, _ in result(nil) }
+    top.present(sheet, animated: true)
   }
 }

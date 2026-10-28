@@ -10,10 +10,12 @@ import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/leaderboard/leaderboard.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 import 'package:pushup_bro/features/menu/widgets/page_container.dart';
+import 'package:pushup_bro/features/onboarding/onboarding_gate.dart';
 import 'package:pushup_bro/features/progress/progress.dart';
 import 'package:pushup_bro/features/pushup_tracking/pushup_tracking.dart';
 import 'package:pushup_bro/features/quest/quest_page.dart';
 import 'package:pushup_bro/features/settings/settings.dart';
+import 'package:pushup_bro/features/settings/view/settings_body.dart';
 import 'package:pushup_bro/features/settings/view/settings_language.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
@@ -146,13 +148,19 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
       VolumeSetting.routeName => CupertinoPageRoute(
           builder: (context) => const VolumeSetting(),
         ),
+      BodySetting.routeName => CupertinoPageRoute(
+          builder: (context) => const BodySetting(),
+        ),
+      // The app's start: the onboarding first, once.
       _ => _revealCircular(
           settings.arguments as BuildContext?,
-          const MusicScope(
-            track: MusicTrack.home,
-            child: PageContainer(
-              PushupTracking(),
-              menuTab: MenuTabInfo.pushupTracking,
+          const OnboardingGate(
+            child: MusicScope(
+              track: MusicTrack.home,
+              child: PageContainer(
+                PushupTracking(),
+                menuTab: MenuTabInfo.pushupTracking,
+              ),
             ),
           ),
         ),

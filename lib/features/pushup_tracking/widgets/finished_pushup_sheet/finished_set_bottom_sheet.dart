@@ -23,6 +23,8 @@ import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/progress/model/level_scalings.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/finished_pushup_sheet/finished_set_stats_item.dart';
+import 'package:pushup_bro/features/share/model/recap.dart';
+import 'package:pushup_bro/features/share/widgets/share_recap_button.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 class FinishedSetBottomSheet extends StatefulWidget {
@@ -331,6 +333,16 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
                         label: localized.saveSet,
                         icon: CarbonIcons.checkmark,
                         onPressed: closeModalAndSave,
+                      ),
+                    ),
+                    Center(
+                      child: ShareRecapButton(
+                        recap: () => Recap.workout(
+                          set: widget.pushupSet,
+                          history: context.read<DBCubit>().state.pushupSets,
+                          now: DateTime.now(),
+                          weightKg: playerWeightKg(context),
+                        ),
                       ),
                     ),
                   ],

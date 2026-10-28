@@ -13,7 +13,9 @@ import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
+import 'package:pushup_bro/core/model/shared_preferences_key.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
+import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
@@ -53,6 +55,10 @@ class TrekReward {
     required this.bananas,
     required this.loot,
     required this.adopted,
+    this.pushups = 0,
+    this.damage = 0,
+    this.bestCombo = 0,
+    this.bestComboBefore = 0,
   });
 
   final int xp;
@@ -65,6 +71,13 @@ class TrekReward {
 
   /// Whether King Komo just joined the island.
   final bool adopted;
+
+  /// For the share video: pushups, damage dealt and the longest quick
+  /// combo of the stage, and the best combo of every stage before.
+  final int pushups;
+  final int damage;
+  final int bestCombo;
+  final int bestComboBefore;
 }
 
 /// One stage of the Jungle Trek from start to finish: a title card, the
@@ -96,6 +109,8 @@ class _TrekStagePageState extends State<TrekStagePage> {
   // Tracking.
   StreamSubscription<PushupState>? _pushupSubscription;
   int _counted = 0;
+  double _damage = 0;
+  int _bestCombo = 0;
   DateTime? _downSince;
   DateTime? _lastRep;
   int? _volume;
@@ -250,7 +265,11 @@ class _TrekStagePageState extends State<TrekStagePage> {
         sinceLast:
             last == null ? null : now.difference(last).inMilliseconds / 1000,
       );
-      if (hit != null) _land(hit);
+      if (hit != null) {
+        _damage += hit.damage;
+        if (hit.combo > _bestCombo) _bestCombo = hit.combo;
+        _land(hit);
+      }
     }
     if (!state.inPushup) _downSince = null;
   }
@@ -414,6 +433,15 @@ class _TrekStagePageState extends State<TrekStagePage> {
       }
     }
     _sets.clear();
+    final prefs = SharedPreferencesProvider();
+    final bestComboBefore =
+        await prefs.getSharedPrefInt(SharedPreferencesKey.trekBestCombo) ?? 0;
+    if (_bestCombo > bestComboBefore) {
+      await prefs.writeIntToSharedPrefs(
+        SharedPreferencesKey.trekBestCombo,
+        value: _bestCombo,
+      );
+    }
     _reward = TrekReward(
       xp: xp,
       levelsGained: levels,
@@ -421,6 +449,10 @@ class _TrekStagePageState extends State<TrekStagePage> {
       bananas: bananas,
       loot: first ? _stage.loot : null,
       adopted: adopt,
+      pushups: _battle.reps,
+      damage: _damage.round(),
+      bestCombo: _bestCombo,
+      bestComboBefore: bestComboBefore,
     );
   }
 

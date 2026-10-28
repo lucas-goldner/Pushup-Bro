@@ -11,5 +11,8 @@ enum SharedPreferencesKey {
   proFreeDaysWelcomeSeen,
   proLastFreeDaySeen,
   reminderEnabled,
-  reminderMinutes;
+  reminderMinutes,
+  onboardingCompleted,
+  onboardingAnswers,
+  trekBestCombo;
 }

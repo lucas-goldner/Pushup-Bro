@@ -925,5 +925,311 @@
   "appIconSnow": "Snow",
   "appIconLava": "Lava",
   "appIconBigBoss": "Big Boss",
-  "proSettingsTitle": "Pushup Bro Pro"
+  "proSettingsTitle": "Pushup Bro Pro",
+  "onbContinue": "Continue",
+  "onbGetStarted": "Get started",
+  "onbTakesTwoMinutes": "Takes about 2 minutes",
+  "onbHookLine1": "You’ve started working out a hundred times.",
+  "onbHookLine2": "This time, *someone’s waiting for you.*",
+  "onbGoalTitle": "What do you want from your *pushups?*",
+  "onbGoalSub": "Pick everything that matters. Your plan is built around it.",
+  "onbGoalStrength": "Get properly strong",
+  "onbGoalLook": "Look better in a t-shirt",
+  "onbGoalEnergy": "Have more energy every day",
+  "onbGoalHabit": "Finally build a daily habit",
+  "onbGoalRecord": "Beat my pushup record",
+  "onbMaxTitle": "How many pushups can you do *in a row?*",
+  "onbMaxSub": "No judgement. Carlos started at zero.",
+  "onbPushupsUnit": "pushups",
+  "onbOftenTitle": "How often did you work out *last month?*",
+  "onbOftenNever": "Almost never",
+  "onbOftenNeverHint": "0–1 times",
+  "onbOftenSometimes": "Now and then",
+  "onbOftenSometimesHint": "About once a week",
+  "onbOftenOften": "Pretty often",
+  "onbOftenOftenHint": "2–3 times a week",
+  "onbOftenDaily": "Every day",
+  "onbOftenDailyHint": "I’m a machine",
+  "onbHeightTitle": "How *tall* are you?",
+  "onbHeightSub": "So Carlos counts calories that are actually yours.",
+  "onbWeightTitle": "What do you *weigh* right now?",
+  "onbWeightSub": "Used for your calories burned. Nobody else sees it.",
+  "onbWeightPrivate": "Stays on your iPhone. Change it any time in Settings.",
+  "onbGoalWeightTitle": "And your *goal weight?*",
+  "onbGoalWeightSub": "Pick what feels good. Carlos will get you there.",
+  "onbGoalWeightLose": "{change}. Totally doable.",
+  "@onbGoalWeightLose": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "onbGoalWeightGain": "{change} of muscle. Let’s build.",
+  "@onbGoalWeightGain": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "onbGoalWeightKeep": "Keep it. Get stronger.",
+  "onbGoalWeightKeepBody": "Same weight, more muscle. Love that.",
+  "onbGoalWeightPace": "About {months} months at a healthy pace.",
+  "@onbGoalWeightPace": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "onbUnitCm": "cm",
+  "onbUnitFtIn": "ft / in",
+  "onbUnitKg": "kg",
+  "onbUnitLb": "lb",
+  "onbPainsTitle": "Sound *familiar?*",
+  "onbPainsSub": "Tap ✓ if it’s you.",
+  "onbPain1": "“I start strong and quit after a week.”",
+  "onbPain2": "“Workouts feel like a chore.”",
+  "onbPain3": "“I never know if I’m getting better.”",
+  "onbNotYou1": "It’s not you.",
+  "onbNotYou2": "Most workouts are built to be *boring.*",
+  "onbNotYou3": "Pushup Bro makes every rep *matter.*",
+  "onbCarlosTitle": "Meet *Carlos.*",
+  "onbCarlosBody": "He lives on a tiny island. Every pushup you do brings his friends home.",
+  "onbCarlosMessage": "Bro, I believe in you. Let’s go!",
+  "onbTrackTitle": "Every pushup *counts.*",
+  "onbTrackSub": "Track with AirPods or your iPhone’s camera.",
+  "onbTrackAirpodsHint": "Counts from your head’s movement",
+  "onbTrackCameraHint": "Put the phone in front of you",
+  "onbMovesTitle": "Pushups become *moves.*",
+  "onbMovesSub": "Fight reptiles in the Jungle Trek. Every enemy has a weakness.",
+  "onbChartTitle": "From {from} to {to} *in a row*",
+  "@onbChartTitle": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "onbChartSub": "With a set every day, you get there by {date}.",
+  "@onbChartSub": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "onbChartToday": "Today",
+  "onbChartWithBro": "With Pushup Bro",
+  "onbChartAlone": "On your own",
+  "onbMonthTitle": "Your first *month*",
+  "onbMonthSub": "Small daily sets add up fast.",
+  "onbMonthWeek": "Week {week}",
+  "@onbMonthWeek": {
+    "placeholders": {
+      "week": {
+        "type": "int"
+      }
+    }
+  },
+  "onbMonthWeek1": "A daily habit, a few minutes a day",
+  "onbMonthWeek2": "Your first friend moves to the island",
+  "onbMonthWeek3": "Deep in the Jungle Trek",
+  "onbMonthWeek4": "More in a row than ever before",
+  "onbDailyTitle": "Your daily *goal*",
+  "onbDailySub": "Start small. You can change it any time.",
+  "onbDailyMinutes": "About {minutes} minutes a day",
+  "@onbDailyMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "onbReminderTitle": "Carlos will *ping you*",
+  "onbReminderSub": "One friendly nudge at {time}, so busy days don’t break the streak.",
+  "@onbReminderSub": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "onbReminderPreview": "Bro, the island misses you. One quick set?",
+  "onbReminderAllow": "Turn on reminders",
+  "onbNotNow": "Not now",
+  "onbBuildingTitle": "Building your plan with *Carlos*",
+  "onbBuildMax": "Matching your max of {count}",
+  "@onbBuildMax": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onbBuildCalories": "Setting calories for {weight}",
+  "@onbBuildCalories": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "onbBuildDaily": "Planning {count} pushups a day",
+  "@onbBuildDaily": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onbBuildQuest": "Picking your first jungle quest",
+  "onbFirstSetTitle": "Do *5 pushups* with Carlos",
+  "onbFirstSetSub": "Right now. Put the phone in front of you.",
+  "onbFirstSetTap": "Tap anywhere after each pushup",
+  "onbFirstSetDone": "Done!",
+  "onbFirstSetSkip": "Skip for now",
+  "onbRewardTitle": "Day 1. *Done.*",
+  "onbRewardSub": "You just earned {count} bananas.",
+  "@onbRewardSub": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onbRewardStreak": "1-day streak",
+  "onbRewardStreakBody": "Come back tomorrow to keep it going.",
+  "onbSeeMyPlan": "See my plan",
+  "onbPlanTitle": "Your plan is *ready*",
+  "onbPlanSub": "Built from your answers. Carlos already moved in.",
+  "onbPlanDaily": "{count} pushups a day",
+  "@onbPlanDaily": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onbPlanDailyHint": "about {minutes} minutes",
+  "@onbPlanDailyHint": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "onbPlanTarget": "{count} in a row",
+  "@onbPlanTarget": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onbPlanTargetHint": "by {date}",
+  "@onbPlanTargetHint": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "onbPlanWeight": "{weight} goal",
+  "@onbPlanWeight": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "onbPlanWeightHint": "{kcal} kcal a day from pushups",
+  "@onbPlanWeightHint": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "onbPlanQuests": "Daily quests",
+  "onbPlanQuestsHint": "A new story every day",
+  "onbLetsGo": "Let’s go",
+  "onbPaywallTitle": "Try everything *free* for 3 days",
+  "onbPaywallSub": "No card needed. The gym stays free forever.",
+  "onbPaywallToday": "Today",
+  "onbPaywallTodayBody": "Jungle Trek, quests, the island and the wardrobe open up.",
+  "onbPaywallDay2": "Day 2",
+  "onbPaywallDay2Body": "Carlos reminds you before the free days end.",
+  "onbPaywallDay3": "Day 3",
+  "onbPaywallDay3Body": "Pick a plan to keep Pro, or keep training in the gym for free.",
+  "onbPaywallStart": "Start my 3 free days",
+  "onbPaywallSeePlans": "See plans",
+  "onbPaywallOverTitle": "Get the whole *jungle*",
+  "onbPaywallOverSub": "Pro opens Jungle Trek, daily quests, the island and the wardrobe. The gym stays free.",
+  "onbMaybeLater": "Maybe later",
+  "bodySettingsTitle": "Body",
+  "bodyHeight": "Height",
+  "bodyWeight": "Weight",
+  "bodyGoalWeight": "Goal weight",
+  "bodyUnits": "Units",
+  "bodyMetric": "cm, kg",
+  "bodyImperial": "ft, lb",
+  "bodyDone": "Done",
+  "bodyFooter": "Used for calories burned. Stays on your iPhone.",
+  "bodyNotSet": "Not set",
+  "proSuccessTitle": "Welcome to *Pro, bro.*",
+  "proSuccessSub": "Everything is unlocked. Carlos is hyped.",
+  "proSuccessCta": "Let’s go, Carlos",
+  "proSuccessWeekly": "Weekly plan active · Manage it any time in Settings",
+  "proSuccessYearly": "Yearly plan active · Manage it any time in Settings",
+  "proSuccessLifetime": "Pro forever · Thanks for backing Pushup Bro",
+  "proSuccessRestored": "Pro is back on this iPhone",
+  "shareButton": "Share",
+  "shareRendering": "Making your video…",
+  "shareFailed": "Couldn’t make the video. Sharing a picture instead.",
+  "shareText": "Pushups, but an adventure 💪 #PushupBro",
+  "flexWorkoutTitle": "You crushed it",
+  "flexQuestTitle": "Quest crushed",
+  "flexTrekTitle": "Beast mode",
+  "flexMoreThanLast": "more than last time",
+  "flexKcal": "kcal burned",
+  "flexBestInARow": "in a row · new best",
+  "flexInARow": "in a row",
+  "flexStreak": "day streak",
+  "flexTotal": "pushups all time",
+  "flexBananas": "bananas earned",
+  "flexFaster": "seconds faster",
+  "flexStars": "stars",
+  "flexQuestsInARow": "quests in a row",
+  "flexDamage": "damage",
+  "flexBestCombo": "combo · new best",
+  "flexCombo": "best combo",
+  "flexPushups": "pushups",
+  "recapVsLast": "+{count} vs last time",
+  "@recapVsLast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recapCanYouBeat": "Can you beat {count}?",
+  "@recapCanYouBeat": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recapPushupsToday": "pushups today",
+  "recapTime": "time",
+  "recapBestSet": "best set",
+  "recapQuestDone": "Quest complete",
+  "recapStageCleared": "Stage cleared",
+  "recapNewQuestDaily": "A new quest every day",
+  "recapJoin": "Train with Carlos in Pushup Bro"
 }
