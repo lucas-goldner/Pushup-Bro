@@ -1,13 +1,11 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_overlay.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/pushup_pose.dart';
 
-/// The web build's stand-in for the camera (ML Kit has no web build): a
-/// skeleton doing a pushup every two seconds from the side, run through the
-/// same tracker and overlay as the real thing.
+/// The web build's stand-in for the camera (Vision is iOS only): a
+/// skeleton doing a pushup every three seconds facing the camera, run
+/// through the same tracker and overlay as the real thing.
 class CameraTrackerView extends StatefulWidget {
   const CameraTrackerView({
     required this.onDown,
@@ -54,7 +52,7 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
 
   void _tick(Duration time) {
     _time = time;
-    // Seen from the side: down for a moment, then up, every 3 s, held long
+    // Down for a moment, then up, every 3 s, held long
     // enough at each end to count even at a low frame rate.
     final t = (time.inMilliseconds % 3000) / 3000;
     final dip = t < 0.15
@@ -64,24 +62,22 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
             : t < 0.65
                 ? 1 - (t - 0.5) / 0.15
                 : 0.0;
-    final lift = 118 - 74 * dip;
-    const floor = 300.0;
-    const wristX = 95.0;
-    final shoulder = Offset(wristX, floor - lift);
-    const ankle = Offset(265, floor);
-    final hip = Offset.lerp(shoulder, ankle, 0.5)!;
-    final half = lift / 2;
-    final out = math.sqrt(math.max(0, 60 * 60 - half * half));
-    final elbow = Offset(wristX + out, floor - half);
-    PosePoint p(Offset o) => PosePoint(o.dx, o.dy, 0.95);
+    // Facing the camera: the shoulders come down towards the hands and
+    // closer, so they also look wider.
+    const floor = 330.0;
+    const centre = 150.0;
+    final width = 110 + 30 * dip;
+    final shoulderY = floor - (1.25 - 0.92 * dip) * width;
+    final handX = width * 0.75;
+    PosePoint p(double x, double y) => PosePoint(x, y, 0.95);
     final pose = {
-      Joint.nose: p(shoulder + const Offset(-26, -6)),
-      Joint.leftShoulder: p(shoulder),
-      Joint.leftElbow: p(elbow),
-      Joint.leftWrist: p(const Offset(wristX, floor)),
-      Joint.leftHip: p(hip),
-      Joint.leftKnee: p(Offset.lerp(hip, ankle, 0.5)!),
-      Joint.leftAnkle: p(ankle),
+      Joint.nose: p(centre, shoulderY - 0.35 * width),
+      Joint.leftShoulder: p(centre - width / 2, shoulderY),
+      Joint.rightShoulder: p(centre + width / 2, shoulderY),
+      Joint.leftElbow: p(centre - handX - 30 * dip, (shoulderY + floor) / 2),
+      Joint.rightElbow: p(centre + handX + 30 * dip, (shoulderY + floor) / 2),
+      Joint.leftWrist: p(centre - handX, floor),
+      Joint.rightWrist: p(centre + handX, floor),
     };
     final reading = _tracker.update(pose, time);
     if (widget.active) {

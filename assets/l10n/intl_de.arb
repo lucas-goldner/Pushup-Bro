@@ -536,7 +536,7 @@
   "trackingAirpods": "AirPods",
   "trackingCamera": "Kamera",
   "trackingTitle": "Liegestütz-Erkennung",
-  "trackingCameraTip": "Stell dein Handy etwa zwei Meter neben dir auf den Boden, damit die Kamera dich von der Seite sieht.",
+  "trackingCameraTip": "Stell dein Handy etwa einen Meter vor deinen Händen auf den Boden, mit der Kamera zu dir, sodass es Kopf, Schultern und Hände sieht.",
   "trackingAirpodsTip": "Setz deine AirPods auf: Die Bewegung deines Kopfes zählt die Liegestütze.",
   "lookingForYou": "Stell dich ins Kamerabild",
   "settingsMusic": "Musik",

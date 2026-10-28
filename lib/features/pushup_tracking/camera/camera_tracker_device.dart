@@ -5,33 +5,18 @@ import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
-import 'package:google_mlkit_selfie_segmentation/google_mlkit_selfie_segmentation.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_overlay.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/pushup_pose.dart';
 
-const Map<Joint, PoseLandmarkType> _landmarks = {
-  Joint.nose: PoseLandmarkType.nose,
-  Joint.leftShoulder: PoseLandmarkType.leftShoulder,
-  Joint.rightShoulder: PoseLandmarkType.rightShoulder,
-  Joint.leftElbow: PoseLandmarkType.leftElbow,
-  Joint.rightElbow: PoseLandmarkType.rightElbow,
-  Joint.leftWrist: PoseLandmarkType.leftWrist,
-  Joint.rightWrist: PoseLandmarkType.rightWrist,
-  Joint.leftHip: PoseLandmarkType.leftHip,
-  Joint.rightHip: PoseLandmarkType.rightHip,
-  Joint.leftKnee: PoseLandmarkType.leftKnee,
-  Joint.rightKnee: PoseLandmarkType.rightKnee,
-  Joint.leftAnkle: PoseLandmarkType.leftAnkle,
-  Joint.rightAnkle: PoseLandmarkType.rightAnkle,
-};
+/// Apple's Vision framework, run natively (PoseVision in
+/// ios/Runner/AppDelegate.swift): body pose and the person mask per frame.
+const _vision = MethodChannel('pushup_bro/pose');
 
-/// The front camera, watching the player do pushups: ML Kit's pose
-/// detection (BlazePose, the model MediaPipe uses) finds the body every
-/// frame, [PushupPoseTracker] turns it into pushups, and selfie
-/// segmentation cuts the player out of the room onto the jungle's colours,
-/// with the skeleton drawn on top.
+/// The front camera, watching the player do pushups facing the phone:
+/// Apple's Vision finds the body every frame, [PushupPoseTracker] turns it
+/// into pushups, and Vision's person segmentation cuts the player out of
+/// the room onto the jungle's colours, with the skeleton drawn on top.
 ///
 /// [onDown] and [onUp] fire as each pushup starts and finishes, while
 /// [active]; otherwise it only shows the preview, so the player can find a
@@ -54,10 +39,6 @@ class CameraTrackerView extends StatefulWidget {
 
 class _CameraTrackerViewState extends State<CameraTrackerView>
     with WidgetsBindingObserver {
-  final _poseDetector = PoseDetector(
-    options: PoseDetectorOptions(),
-  );
-  final _segmenter = SelfieSegmenter();
   final _tracker = PushupPoseTracker();
   final _feedback = RepFeedback();
   final _clock = Stopwatch()..start();
@@ -72,8 +53,6 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
   Size _upright = Size.zero;
 
   ui.Image? _mask;
-  Size _maskSize = Size.zero;
-  InputImageRotation _rotation = InputImageRotation.rotation0deg;
 
   @override
   void initState() {
@@ -145,40 +124,51 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_stop());
-    unawaited(_poseDetector.close());
-    unawaited(_segmenter.close());
     _mask?.dispose();
     super.dispose();
   }
 
   Future<void> _onImage(CameraImage image) async {
-    if (_busy) return;
+    final camera = _camera;
+    if (_busy || camera == null || image.planes.length != 1) return;
     _busy = true;
     try {
-      final input = _inputImage(image);
-      if (input == null) return;
-      final rawSize = Size(image.width.toDouble(), image.height.toDouble());
-      // Pose in upright pixels, so up is up and angles keep their shape.
-      final upright = switch (_rotation) {
-        InputImageRotation.rotation90deg ||
-        InputImageRotation.rotation270deg =>
-          Size(rawSize.height, rawSize.width),
-        _ => rawSize,
-      };
-      final poses = await _poseDetector.processImage(input);
-      // Cut-out every other frame is plenty and halves the work.
-      final mask =
-          (_frame++).isEven ? await _segmenter.processImage(input) : null;
+      // The plugin usually hands over upright (and, for the front camera,
+      // mirrored like the preview) frames; a landscape one still needs the
+      // sensor's turn.
+      final rotation =
+          image.height >= image.width ? 0 : camera.sensorOrientation % 360;
+      final turned = rotation == 90 || rotation == 270;
+      final upright = Size(
+        (turned ? image.height : image.width).toDouble(),
+        (turned ? image.width : image.height).toDouble(),
+      );
+      final plane = image.planes.first;
+      // The cut-out every other frame is plenty and halves the work.
+      final wantsMask = (_frame++).isEven;
+      final reply = await _vision.invokeMapMethod<String, Object?>(
+        'process',
+        {
+          'bytes': plane.bytes,
+          'width': image.width,
+          'height': image.height,
+          'bytesPerRow': plane.bytesPerRow,
+          'rotation': rotation,
+          'mask': wantsMask,
+        },
+      );
+      if (reply == null) return;
 
       final pose = <Joint, PosePoint>{};
-      if (poses.isNotEmpty) {
-        final landmarks = poses.first.landmarks;
-        for (final MapEntry(key: joint, value: type) in _landmarks.entries) {
-          final landmark = landmarks[type];
-          if (landmark == null) continue;
-          final at = _toCanvas(landmark.x, landmark.y, upright, rawSize);
-          pose[joint] = PosePoint(at.dx, at.dy, landmark.likelihood);
-        }
+      final joints = reply['joints'] as Map<Object?, Object?>? ?? const {};
+      for (final joint in Joint.values) {
+        final point = joints[joint.name] as List<Object?>?;
+        if (point == null || point.length < 3) continue;
+        pose[joint] = PosePoint(
+          (point[0]! as num) * upright.width,
+          (point[1]! as num) * upright.height,
+          (point[2]! as num).toDouble(),
+        );
       }
       final reading = _tracker.update(pose, _clock.elapsed);
       if (widget.active) {
@@ -187,11 +177,15 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
       }
       _feedback.update(reading, _clock.elapsed);
 
-      if (mask != null) {
-        final next = await _maskImage(mask);
+      final mask = reply['mask'];
+      if (mask is Uint8List) {
+        final next = await _maskImage(
+          mask,
+          reply['maskWidth']! as int,
+          reply['maskHeight']! as int,
+        );
         _mask?.dispose();
         _mask = next;
-        _maskSize = Size(mask.width.toDouble(), mask.height.toDouble());
       }
       if (mounted) {
         setState(() {
@@ -206,94 +200,22 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
     }
   }
 
-  static const Map<DeviceOrientation, int> _orientations = {
-    DeviceOrientation.portraitUp: 0,
-    DeviceOrientation.landscapeLeft: 90,
-    DeviceOrientation.portraitDown: 180,
-    DeviceOrientation.landscapeRight: 270,
-  };
-
-  /// The camera frame as ML Kit wants it (following ML Kit's own example).
-  InputImage? _inputImage(CameraImage image) {
-    final camera = _camera;
-    final controller = _controller;
-    if (camera == null || controller == null) return null;
-    final sensor = camera.sensorOrientation;
-    InputImageRotation? rotation;
-    if (Platform.isIOS) {
-      rotation = InputImageRotationValue.fromRawValue(sensor);
-    } else {
-      var compensation = _orientations[controller.value.deviceOrientation];
-      if (compensation == null) return null;
-      compensation = camera.lensDirection == CameraLensDirection.front
-          ? (sensor + compensation) % 360
-          : (sensor - compensation + 360) % 360;
-      rotation = InputImageRotationValue.fromRawValue(compensation);
-    }
-    if (rotation == null) return null;
-    _rotation = rotation;
-    final format = InputImageFormatValue.fromRawValue(image.format.raw as int);
-    if (format == null ||
-        (Platform.isIOS && format != InputImageFormat.bgra8888) ||
-        (Platform.isAndroid && format != InputImageFormat.nv21) ||
-        image.planes.length != 1) {
-      return null;
-    }
-    final plane = image.planes.first;
-
-    return InputImage.fromBytes(
-      bytes: plane.bytes,
-      metadata: InputImageMetadata(
-        size: Size(image.width.toDouble(), image.height.toDouble()),
-        rotation: rotation,
-        format: format,
-        bytesPerRow: plane.bytesPerRow,
-      ),
-    );
-  }
-
-  /// Where an ML Kit point lands on a [canvas] showing the (mirrored, for
-  /// the front camera) preview; [imageSize] is the analysed image's size
-  /// (following ML Kit's example).
-  Offset _toCanvas(double x, double y, Size canvas, Size imageSize) {
-    final front = _camera?.lensDirection == CameraLensDirection.front;
-    final ios = Platform.isIOS;
-    final px = switch (_rotation) {
-      InputImageRotation.rotation90deg =>
-        x * canvas.width / (ios ? imageSize.width : imageSize.height),
-      InputImageRotation.rotation270deg => canvas.width -
-          x * canvas.width / (ios ? imageSize.width : imageSize.height),
-      _ => front
-          ? canvas.width - x * canvas.width / imageSize.width
-          : x * canvas.width / imageSize.width,
-    };
-    final py = switch (_rotation) {
-      InputImageRotation.rotation90deg ||
-      InputImageRotation.rotation270deg =>
-        y * canvas.height / (ios ? imageSize.height : imageSize.width),
-      _ => y * canvas.height / imageSize.height,
-    };
-
-    return Offset(px, py);
-  }
-
-  /// The segmentation mask as an image whose alpha is how sure it is that
-  /// a pixel is the player.
-  Future<ui.Image> _maskImage(SegmentationMask mask) {
-    final pixels = Uint8List(mask.width * mask.height * 4);
-    for (var i = 0; i < mask.confidences.length; i++) {
-      final alpha = (mask.confidences[i] * 255).round().clamp(0, 255);
+  /// Vision's person mask (one byte per pixel, upright) as an image whose
+  /// alpha is how sure it is that a pixel is the player.
+  Future<ui.Image> _maskImage(Uint8List mask, int width, int height) {
+    final pixels = Uint8List(width * height * 4);
+    for (var i = 0; i < width * height && i < mask.length; i++) {
       pixels
         ..[i * 4] = 255
         ..[i * 4 + 1] = 255
         ..[i * 4 + 2] = 255
-        ..[i * 4 + 3] = alpha;
+        ..[i * 4 + 3] = mask[i];
     }
     final done = Completer<ui.Image>();
     ui.decodeImageFromPixels(
       pixels,
-      mask.width,
-      mask.height,
+      width,
+      height,
       ui.PixelFormat.rgba8888,
       done.complete,
     );
@@ -301,17 +223,16 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
     return done.future;
   }
 
-  /// Maps the mask over the preview the same way as the landmarks.
+  /// Stretches the upright mask over the preview.
   Shader _maskShader(Rect bounds) {
     final mask = _mask!;
-    final origin = _toCanvas(0, 0, bounds.size, _maskSize);
-    final end =
-        _toCanvas(_maskSize.width, _maskSize.height, bounds.size, _maskSize);
-    final scaleX = (end.dx - origin.dx) / mask.width;
-    final scaleY = (end.dy - origin.dy) / mask.height;
     final matrix = Matrix4.identity()
-      ..translateByDouble(origin.dx, origin.dy, 0, 1)
-      ..scaleByDouble(scaleX, scaleY, 1, 1);
+      ..scaleByDouble(
+        bounds.width / mask.width,
+        bounds.height / mask.height,
+        1,
+        1,
+      );
 
     return ImageShader(
       mask,

@@ -1,9 +1,8 @@
 import 'dart:math' as math;
 import 'dart:ui' show Offset;
 
-/// The body points the pushup tracker looks at (a subset of the 33 that
-/// BlazePose, the model behind ML Kit's and MediaPipe's pose detection,
-/// finds).
+/// The body points the pushup tracker looks at (the ones Apple's Vision
+/// body pose finds that matter for a pushup).
 enum Joint {
   nose,
   leftShoulder,
@@ -87,14 +86,21 @@ class PushupReading {
 
 /// Counts pushups from pose landmarks, frame by frame.
 ///
-/// The main signal is the elbow angle (straight arms at the top, bent past
-/// about 90° at the bottom), which works from the side and at an angle.
-/// When the elbows can't be seen, it falls back on how high the shoulders
-/// are above the wrists, relative to the torso, which also works from the
-/// front; that one is normalised by the range seen so far, so it adapts to
-/// wherever the phone is. Both are smoothed, and a pushup only counts with
-/// hysteresis (deep enough to go down, high enough to come back up) and a
-/// minimum time at the bottom, so jitter never counts twice.
+/// Players face the phone, so the main signal is the front view: how far
+/// the shoulders are above the hands, in shoulder widths. Going down
+/// brings the shoulders down to the hands and closer to the camera (so
+/// they also look wider), and both shrink that number. It starts from a
+/// typical top and bottom and widens to what the player shows, so the
+/// first pushup counts and it adapts to wherever the phone is. From the
+/// front the elbows only nudge it, since a bent arm pointing at the camera
+/// is hard to read.
+///
+/// Seen from the side (one shoulder hidden), the elbow angle takes over:
+/// straight arms at the top, bent past about 90° at the bottom, with the
+/// shoulder height above the wrists as a fallback when the elbows can't be
+/// seen. The depth is smoothed, and a pushup only counts with hysteresis
+/// (deep enough to go down, high enough to come back up) and a minimum time
+/// at the bottom, so jitter never counts twice.
 class PushupPoseTracker {
   PushupPoseTracker({
     this.downAt = 0.62,
@@ -118,6 +124,14 @@ class PushupPoseTracker {
   Duration? _downSince;
   double? _low;
   double? _high;
+  double _frontLow = _frontBottom;
+  double _frontHigh = _frontTop;
+
+  /// Shoulders above the hands, in shoulder widths, at the bottom and the
+  /// top of a typical pushup seen from the front (from a phone on the
+  /// floor in front of the hands).
+  static const _frontBottom = 0.35;
+  static const _frontTop = 1.25;
 
   /// Starts over, forgetting the range seen so far.
   void reset() {
@@ -126,6 +140,8 @@ class PushupPoseTracker {
     _downSince = null;
     _low = null;
     _high = null;
+    _frontLow = _frontBottom;
+    _frontHigh = _frontTop;
   }
 
   PushupReading update(Map<Joint, PosePoint> pose, Duration time) {
@@ -134,7 +150,11 @@ class PushupPoseTracker {
       return point != null && point.likelihood >= minLikelihood ? point : null;
     }
 
-    final raw = _elbowDepth(seen) ?? _shoulderDepth(seen);
+    final front = _frontDepth(seen);
+    final elbows = _elbowDepth(seen);
+    final raw = front != null
+        ? (elbows == null ? front : front * 0.8 + elbows * 0.2)
+        : elbows ?? _shoulderDepth(seen);
     if (raw == null) {
       return PushupReading(
         visible: false,
@@ -163,10 +183,36 @@ class PushupPoseTracker {
       visible: true,
       down: _down,
       depth: depth,
-      form: _form(seen),
+      // The body line can only be judged from the side.
+      form: front == null ? _form(seen) : PushupForm.unknown,
       wentDown: wentDown,
       cameUp: cameUp,
     );
+  }
+
+  /// Depth from the front: the shoulders' height above the hands in
+  /// shoulder widths, placed in the range seen so far. Null unless both
+  /// shoulders and a hand are in view, i.e. the player faces the camera.
+  double? _frontDepth(PosePoint? Function(Joint) seen) {
+    final left = seen(Joint.leftShoulder);
+    final right = seen(Joint.rightShoulder);
+    final hands = _mid(seen(Joint.leftWrist), seen(Joint.rightWrist));
+    if (left == null || right == null || hands == null) return null;
+    final width = (left.offset - right.offset).distance;
+    // Seen edge on, the shoulders overlap: that's a side view.
+    if (width < 12) return null;
+    final shoulders = (left.offset + right.offset) / 2;
+    final height = (hands.dy - shoulders.dy) / width;
+
+    // Widen the range to what this player shows, and let it ease back
+    // towards the typical one so an odd frame doesn't stretch it for good.
+    _frontLow = math.min(_frontLow, height);
+    _frontHigh = math.max(_frontHigh, height);
+    _frontLow += (_frontBottom - _frontLow).clamp(0.0, 1.0) * 0.002;
+    _frontHigh -= (_frontHigh - _frontTop).clamp(0.0, 10.0) * 0.002;
+
+    return (1 - (height - _frontLow) / (_frontHigh - _frontLow))
+        .clamp(0.0, 1.0);
   }
 
   /// Depth from the elbow angles: 0 with the arms straight (170°), 1 bent

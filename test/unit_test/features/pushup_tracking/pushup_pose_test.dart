@@ -76,6 +76,57 @@ Iterable<double> pushups(
   }
 }
 
+/// A front view of a pushup, the phone on the floor in front of the hands:
+/// at depth [t] (0 top, 1 bottom) the shoulders come down towards the hands
+/// and closer to the camera, so they also look wider. [scale] stands for
+/// how far away the player is.
+Map<Joint, PosePoint> frontPose(double t, {double scale = 1}) {
+  const floor = 600.0;
+  const centre = 200.0;
+  final width = (100 + 30 * t) * scale;
+  final shoulderY = floor - (1.25 - 0.92 * t) * width;
+  final handX = width * 0.75;
+  PosePoint p(double x, double y) => PosePoint(x, y, 0.9);
+
+  return {
+    Joint.nose: p(centre, shoulderY - 0.3 * width),
+    Joint.leftShoulder: p(centre - width / 2, shoulderY),
+    Joint.rightShoulder: p(centre + width / 2, shoulderY),
+    // Elbows flare out as the arms bend.
+    Joint.leftElbow:
+        p(centre - handX - 30 * t * scale, (shoulderY + floor) / 2),
+    Joint.rightElbow:
+        p(centre + handX + 30 * t * scale, (shoulderY + floor) / 2),
+    Joint.leftWrist: p(centre - handX, floor),
+    Joint.rightWrist: p(centre + handX, floor),
+  };
+}
+
+/// [count] smooth front-view pushups, each [frames] long, down to depth
+/// [bottom].
+int countFrontReps(
+  PushupPoseTracker tracker,
+  int count, {
+  int frames = 40,
+  double bottom = 1,
+  double scale = 1,
+}) {
+  var reps = 0;
+  var frame = 0;
+  for (var r = 0; r < count; r++) {
+    for (var f = 0; f < frames; f++) {
+      final t = (1 - math.cos(2 * math.pi * f / frames)) / 2 * bottom;
+      final reading = tracker.update(
+        frontPose(t, scale: scale),
+        Duration(milliseconds: 33 * frame++),
+      );
+      if (reading.cameUp) reps++;
+    }
+  }
+
+  return reps;
+}
+
 void main() {
   test('angleAt measures the angle at the middle point', () {
     expect(
@@ -86,6 +137,28 @@ void main() {
       ),
       closeTo(90, 1e-9),
     );
+  });
+
+  group('PushupPoseTracker from the front', () {
+    test('counts pushups facing the phone, the first one too', () {
+      expect(countFrontReps(PushupPoseTracker(), 1), 1);
+      expect(countFrontReps(PushupPoseTracker(), 5), 5);
+    });
+
+    test('ignores shallow dips', () {
+      expect(countFrontReps(PushupPoseTracker(), 4, bottom: 0.25), 0);
+    });
+
+    test('works near and far from the phone', () {
+      expect(countFrontReps(PushupPoseTracker(), 3, scale: 0.5), 3);
+      expect(countFrontReps(PushupPoseTracker(), 3, scale: 2), 3);
+    });
+
+    test("doesn't judge the body line from the front", () {
+      final reading = PushupPoseTracker().update(frontPose(0), Duration.zero);
+      expect(reading.visible, isTrue);
+      expect(reading.form, PushupForm.unknown);
+    });
   });
 
   group('PushupPoseTracker', () {
