@@ -55,9 +55,7 @@ final class WidgetBridge {
       }
       if defaults.string(forKey: WidgetBridge.snapshotKey) != json {
         defaults.set(json, forKey: WidgetBridge.snapshotKey)
-        if #available(iOS 14.0, *) {
-          WidgetCenter.shared.reloadAllTimelines()
-        }
+        WidgetCenter.shared.reloadAllTimelines()
       }
       result(nil)
     }
