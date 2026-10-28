@@ -23,6 +23,10 @@ class ProCubit extends Cubit<ProState> {
 
   DateTime get now => _clock();
 
+  /// The plan bought last in this session, for the welcome screen; null
+  /// after a restore.
+  ProPlanKind? lastPurchase;
+
   /// Whether everything is open right now.
   bool get hasAccess => state.hasAccess(now);
 
@@ -65,7 +69,10 @@ class ProCubit extends Cubit<ProState> {
   /// they cancelled.
   Future<bool?> purchase(ProPlan plan) async {
     final pro = await _purchases.purchase(plan);
-    if (pro ?? false) emit(state.copyWith(isPro: true));
+    if (pro ?? false) {
+      lastPurchase = plan.kind;
+      emit(state.copyWith(isPro: true));
+    }
     return pro;
   }
 
@@ -75,7 +82,10 @@ class ProCubit extends Cubit<ProState> {
 
   Future<bool> restore() async {
     final pro = await _purchases.restore();
-    if (pro) emit(state.copyWith(isPro: true));
+    if (pro) {
+      lastPurchase = null;
+      emit(state.copyWith(isPro: true));
+    }
     return pro;
   }
 }

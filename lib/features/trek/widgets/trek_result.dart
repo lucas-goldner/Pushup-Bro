@@ -7,6 +7,8 @@ import 'package:pushup_bro/core/model/cosmetics.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
+import 'package:pushup_bro/features/share/model/recap.dart';
+import 'package:pushup_bro/features/share/widgets/share_recap_button.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/trek_stage_page.dart';
 import 'package:pushup_bro/features/trek/widgets/stats_sheet.dart';
@@ -241,6 +243,19 @@ class _TrekResultState extends State<TrekResult> {
                         icon: CarbonIcons.map,
                         onPressed: widget.onDone,
                       ),
+                      if (reward != null)
+                        ShareRecapButton(
+                          recap: () => Recap.trek(
+                            title: widget.stage.title(l),
+                            pushups: reward.pushups,
+                            damage: reward.damage,
+                            bestCombo: reward.bestCombo,
+                            bestComboBefore: reward.bestComboBefore,
+                            stars: reward.stars,
+                            bananas: reward.bananas,
+                            weightKg: playerWeightKg(context),
+                          ),
+                        ),
                     ],
                   ),
                 ),

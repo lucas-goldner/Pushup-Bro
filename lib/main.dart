@@ -29,6 +29,7 @@ import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/core/style/theme.dart';
 import 'package:pushup_bro/features/app_icon/app_icon_guard.dart';
 import 'package:pushup_bro/features/menu/model/routes.dart';
+import 'package:pushup_bro/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/news_cubit.dart';
@@ -84,6 +85,7 @@ class Main extends StatelessWidget {
     DBCubit dbCubit,
     GameInventoryCubit gameInventoryCubit,
     ProCubit proCubit,
+    OnboardingCubit onboardingCubit,
   ) async {
     await initializeDateFormatting();
     if (!kIsWeb) {
@@ -119,6 +121,9 @@ class Main extends StatelessWidget {
     // Reminders and widgets plan from the saved sets.
     await dbCubit.getAllPushupSets();
     await gameInventoryCubit.fetchInventory();
+    // After the sets: the onboarding skips the first set for players who
+    // already have some.
+    await onboardingCubit.load();
     // The free days start on the first launch; the store loads alongside.
     unawaited(proCubit.load());
   }
@@ -147,6 +152,7 @@ class Main extends StatelessWidget {
     final proCubit = ProCubit(sharedPreferencesProvider);
     final remindersCubit =
         RemindersCubit(sharedPreferencesProvider, LocalReminderService());
+    final onboardingCubit = OnboardingCubit(sharedPreferencesProvider);
 
     return MultiBlocProvider(
       providers: [
@@ -183,6 +189,9 @@ class Main extends StatelessWidget {
         BlocProvider<RemindersCubit>(
           create: (context) => remindersCubit,
         ),
+        BlocProvider<OnboardingCubit>(
+          create: (context) => onboardingCubit,
+        ),
       ],
       child: FutureBuilder(
         future: _initConfig(
@@ -192,6 +201,7 @@ class Main extends StatelessWidget {
           dbCubit,
           gameInventoryCubit,
           proCubit,
+          onboardingCubit,
         ),
         builder: (context, snapshot) =>
             BlocBuilder<SharedPreferencesCubit, SharedPreferencesState>(

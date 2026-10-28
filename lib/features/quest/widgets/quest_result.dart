@@ -1,10 +1,14 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
+import 'package:pushup_bro/features/share/model/recap.dart';
+import 'package:pushup_bro/features/share/widgets/share_recap_button.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 /// The end of a quest: won or not, the pushups done and bananas earned.
@@ -105,6 +109,17 @@ class QuestResult extends StatelessWidget {
                     icon: CarbonIcons.tree,
                     onPressed: onDone,
                   ),
+                  if (won)
+                    ShareRecapButton(
+                      recap: () => Recap.quest(
+                        title: quest.title(context.l10n),
+                        pushups: pushups,
+                        bananas: bananas,
+                        history: context.read<DBCubit>().state.pushupSets,
+                        now: DateTime.now(),
+                        weightKg: playerWeightKg(context),
+                      ),
+                    ),
                 ],
               ),
             ),
