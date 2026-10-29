@@ -14,6 +14,8 @@ import WidgetKit
   private var poseVision: PoseVision?
   private var storeReview: StoreReview?
   private var recapVideo: RecapVideo?
+  private var qrScanner: QrScanner?
+  private var screenBrightness: ScreenBrightness?
 
   override func application(
     _ application: UIApplication,
@@ -40,6 +42,12 @@ import WidgetKit
     }
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RecapVideo") {
       recapVideo = RecapVideo(messenger: registrar.messenger())
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "QrScanner") {
+      qrScanner = QrScanner(messenger: registrar.messenger())
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "ScreenBrightness") {
+      screenBrightness = ScreenBrightness(messenger: registrar.messenger())
     }
   }
 }
@@ -546,3 +554,191 @@ final class RecapVideo {
     top.present(sheet, animated: true)
   }
 }
+
+/// The topmost view controller, to present native screens over Flutter.
+private func topViewController() -> UIViewController? {
+  let scene = UIApplication.shared.connectedScenes
+    .first { $0.activationState == .foregroundActive } as? UIWindowScene
+  var top = scene?.windows.first(where: { $0.isKeyWindow })?.rootViewController
+  while let presented = top?.presentedViewController { top = presented }
+  return top
+}
+
+/// Scans a friend's QR code for lib/features/social/data/qr_scanner.dart:
+/// AVFoundation's metadata output reads QR codes natively (no ML Kit).
+/// Returns the code's text, or nil when cancelled or there's no camera.
+final class QrScanner {
+  private let channel: FlutterMethodChannel
+
+  init(messenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(name: "pushup_bro/qr_scanner", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "scan" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let args = call.arguments as? [String: Any]
+      QrScanner.present(
+        title: args?["title"] as? String ?? "",
+        cancel: args?["cancel"] as? String ?? "Cancel",
+        result: result
+      )
+    }
+  }
+
+  private static func present(title: String, cancel: String, result: @escaping FlutterResult) {
+    let start = {
+      guard let top = topViewController() else {
+        result(nil)
+        return
+      }
+      let scanner = QrScannerViewController(title: title, cancel: cancel) { code in
+        result(code)
+      }
+      scanner.modalPresentationStyle = .fullScreen
+      top.present(scanner, animated: true)
+    }
+    switch AVCaptureDevice.authorizationStatus(for: .video) {
+    case .authorized:
+      start()
+    case .notDetermined:
+      AVCaptureDevice.requestAccess(for: .video) { granted in
+        DispatchQueue.main.async { granted ? start() : result(nil) }
+      }
+    default:
+      result(nil)
+    }
+  }
+}
+
+final class QrScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+  private let session = AVCaptureSession()
+  private let sessionQueue = DispatchQueue(label: "pushup_bro.qr")
+  private let titleText: String
+  private let cancelText: String
+  private var finish: ((String?) -> Void)?
+
+  init(title: String, cancel: String, finish: @escaping (String?) -> Void) {
+    titleText = title
+    cancelText = cancel
+    self.finish = finish
+    super.init(nibName: nil, bundle: nil)
+  }
+
+  required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = .black
+    guard
+      let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+      let input = try? AVCaptureDeviceInput(device: camera),
+      session.canAddInput(input)
+    else {
+      close(with: nil)
+      return
+    }
+    session.addInput(input)
+    let output = AVCaptureMetadataOutput()
+    guard session.canAddOutput(output) else {
+      close(with: nil)
+      return
+    }
+    session.addOutput(output)
+    output.setMetadataObjectsDelegate(self, queue: .main)
+    output.metadataObjectTypes = [.qr]
+
+    let preview = AVCaptureVideoPreviewLayer(session: session)
+    preview.videoGravity = .resizeAspectFill
+    preview.frame = view.bounds
+    view.layer.addSublayer(preview)
+
+    // A rounded frame to aim with, the title above and Cancel below.
+    let frame = UIView()
+    frame.layer.borderColor = UIColor.white.cgColor
+    frame.layer.borderWidth = 4
+    frame.layer.cornerRadius = 28
+    frame.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(frame)
+
+    let label = UILabel()
+    label.text = titleText
+    label.textColor = .white
+    label.font = .systemFont(ofSize: 20, weight: .bold)
+    label.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(label)
+
+    var config = UIButton.Configuration.filled()
+    config.title = cancelText
+    config.baseBackgroundColor = .white
+    config.baseForegroundColor = .black
+    config.cornerStyle = .capsule
+    config.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 32, bottom: 14, trailing: 32)
+    let button = UIButton(configuration: config)
+    button.addAction(UIAction { [weak self] _ in self?.close(with: nil) }, for: .touchUpInside)
+    button.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(button)
+
+    NSLayoutConstraint.activate([
+      frame.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+      frame.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+      frame.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.7),
+      frame.heightAnchor.constraint(equalTo: frame.widthAnchor),
+      label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+      label.bottomAnchor.constraint(equalTo: frame.topAnchor, constant: -28),
+      button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+      button.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24),
+    ])
+    sessionQueue.async { [session] in session.startRunning() }
+  }
+
+  func metadataOutput(
+    _ output: AVCaptureMetadataOutput,
+    didOutput metadataObjects: [AVMetadataObject],
+    from connection: AVCaptureConnection
+  ) {
+    guard
+      let code = metadataObjects.compactMap({ $0 as? AVMetadataMachineReadableCodeObject }).first,
+      let text = code.stringValue
+    else { return }
+    UINotificationFeedbackGenerator().notificationOccurred(.success)
+    close(with: text)
+  }
+
+  private func close(with code: String?) {
+    guard let finish = finish else { return }
+    self.finish = nil
+    sessionQueue.async { [session] in session.stopRunning() }
+    if presentingViewController != nil {
+      dismiss(animated: true) { finish(code) }
+    } else {
+      finish(code)
+    }
+  }
+}
+
+/// Full brightness while a QR code is shown, for
+/// lib/features/social/data/screen_brightness.dart.
+final class ScreenBrightness {
+  private let channel: FlutterMethodChannel
+
+  init(messenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(name: "pushup_bro/brightness", binaryMessenger: messenger)
+    channel.setMethodCallHandler { call, result in
+      switch call.method {
+      case "raise":
+        let previous = UIScreen.main.brightness
+        UIScreen.main.brightness = 1
+        result(Double(previous))
+      case "restore":
+        if let level = call.arguments as? Double {
+          UIScreen.main.brightness = CGFloat(level)
+        }
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+  }
+}
+

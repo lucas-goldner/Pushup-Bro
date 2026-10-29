@@ -20,6 +20,10 @@ abstract interface class PurchasesService {
 
   /// Returns whether the player has Pro after restoring.
   Future<bool> restore();
+
+  /// Ties purchases to the player's account [uid], so Pro follows them to a
+  /// new iPhone. Returns whether they have Pro.
+  Future<bool> logIn(String uid);
 }
 
 class RevenueCatPurchasesService implements PurchasesService {
@@ -95,6 +99,13 @@ class RevenueCatPurchasesService implements PurchasesService {
     await _ensureConfigured();
     return _isPro(await Purchases.restorePurchases());
   }
+
+  @override
+  Future<bool> logIn(String uid) async {
+    await _ensureConfigured();
+    final result = await Purchases.logIn(uid);
+    return _isPro(result.customerInfo);
+  }
 }
 
 /// A store that sells nothing (web, tests, builds without a key). Shows the
@@ -124,4 +135,7 @@ class PreviewPurchasesService implements PurchasesService {
 
   @override
   Future<bool> restore() async => false;
+
+  @override
+  Future<bool> logIn(String uid) async => false;
 }

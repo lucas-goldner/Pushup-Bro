@@ -20,6 +20,7 @@ import 'package:pushup_bro/features/settings/widgets/info_item.dart';
 import 'package:pushup_bro/features/settings/widgets/settings_group.dart';
 import 'package:pushup_bro/features/settings/widgets/settings_item.dart';
 import 'package:pushup_bro/features/settings/widgets/x_logo.dart';
+import 'package:pushup_bro/features/social/account/account_page.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -51,6 +52,12 @@ class _SettingsState extends State<Settings> {
           SettingsSectionHeader(context.l10n.general),
           SettingsGroup(
             children: [
+              Settingsitem(
+                context.l10n.accountSettingsRow,
+                CarbonIcons.user_avatar,
+                () => navigateToSettingPage(AccountPage.routeName),
+                color: context.colorScheme.secondary,
+              ),
               Settingsitem(
                 context.l10n.switchLanguage,
                 CarbonIcons.language,

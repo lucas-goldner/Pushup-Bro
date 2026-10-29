@@ -15,8 +15,13 @@ dependencies:
     path: packages/carbon_icons_patched
   carousel_slider: ^5.1.2
   circular_clip_route: ^0.2.0+3
+  cloud_firestore: ^7.1.0
   cupertino_icons: ^2.0.0
   equatable: ^2.0.5
+  firebase_app_check: ^0.5.1
+  firebase_auth: ^7.0.1
+  firebase_core: ^5.1.0
+  firebase_messaging: ^17.0.1
   fl_chart: ^1.1.1
   flutter:
     sdk: flutter
@@ -36,6 +41,7 @@ dependencies:
   modal_bottom_sheet: ^3.0.0-pre
   path_provider: ^2.0.12
   purchases_flutter: ^10.17.0
+  qr: ^4.0.0
   rive: ^0.14.11
   shared_preferences: ^2.0.17
   table_calendar: ^3.0.8

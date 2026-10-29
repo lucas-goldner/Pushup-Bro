@@ -35,8 +35,14 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Count your pushups by watching your form through the camera. The video never leaves your phone.</string>
+	<string>Count your pushups by watching your form through the camera, and scan your bros' QR codes. The video never leaves your phone.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Measure airpods movement to track pushups</string>
 	<key>UIApplicationSceneManifest</key>

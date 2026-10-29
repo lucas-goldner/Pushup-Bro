@@ -25,6 +25,9 @@ class _Store implements PurchasesService {
 
   @override
   Future<bool> restore() async => pro;
+
+  @override
+  Future<bool> logIn(String uid) async => pro;
 }
 
 void main() {

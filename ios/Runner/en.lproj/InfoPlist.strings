@@ -7,5 +7,5 @@
 */
 
 CFBundleDisplayName = "Pushup Bro";
-NSCameraUsageDescription = "Count your pushups by watching your form through the camera. The video never leaves your phone.";
+NSCameraUsageDescription = "Count your pushups by watching your form through the camera, and scan your bros' QR codes. The video never leaves your phone.";
 NSMotionUsageDescription = "Measure AirPods movement to track pushups";

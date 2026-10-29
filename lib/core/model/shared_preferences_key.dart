@@ -15,5 +15,9 @@ enum SharedPreferencesKey {
   onboardingCompleted,
   onboardingAnswers,
   trekBestCombo,
+  accountUpgradePromptPending,
+  accountUpgradePromptShown,
+  cloudSavedAt,
+  inboxBananasDay,
   dailyBananasClaimedOn;
 }

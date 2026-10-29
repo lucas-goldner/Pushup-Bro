@@ -129,7 +129,7 @@
   "monkeyConfirm": "oo oo ok!",
   "shareProfile": "Share profile",
   "friends": "Bros",
-  "leaderboard": "Leaderboard",
+  "leaderboard": "Today",
   "sharedStreak": "Shared streak",
   "openChallenges": "{xChallenges} Open challenges",
   "@openChallenges": {
@@ -1232,5 +1232,398 @@
   "recapQuestDone": "Quest complete",
   "recapStageCleared": "Stage cleared",
   "recapNewQuestDaily": "A new quest every day",
-  "recapJoin": "Train with Carlos in Pushup Bro"
+  "recapJoin": "Train with Carlos in Pushup Bro",
+  "boardFriends": "Friends",
+  "boardEveryone": "Everyone",
+  "boardResetsIn": "Resets in {hours} h {minutes} m",
+  "@boardResetsIn": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "boardPlayers": "{count, plural, =1{1 bro} other{{count} bros}}",
+  "@boardPlayers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "boardYou": "You",
+  "boardToday": "today",
+  "boardStreak": "{days}-day streak",
+  "@boardStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "boardNotStarted": "Not started today",
+  "boardPass": "{more} more to pass {name}.",
+  "@boardPass": {
+    "placeholders": {
+      "more": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "boardPassSub": "That's one good set.",
+  "boardOnTop": "You're on top.",
+  "boardOnTopSub": "Defend the crown.",
+  "boardStart": "Do your first set today",
+  "boardStartSub": "Every pushup counts on the board.",
+  "boardGo": "Go",
+  "boardYouName": "You · {name}",
+  "@boardYouName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "boardTopPercent": "Top {percent}% today",
+  "@boardTopPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "boardNotOnYet": "Do a set to get on the board",
+  "boardNoFriends": "Add bros to race them every day",
+  "boardAddBros": "Add bros",
+  "boardEmptyEveryone": "Nobody has done pushups yet today. Be the first!",
+  "socialOffline": "Connect to the internet to see your bros.",
+  "socialRetry": "Try again",
+  "brosYourCode": "Your friend code",
+  "brosShareIsland": "Share my island",
+  "brosScanCode": "Scan a code",
+  "brosCount": "{count, plural, =0{No bros yet} =1{1 bro} other{{count} bros}}",
+  "@brosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "brosAddByCode": "+ Add by code",
+  "brosTodayStreak": "{count} today",
+  "@brosTodayStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "brosNotStarted": "Not started",
+  "brosDone": "✓ Done",
+  "brosNudge": "👋 Nudge",
+  "brosNudged": "Nudged",
+  "brosEmptyTitle": "Pushups are better with bros",
+  "brosEmptyText": "Share your code or scan a friend's. You'll race each other on today's board and can visit each other's islands.",
+  "brosRemove": "Remove bro",
+  "brosBlock": "Block",
+  "brosRemoveConfirm": "Remove {name}?",
+  "@brosRemoveConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "brosBlockConfirm": "Block {name}? You won't see each other anywhere.",
+  "@brosBlockConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "brosCancel": "Cancel",
+  "brosLimit": "That's 100 bros, the most you can have.",
+  "addTitle": "Add a bro",
+  "addText": "Type their code or scan their QR. You both see each other right away.",
+  "addFound": "Found",
+  "addIslandLevel": "Island level {level}",
+  "@addIslandLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "addStreakDays": "{days}-day streak",
+  "@addStreakDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "addOr": "or",
+  "addScanQr": "Scan a QR code",
+  "addButton": "Add {name}",
+  "@addButton": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addButtonEmpty": "Add bro",
+  "addUnknown": "No bro with that code",
+  "addSelf": "That's you, bro 😄",
+  "addAlready": "Already bros",
+  "addFailed": "That didn't work. Try again?",
+  "addedTitle": "You and {name} are",
+  "@addedTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addedTitleBros": "bros",
+  "addedTitleNow": "now",
+  "addedText": "You'll see each other on today's board and can visit each other's islands.",
+  "addedLevel": "Island level {level}",
+  "@addedLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "addedDays": "{days} days",
+  "@addedDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "addedToday": "{count} today",
+  "@addedToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addedVisit": "Visit {name}'s island",
+  "@addedVisit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addedDone": "Done",
+  "scanUnavailable": "The camera isn't available. Type the code instead.",
+  "inboxWave": "{name} waved at you 👋",
+  "@inboxWave": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxBanana": "{name} sent you a banana 🍌",
+  "@inboxBanana": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxNudge": "{name} nudged you: time for pushups! 💪",
+  "@inboxNudge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxClaim": "Claim",
+  "inboxOk": "Nice",
+  "visitTitle": "{name}'s island",
+  "@visitTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "visitSubtitle": "Level {level} · {friends, plural, =0{no friends yet} =1{1 friend lives here} other{{friends} friends live here}}",
+  "@visitSubtitle": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      },
+      "friends": {
+        "type": "int"
+      }
+    }
+  },
+  "visitToday": "{count} today",
+  "@visitToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "visitRank": "#{rank} of bros",
+  "@visitRank": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "visitFriends": "{count, plural, =1{1 friend} other{{count} friends}}",
+  "@visitFriends": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "visitWave": "Wave",
+  "visitBanana": "Send a banana",
+  "visitWaved": "Waved 👋",
+  "visitBananaSent": "Banana sent 🍌",
+  "visitGone": "This bro's island can't be visited right now.",
+  "visitGreet1": "Hey bro! Did your pushups? 💪",
+  "visitGreet2": "Welcome to my island!",
+  "visitGreet3": "Race you on today's board 🏆",
+  "visitGreet4": "Nice to see you, bro!",
+  "visitGreet5": "Want a banana? Just kidding, they're mine 🍌",
+  "shareTitle": "My island",
+  "shareCodeLabel": "Friend code",
+  "shareLevel": "✓ Island level {level}",
+  "@shareLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "shareHeadline": "Scan to be my pushup bro",
+  "shareBrightness": "Brightness is turned up while this is open",
+  "shareScan": "Scan a friend's code",
+  "shareMessage": "Be my pushup bro: {link}",
+  "@shareMessage": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "islandShareText": "Carlos, {friends, plural, =0{no friends yet} =1{1 friend} other{{friends} friends}} and {streak, plural, =1{1 day} other{{streak} days}} of streak live here.",
+  "@islandShareText": {
+    "placeholders": {
+      "friends": {
+        "type": "int"
+      },
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "islandShareButton": "Share my island",
+  "accountTitle": "Account",
+  "accountSaved": "Saved",
+  "accountPro": "Pro",
+  "accountLocalOnly": "Saved on this iPhone only",
+  "accountApple": "Apple",
+  "accountGoogle": "Google",
+  "accountConnected": "Connected",
+  "accountConnect": "Connect",
+  "accountLastSaved": "Last saved",
+  "accountNever": "Not yet",
+  "accountSyncNow": "Sync now",
+  "accountPaused": "Backups paused. Renew Pro to keep saving.",
+  "accountFriendName": "Name for friends",
+  "accountFriendNameHint": "Only your bros see it",
+  "accountShowEveryone": "Show me on Everyone",
+  "accountBlocked": "Blocked bros",
+  "accountUnblock": "Unblock",
+  "accountSignOut": "Sign out",
+  "accountSignOutConfirm": "Sign out? Your progress stays on this iPhone, and you start a fresh account for bros and the board.",
+  "accountDelete": "Delete account",
+  "accountDeleteConfirm": "Delete your account? Your saved progress, friends, scores and island are removed from our servers, and Apple and Google are disconnected. Progress on this iPhone stays.",
+  "accountDeleteNote": "Deleting removes your saved progress, friends, scores and island from our servers and disconnects Apple and Google. Progress on this iPhone stays.",
+  "accountFreeNote": "You already have a private account for the leaderboard and friends. It needs no sign-in and works on this iPhone.",
+  "accountBackupTitle": "Back up your island",
+  "accountBackupText": "With Pro, connect Apple or Google and your island, pushups, streak and bros are saved and come back on any iPhone.",
+  "accountSeePro": "See Pro",
+  "accountRestore": "Restore with Apple or Google",
+  "accountLinkFailed": "That didn't work. Try again?",
+  "accountOk": "OK",
+  "upgradeBadge": "👑 PRO PERK",
+  "upgradeTitle": "Never lose your",
+  "upgradeTitleIsland": "island",
+  "upgradeText": "Connect an account and everything is saved. Get it all back on a new iPhone.",
+  "upgradeIsland": "Your island and Carlos's look",
+  "upgradePushups": "Every pushup, streak and quest",
+  "upgradeBros": "Your bros and your friend code",
+  "upgradeApple": "Continue with Apple",
+  "upgradeGoogle": "Continue with Google",
+  "upgradeLater": "Maybe later",
+  "restoreTitle": "Welcome back,",
+  "restoreTitleBro": "bro!",
+  "restoreFound": "We found your saved island from {time}.",
+  "@restoreFound": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "restorePushups": "pushups",
+  "restoreStreak": "day streak",
+  "restoreBros": "bros",
+  "restoreIsland": "island",
+  "restoreLocal": "This iPhone has {count} pushups from today. They're added on top, nothing is lost.",
+  "@restoreLocal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreButton": "Restore my island",
+  "restoreFresh": "Start fresh on this iPhone",
+  "restoreOnboarding": "I already have an island",
+  "accountJustNow": "Just now",
+  "accountMinutesAgo": "{count} min ago",
+  "@accountMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountHoursAgo": "{count} h ago",
+  "@accountHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountFriends": "Bros",
+  "accountOn": "On",
+  "accountOff": "Off",
+  "accountSettingsRow": "Account"
 }

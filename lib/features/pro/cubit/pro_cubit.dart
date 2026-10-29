@@ -27,6 +27,10 @@ class ProCubit extends Cubit<ProState> {
   /// after a restore.
   ProPlanKind? lastPurchase;
 
+  /// Called when Pro starts from a purchase or a restore (not when a
+  /// player who already has it opens the app).
+  VoidCallback? onBecamePro;
+
   /// Whether everything is open right now.
   bool get hasAccess => state.hasAccess(now);
 
@@ -72,6 +76,7 @@ class ProCubit extends Cubit<ProState> {
     if (pro ?? false) {
       lastPurchase = plan.kind;
       emit(state.copyWith(isPro: true));
+      onBecamePro?.call();
     }
     return pro;
   }
@@ -85,7 +90,20 @@ class ProCubit extends Cubit<ProState> {
     if (pro) {
       lastPurchase = null;
       emit(state.copyWith(isPro: true));
+      onBecamePro?.call();
     }
     return pro;
+  }
+
+  /// Ties purchases to the account [uid]; after signing in on a new
+  /// iPhone, Pro comes along.
+  Future<void> logIn(String uid) async {
+    if (!_purchases.isAvailable) return;
+    try {
+      final pro = await _purchases.logIn(uid);
+      if (pro != state.isPro) emit(state.copyWith(isPro: pro));
+    } on Object catch (error) {
+      debugPrint('Store log in failed: $error');
+    }
   }
 }
