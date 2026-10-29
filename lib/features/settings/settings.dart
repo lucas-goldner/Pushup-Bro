@@ -122,6 +122,7 @@ class _SettingsState extends State<Settings> {
                 null,
                 () => openBrowser(createURI(WebsiteLinks.x.link)),
                 glyph: const XLogo(),
+                color: context.colorScheme.onSurface,
               ),
               InfoItem(
                 context.l10n.privacyPolicy,

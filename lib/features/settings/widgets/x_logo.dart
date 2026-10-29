@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-/// The X logo, drawn in the [IconTheme]'s colour and size: a bold stroke
-/// from top left to bottom right, crossed by a thin one.
+/// The X logo, drawn in the [IconTheme]'s colour and size: an outlined
+/// stroke from top left to bottom right, crossed by a thin one.
 class XLogo extends StatelessWidget {
   const XLogo({super.key});
 
@@ -26,39 +26,29 @@ class _XPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final paint = Paint()..color = color;
-    // The bold stroke: an outlined band with a slot cut through it.
+    // Drawn inside a 12% margin, like the icon font's glyphs.
+    Offset at(double x, double y) => Offset(
+          size.width * (0.12 + x * 0.76),
+          size.height * (0.12 + y * 0.76),
+        );
+    final line = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeJoin = StrokeJoin.miter
+      ..strokeWidth = size.width * 0.075;
     canvas
+      // The bold stroke, drawn as an outline.
       ..drawPath(
         Path()
-          ..moveTo(w * 0.06, h * 0.1)
-          ..lineTo(w * 0.36, h * 0.1)
-          ..lineTo(w * 0.94, h * 0.9)
-          ..lineTo(w * 0.64, h * 0.9)
+          ..moveTo(at(0, 0).dx, at(0, 0).dy)
+          ..lineTo(at(0.3, 0).dx, at(0.3, 0).dy)
+          ..lineTo(at(1, 1).dx, at(1, 1).dy)
+          ..lineTo(at(0.7, 1).dx, at(0.7, 1).dy)
           ..close(),
-        paint,
-      )
-      ..drawPath(
-        Path()
-          ..moveTo(w * 0.2, h * 0.17)
-          ..lineTo(w * 0.32, h * 0.17)
-          ..lineTo(w * 0.8, h * 0.83)
-          ..lineTo(w * 0.68, h * 0.83)
-          ..close(),
-        Paint()
-          ..color = color
-          ..blendMode = BlendMode.clear,
+        line,
       )
       // The thin stroke, bottom left to top right.
-      ..drawLine(
-        Offset(w * 0.12, h * 0.9),
-        Offset(w * 0.86, h * 0.1),
-        paint
-          ..strokeWidth = w * 0.09
-          ..strokeCap = StrokeCap.butt,
-      );
+      ..drawLine(at(0.04, 1), at(0.94, 0), line);
   }
 
   @override
