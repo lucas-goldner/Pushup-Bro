@@ -228,10 +228,10 @@
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
 				9740EEB61CF901F6004384FC /* Run Script */,
-				4D2DC06A299EC05500B7640B /* Setup Firebase Environment GoogleService-Info.plist */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
+				4D2DC06A299EC05500B7640B /* Setup Firebase Environment GoogleService-Info.plist */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				EC809291180BB4002375C07D /* Embed Foundation Extensions */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
@@ -355,6 +355,7 @@
 		};
 		4D2DC06A299EC05500B7640B /* Setup Firebase Environment GoogleService-Info.plist */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -369,7 +370,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"${CONFIGURATION}\" == \"Debug-dev\" ] || [ \"${CONFIGURATION}\" == \"Release-dev\" ]; then\n\ncp -f \"${PROJECT_DIR}/config/dev/GoogleService-Info.plist\" \"${PROJECT_DIR}/Runner/GoogleService-Info.plist\"\necho \"Development plist copied\"\n\nelif [ \"${CONFIGURATION}\" == \"Debug-prod\" ] || [ \"${CONFIGURATION}\" == \"Release-prod\" ]; then\ncp -f \"${PROJECT_DIR}/config/prod/GoogleService-Info.plist\" \"${PROJECT_DIR}/Runner/GoogleService-Info.plist\"\necho \"Production plist copied\"\nfi\n";
+			shellScript = "# Firebase (bros, the leaderboard and cloud save) reads the flavor's\n# GoogleService-Info.plist from the app bundle.\ncase \"${CONFIGURATION}\" in\n  *-dev) FLAVOR=dev ;;\n  *) FLAVOR=prod ;;\nesac\nSOURCE=\"${PROJECT_DIR}/config/${FLAVOR}/GoogleService-Info.plist\"\nif [ ! -f \"${SOURCE}\" ]; then\n  echo \"warning: ${SOURCE} is missing, so bros, the leaderboard and cloud save are off in this build.\"\n  exit 0\nfi\ncp -f \"${SOURCE}\" \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\"\n# Google sign-in comes back to the app through its reversed client id.\nSCHEME=$(/usr/libexec/PlistBuddy -c \"Print :REVERSED_CLIENT_ID\" \"${SOURCE}\" 2>/dev/null)\nINFO=\"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nif [ -n \"${SCHEME}\" ]; then\n  /usr/libexec/PlistBuddy -c \"Delete :CFBundleURLTypes\" \"${INFO}\" 2>/dev/null || true\n  /usr/libexec/PlistBuddy -c \"Add :CFBundleURLTypes array\" -c \"Add :CFBundleURLTypes:0 dict\" -c \"Add :CFBundleURLTypes:0:CFBundleURLSchemes array\" -c \"Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string ${SCHEME}\" \"${INFO}\"\nfi\n";
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;

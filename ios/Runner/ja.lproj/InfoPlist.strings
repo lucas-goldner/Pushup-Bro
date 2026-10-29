@@ -7,5 +7,5 @@
 */
 
 CFBundleDisplayName = "腕立て伏せ兄貴";
-NSCameraUsageDescription = "カメラであなたのフォームを見て腕立て伏せを数えます。映像が端末の外に出ることはありません。";
+NSCameraUsageDescription = "カメラであなたのフォームを見て腕立て伏せを数え、ブロのQRコードを読み取ります。映像が端末の外に出ることはありません。";
 NSMotionUsageDescription = "AirPodsの動きを測って腕立て伏せを数えます";

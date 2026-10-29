@@ -7,5 +7,5 @@
 */
 
 CFBundleDisplayName = "Bro flexiones";
-NSCameraUsageDescription = "Cuenta tus flexiones observando tu postura con la cámara. El vídeo nunca sale de tu móvil.";
+NSCameraUsageDescription = "Cuenta tus flexiones observando tu postura con la cámara y escanea los códigos QR de tus bros. El vídeo nunca sale de tu móvil.";
 NSMotionUsageDescription = "Mide el movimiento de los AirPods para contar flexiones";
