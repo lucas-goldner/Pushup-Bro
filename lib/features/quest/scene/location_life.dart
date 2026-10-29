@@ -1113,8 +1113,8 @@ extension _LocationLife on LocationWorld {
     _flock(
       scene,
       count: 6,
-      center: vm.Vector3(0, 3, -1),
-      radius: 6,
+      center: vm.Vector3(0, 6, -4),
+      radius: 10,
       body: const Color(0xFFFFFFFF),
       wings: const Color(0xFFE8EEF5),
       size: 1.5,
@@ -1234,7 +1234,7 @@ extension _LocationLife on LocationWorld {
     // Vines hanging down, swaying in the breeze.
     for (var i = 0; i < 12; i++) {
       final a = i / 12 * math.pi * 2;
-      final r = 3 + random.nextDouble() * 4;
+      final r = 6 + random.nextDouble() * 4;
       final length = 2.5 + random.nextDouble() * 3;
       final vine = Node(name: 'vine')
         ..position = vm.Vector3(math.cos(a) * r, 5, math.sin(a) * r - 2)
@@ -1314,8 +1314,8 @@ extension _LocationLife on LocationWorld {
       scene,
       random,
       count: 16,
-      near: 3.2,
-      far: 6,
+      near: 6.5,
+      far: 9,
       y: -0.05,
       build: (i) => Node(name: 'reeds')
         ..addAll([
