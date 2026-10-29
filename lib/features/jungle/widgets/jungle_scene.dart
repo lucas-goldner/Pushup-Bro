@@ -19,7 +19,10 @@ Color jungleMistOf(BuildContext context) =>
 /// A clearing deep in the jungle. Carlos wanders in through the gate and
 /// sits down in the middle while parrots circle overhead.
 class JungleScene extends StatefulWidget {
-  const JungleScene({super.key});
+  const JungleScene({this.onReady, super.key});
+
+  /// Called once the whole clearing is drawn.
+  final VoidCallback? onReady;
 
   @override
   State<JungleScene> createState() => _JungleSceneState();
@@ -105,5 +108,8 @@ class _JungleSceneState extends State<JungleScene> {
         populate: _populate,
         cameraBuilder: _camera,
         onTick: _tick,
+        // Compile the shaders first, so the clearing never shows half drawn.
+        warmUp: true,
+        onReady: widget.onReady,
       );
 }
