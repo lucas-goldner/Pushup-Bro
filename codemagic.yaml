@@ -6,6 +6,7 @@ workflows:
     environment:
       groups:
         - revenuecat
+        - firebase
       flutter: 3.47.5
       xcode: latest
       cocoapods: default
@@ -40,6 +41,16 @@ workflows:
             echo "Add it as a secret in the 'revenuecat' environment group in Codemagic."
             exit 1
           fi
+
+      - name: Add the Firebase config
+        script: |
+          if [ -z "$GOOGLE_SERVICE_INFO_PLIST_PROD" ]; then
+            echo "GOOGLE_SERVICE_INFO_PLIST_PROD is missing, so bros and the leaderboard would be offline."
+            echo "Add the prod GoogleService-Info.plist as a secret file in the 'firebase' environment group in Codemagic."
+            exit 1
+          fi
+          mkdir -p ios/config/prod
+          echo "$GOOGLE_SERVICE_INFO_PLIST_PROD" | base64 --decode > ios/config/prod/GoogleService-Info.plist
 
       - name: Build iOS app
         script: |
