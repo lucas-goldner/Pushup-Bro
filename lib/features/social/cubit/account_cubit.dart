@@ -37,6 +37,10 @@ class AccountCubit extends Cubit<AccountState> {
   /// account is signed in to; ties Pro to it.
   void Function(String uid)? onSignedIn;
 
+  /// Called before signing out, while the old account can still be
+  /// written to.
+  Future<void> Function()? beforeSignOut;
+
   SocialBackend get backend => _backend;
 
   /// Signs in (anonymously the first time) and loads or creates the
@@ -216,6 +220,7 @@ class AccountCubit extends Cubit<AccountState> {
 
   /// Back to a fresh anonymous account; progress on this iPhone stays.
   Future<void> signOut({MonkeyLook look = const MonkeyLook()}) async {
+    await beforeSignOut?.call();
     await _backend.signOut();
     emit(const AccountState());
     await start(look: look);

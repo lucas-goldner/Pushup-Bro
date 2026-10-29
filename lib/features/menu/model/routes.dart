@@ -31,6 +31,10 @@ import 'package:pushup_bro/features/trek/trek_map_page.dart';
 import 'package:pushup_bro/features/trek/trek_stage_page.dart';
 import 'package:pushup_bro/features/wardrobe/wardrobe.dart';
 
+/// The app's navigator, for opening screens from outside the widget tree
+/// (a tapped push notification).
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey();
+
 Route<CupertinoPageRoute<Widget>> generateRoutes(
   RouteSettings settings,
 ) =>

@@ -113,6 +113,17 @@ abstract class SocialBackend {
   Stream<List<InboxItem>> inbox(String uid);
   Future<void> removeFromInbox(String uid, String id);
 
+  // Push notifications.
+
+  /// Registers this iPhone's push [token] for [uid], so waves, bananas and
+  /// nudges reach it in [language] (the Cloud Function sends them).
+  Future<void> saveDevice(
+    String uid, {
+    required String token,
+    required String language,
+  });
+  Future<void> removeDevice(String uid, String token);
+
   // Cloud save, for linked Pro members.
 
   Future<CloudBackup?> readBackup(String uid);

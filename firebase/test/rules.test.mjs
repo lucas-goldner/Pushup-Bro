@@ -199,3 +199,23 @@ describe('inbox', () => {
     await assertSucceeds(getDocs(collection(anon('alice'), 'users/alice/inbox')));
   });
 });
+
+describe('devices', () => {
+  const device = { token: 'tok1', language: 'de', updatedAt: 1 };
+
+  it('are written and read only by their owner', async () => {
+    await assertSucceeds(setDoc(doc(anon('alice'), 'users/alice/devices/tok1'), device));
+    await assertSucceeds(getDoc(doc(anon('alice'), 'users/alice/devices/tok1')));
+    await assertFails(getDoc(doc(anon('bob'), 'users/alice/devices/tok1')));
+    await assertFails(setDoc(doc(anon('bob'), 'users/alice/devices/tok2'), { ...device, token: 'tok2' }));
+  });
+
+  it('are stored under their own token', async () => {
+    await assertFails(setDoc(doc(anon('alice'), 'users/alice/devices/other'), device));
+  });
+
+  it('take only the known fields and languages', async () => {
+    await assertFails(setDoc(doc(anon('alice'), 'users/alice/devices/tok1'), { ...device, extra: 1 }));
+    await assertFails(setDoc(doc(anon('alice'), 'users/alice/devices/tok1'), { ...device, language: 'fr' }));
+  });
+});

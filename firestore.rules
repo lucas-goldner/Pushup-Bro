@@ -88,6 +88,17 @@ service cloud.firestore {
         allow read, write: if isMe(uid);
       }
 
+      // This player's iPhones for push notifications, by their FCM token.
+      // Only the owner sees them; the Cloud Function reads them as admin.
+      match /devices/{token} {
+        allow read, delete: if isMe(uid);
+        allow create, update: if isMe(uid)
+          && request.resource.data.keys().hasOnly(['token', 'language', 'updatedAt'])
+          && request.resource.data.token == token
+          && request.resource.data.language in ['en', 'de', 'es', 'ja', 'pt']
+          && request.resource.data.updatedAt is int;
+      }
+
       // Waves, bananas and nudges from friends. Nothing is ever overwritten,
       // and a nudge's id is one per sender and day, so a second nudge the
       // same day is refused.

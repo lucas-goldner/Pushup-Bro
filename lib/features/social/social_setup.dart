@@ -5,6 +5,7 @@ import 'package:pushup_bro/core/app_config.dart';
 import 'package:pushup_bro/features/social/data/demo_social_backend.dart';
 import 'package:pushup_bro/features/social/data/fake_social_backend.dart';
 import 'package:pushup_bro/features/social/data/firestore_social_backend.dart';
+import 'package:pushup_bro/features/social/data/push_service.dart';
 import 'package:pushup_bro/features/social/data/social_backend.dart';
 
 /// Firebase on iOS, from the flavor's `GoogleService-Info.plist`. Without
@@ -26,6 +27,10 @@ Future<SocialBackend> createSocialBackend({required bool dev}) async {
     return UnavailableSocialBackend();
   }
 }
+
+/// Push notifications where Firebase is set up.
+PushService pushServiceFor(SocialBackend backend) =>
+    backend is FirestoreSocialBackend ? FirebasePushService() : NoPushService();
 
 /// No Firebase: signing in fails, so the account stays offline.
 class UnavailableSocialBackend extends FakeSocialBackend {

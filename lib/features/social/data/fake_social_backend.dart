@@ -33,6 +33,9 @@ class FakeSocialBackend implements SocialBackend {
   final Map<String, Map<String, InboxItem>> inboxes = {};
   final Map<String, CloudBackup> backups = {};
 
+  /// Push tokens by uid, with their language.
+  final Map<String, Map<String, String>> devices = {};
+
   final _changes = StreamController<void>.broadcast();
 
   void _changed() => _changes.add(null);
@@ -245,6 +248,18 @@ class FakeSocialBackend implements SocialBackend {
     inboxes[uid]?.remove(id);
     _changed();
   }
+
+  @override
+  Future<void> saveDevice(
+    String uid, {
+    required String token,
+    required String language,
+  }) async =>
+      (devices[uid] ??= {})[token] = language;
+
+  @override
+  Future<void> removeDevice(String uid, String token) async =>
+      devices[uid]?.remove(token);
 
   @override
   Future<CloudBackup?> readBackup(String uid) async => backups[uid];

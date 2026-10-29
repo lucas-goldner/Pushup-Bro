@@ -145,6 +145,7 @@ class FirestoreSocialBackend implements SocialBackend {
       'blocked',
       'inbox',
       'private',
+      'devices',
       // Only a linked account may touch its backup (and only it has one).
       if (linkedProviders.isNotEmpty) 'backup',
     ];
@@ -375,6 +376,22 @@ class FirestoreSocialBackend implements SocialBackend {
   @override
   Future<void> removeFromInbox(String uid, String id) =>
       _user(uid).collection('inbox').doc(id).delete();
+
+  @override
+  Future<void> saveDevice(
+    String uid, {
+    required String token,
+    required String language,
+  }) =>
+      _user(uid).collection('devices').doc(token).set({
+        'token': token,
+        'language': language,
+        'updatedAt': DateTime.now().millisecondsSinceEpoch,
+      });
+
+  @override
+  Future<void> removeDevice(String uid, String token) =>
+      _user(uid).collection('devices').doc(token).delete();
 
   @override
   Future<CloudBackup?> readBackup(String uid) async {

@@ -40,6 +40,7 @@ import 'package:pushup_bro/features/reminders/cubit/reminders_cubit.dart';
 import 'package:pushup_bro/features/reminders/data/reminder_service.dart';
 import 'package:pushup_bro/features/reminders/reminders_scope.dart';
 import 'package:pushup_bro/features/social/cubit/account_cubit.dart';
+import 'package:pushup_bro/features/social/cubit/bro_push.dart';
 import 'package:pushup_bro/features/social/cubit/cloud_save.dart';
 import 'package:pushup_bro/features/social/cubit/social_sync.dart';
 import 'package:pushup_bro/features/social/data/social_backend.dart';
@@ -100,6 +101,7 @@ class Main extends StatelessWidget {
     AccountCubit accountCubit,
     CloudSave cloudSave,
     SocialSync socialSync,
+    BroPush broPush,
   ) async {
     await initializeDateFormatting();
     if (!kIsWeb) {
@@ -143,12 +145,28 @@ class Main extends StatelessWidget {
     // The anonymous account, then scores and saves follow the game.
     socialSync.start();
     cloudSave.start();
+    // Waves, bananas and nudges as push notifications; a tap opens Bros.
+    sharedPreferencesCubit.stream
+        .map((state) => state.language)
+        .distinct()
+        .listen((_) => unawaited(broPush.update()));
+    broPush
+      ..start()
+      ..opened.listen(_openFromNotification);
     final monkeys = gameInventoryCubit.state.inventory.monkeys;
     unawaited(
       accountCubit.start(
         look: monkeys.isEmpty ? const MonkeyLook() : monkeys.first.look,
       ),
     );
+  }
+
+  static Future<void> _openFromNotification(String route) async {
+    // A notification that launched the app arrives before the navigator.
+    while (appNavigatorKey.currentState == null) {
+      await WidgetsBinding.instance.endOfFrame;
+    }
+    appNavigatorKey.currentState!.pushNamed(route);
   }
 
   @override
@@ -193,6 +211,13 @@ class Main extends StatelessWidget {
       db: dbCubit,
       inventory: gameInventoryCubit,
     );
+    final broPush = BroPush(
+      account: accountCubit,
+      push: pushServiceFor(social),
+      language: () =>
+          sharedPreferencesCubit.state.language?.languageCode ?? 'en',
+    );
+    accountCubit.beforeSignOut = broPush.forget;
 
     return MultiBlocProvider(
       providers: [
@@ -249,6 +274,7 @@ class Main extends StatelessWidget {
           accountCubit,
           cloudSave,
           socialSync,
+          broPush,
         ),
         builder: (context, snapshot) =>
             BlocBuilder<SharedPreferencesCubit, SharedPreferencesState>(
@@ -293,6 +319,7 @@ class _ThemedApp extends StatelessWidget {
         locale: locale,
         supportedLocales: S.delegate.supportedLocales,
         theme: MaterialBasedCupertinoThemeData(materialTheme: themeData),
+        navigatorKey: appNavigatorKey,
         onGenerateRoute: generateRoutes,
         // Below Localizations: these read translated strings.
         builder: (context, child) => WidgetSyncScope(
