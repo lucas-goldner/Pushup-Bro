@@ -15,7 +15,7 @@ void main() {
     expect(name.display('de'), 'Bananen Bro 4821');
     expect(name.display('es'), 'Bro Bananero 4821');
     expect(name.display('pt'), 'Bro Banana 4821');
-    expect(name.display('ja'), 'バナナブロ 4821');
+    expect(name.display('ja'), 'バナナ兄貴 4821');
     expect(name.display('fr'), 'Banana Bro 4821');
   });
 

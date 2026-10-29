@@ -236,7 +236,7 @@ const Map<String, (List<String>, List<String>)> _words = {
       'ロイヤル',
     ],
     [
-      'ブロ',
+      '兄貴',
       'キング',
       'ゴリラ',
       'シルバーバック',
