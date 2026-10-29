@@ -14,5 +14,6 @@ enum SharedPreferencesKey {
   reminderMinutes,
   onboardingCompleted,
   onboardingAnswers,
-  trekBestCombo;
+  trekBestCombo,
+  dailyBananasClaimedOn;
 }
