@@ -8,9 +8,9 @@ import 'package:pushup_bro/features/pro/notices/free_days_notices.dart';
 import 'package:pushup_bro/features/pro/paywall/show_paywall.dart';
 import 'package:pushup_bro/features/pro/widgets/free_days_chip.dart';
 
-/// On the home screen during the free days: the countdown chip (tap for
-/// the paywall), and once the store has loaded, the welcome or last-day
-/// sheet when one is due.
+/// On the home screen during the free days: the countdown badge, top
+/// right (tap for the paywall), and once the store has loaded, the welcome
+/// or last-day sheet when one is due.
 class FreeDaysHomeChip extends StatefulWidget {
   const FreeDaysHomeChip({this.visible = true, super.key});
 
@@ -65,7 +65,7 @@ class _FreeDaysHomeChipState extends State<FreeDaysHomeChip> {
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: shown
-                ? FreeDaysChip(
+                ? FreeDaysBadge(
                     left: state.freeLeft(now),
                     onTap: () => showPaywall(context),
                   )

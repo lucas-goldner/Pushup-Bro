@@ -75,3 +75,69 @@ class FreeDaysChip extends StatelessWidget {
     );
   }
 }
+
+/// The free days on the home screen, top right opposite the menu button:
+/// a big clock and the number of days left ("5h" on the last day), so it
+/// can't be missed. A lock once they're over.
+class FreeDaysBadge extends StatelessWidget {
+  const FreeDaysBadge({required this.left, this.onTap, super.key});
+
+  /// What's left of the free days; zero once they're over.
+  final Duration left;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final over = left <= Duration.zero;
+    final game = context.gameColors;
+    final lastDay = left < const Duration(hours: 24);
+    final count = over
+        ? ''
+        : lastDay
+            ? '${math.max(1, (left.inMinutes / 60).ceil())}h'
+            : '${(left.inMinutes / 1440).ceil()}';
+
+    return Semantics(
+      button: true,
+      label: over ? context.l10n.proFreeDaysOver : freeLeftLabel(context, left),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 48,
+          constraints: const BoxConstraints(minWidth: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: over ? game.red : game.orange,
+            borderRadius: BorderRadius.circular(PBRadius.pill),
+            boxShadow: context.cardShadow,
+          ),
+          child: ExcludeSemantics(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  over ? CarbonIcons.locked : CarbonIcons.time,
+                  size: 24,
+                  color: game.onGame,
+                ),
+                if (count.isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    count,
+                    style: context.textTheme.titleLarge?.copyWith(
+                      color: game.onGame,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 24,
+                      height: 1,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

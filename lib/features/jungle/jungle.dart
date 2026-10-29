@@ -12,6 +12,7 @@ import 'package:pushup_bro/core/model/trek_progress.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/one_move.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
+import 'package:pushup_bro/features/jungle/widgets/jungle_loader.dart';
 import 'package:pushup_bro/features/jungle/widgets/jungle_scene.dart';
 import 'package:pushup_bro/features/jungle/widgets/quest_card.dart';
 import 'package:pushup_bro/features/pro/pro_access.dart';
@@ -23,7 +24,8 @@ import 'package:pushup_bro/features/trek/widgets/trek_card.dart';
 /// quest popping up.
 ///
 /// It opens out of white (the island fades to white as Carlos runs in)
-/// and fades back to white on the way out.
+/// and fades back to white on the way out. Carlos hops on the white
+/// until the clearing is fully drawn.
 class Jungle extends StatefulWidget {
   const Jungle({super.key});
   static const routeName = '/jungle';
@@ -32,9 +34,17 @@ class Jungle extends StatefulWidget {
   State<Jungle> createState() => _JungleState();
 }
 
+/// Opens the jungle anyway if the scene never reports ready.
+const _kLoadTimeout = Duration(seconds: 8);
+
+/// The quest pops up this long after the clearing appears.
+const _kQuestDelay = Duration(milliseconds: 1300);
+
 class _JungleState extends State<Jungle> with OneMove {
   bool _white = true;
+  bool _loaded = false;
   bool _questShown = false;
+  Timer? _loadTimeout;
 
   /// Whether the story is picked over today's challenge; until the player
   /// picks, the story once today's challenge is done.
@@ -43,15 +53,29 @@ class _JungleState extends State<Jungle> with OneMove {
   @override
   void initState() {
     super.initState();
-    // Let the clearing appear out of white, then the quest pops up.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() => _white = false);
+    _loadTimeout = Timer(_kLoadTimeout, _onLoaded);
+  }
+
+  /// The clearing is fully drawn: it appears out of white, then the quest
+  /// pops up.
+  void _onLoaded() {
+    _loadTimeout?.cancel();
+    if (_loaded || !mounted) return;
+    setState(() {
+      _loaded = true;
+      _white = false;
     });
     unawaited(
-      Future<void>.delayed(const Duration(milliseconds: 1900), () {
+      Future<void>.delayed(_kQuestDelay, () {
         if (mounted) setState(() => _questShown = true);
       }),
     );
+  }
+
+  @override
+  void dispose() {
+    _loadTimeout?.cancel();
+    super.dispose();
   }
 
   Future<void> _leave() => oneMove(() async {
@@ -118,7 +142,7 @@ class _JungleState extends State<Jungle> with OneMove {
                 ),
               ),
             ),
-            const Positioned.fill(child: JungleScene()),
+            Positioned.fill(child: JungleScene(onReady: _onLoaded)),
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -218,6 +242,15 @@ class _JungleState extends State<Jungle> with OneMove {
                   duration: const Duration(milliseconds: 450),
                   curve: Curves.easeOut,
                   child: ColoredBox(color: whiteout),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child:
+                      _loaded ? const SizedBox.shrink() : const JungleLoader(),
                 ),
               ),
             ),

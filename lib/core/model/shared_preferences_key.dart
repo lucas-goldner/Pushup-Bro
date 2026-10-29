@@ -18,5 +18,6 @@ enum SharedPreferencesKey {
   accountUpgradePromptPending,
   accountUpgradePromptShown,
   cloudSavedAt,
-  inboxBananasDay;
+  inboxBananasDay,
+  dailyBananasClaimedOn;
 }

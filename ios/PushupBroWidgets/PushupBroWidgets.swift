@@ -553,11 +553,14 @@ struct TodayView: View {
   private func small(context: EntryContext, count: Int, goal: Int) -> some View {
     let palette = context.palette
     return ZStack(alignment: .topLeading) {
+      // His face is at the art's right edge, so he stays fully inside the
+      // widget, tucked into the corner past the rounded edge.
       Image("CarlosPushup")
         .resizable()
         .scaledToFit()
-        .frame(width: 118)
-        .offset(x: 18, y: 8)
+        .frame(width: 100)
+        .padding(.trailing, 10)
+        .padding(.bottom, 8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
       VStack(alignment: .leading, spacing: 0) {
         Caption(text: context.l10n("today.label"), color: palette.muted)
