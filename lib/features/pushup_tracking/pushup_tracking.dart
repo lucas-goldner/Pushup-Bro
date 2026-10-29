@@ -140,7 +140,6 @@ class _PushupTrackingState extends State<PushupTracking> {
                   PushupTrackingTopRow(
                     toggleNewsVisibility: toggleNewsVisibility,
                   ),
-                  FreeDaysHomeChip(visible: !started),
                   const SizedBox(height: 24),
                   SizedBox(
                     height: 140,
@@ -255,6 +254,16 @@ class _PushupTrackingState extends State<PushupTracking> {
                   },
                 ),
               ),
+            // Opposite the menu button, where it can't be missed.
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4, right: 12),
+                  child: FreeDaysHomeChip(visible: !started),
+                ),
+              ),
+            ),
           ],
         ),
       );

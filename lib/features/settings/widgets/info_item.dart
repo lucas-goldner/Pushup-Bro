@@ -9,12 +9,16 @@ class InfoItem extends StatelessWidget {
     this.name,
     this.icon,
     this.openInfo, {
+    this.glyph,
     this.color,
     super.key,
   });
   final String name;
-  final IconData icon;
+  final IconData? icon;
   final VoidCallback openInfo;
+
+  /// Drawn instead of [icon]; see [SettingsRow.glyph].
+  final Widget? glyph;
 
   /// The icon tile's colour.
   final Color? color;
@@ -23,6 +27,7 @@ class InfoItem extends StatelessWidget {
   Widget build(BuildContext context) => SettingsRow(
         label: name,
         icon: icon,
+        glyph: glyph,
         color: color,
         onTap: openInfo,
         trailing: Icon(

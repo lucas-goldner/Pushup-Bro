@@ -19,6 +19,7 @@ import 'package:pushup_bro/features/settings/widgets/appearance_picker.dart';
 import 'package:pushup_bro/features/settings/widgets/info_item.dart';
 import 'package:pushup_bro/features/settings/widgets/settings_group.dart';
 import 'package:pushup_bro/features/settings/widgets/settings_item.dart';
+import 'package:pushup_bro/features/settings/widgets/x_logo.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -117,9 +118,10 @@ class _SettingsState extends State<Settings> {
                 color: game.jungle,
               ),
               InfoItem(
-                context.l10n.twitter,
-                CarbonIcons.logo_twitter,
-                () => openBrowser(createURI(WebsiteLinks.twitter.link)),
+                context.l10n.x,
+                null,
+                () => openBrowser(createURI(WebsiteLinks.x.link)),
+                glyph: const XLogo(),
               ),
               InfoItem(
                 context.l10n.privacyPolicy,
