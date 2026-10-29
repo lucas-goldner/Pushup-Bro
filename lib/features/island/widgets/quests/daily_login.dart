@@ -7,6 +7,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
+import 'package:pushup_bro/features/island/model/daily_bananas.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 /// Ten free bananas a day: today's to claim, and the next few days.
@@ -19,14 +20,15 @@ class DailyLogin extends StatelessWidget {
 
   Future<void> takeBananas(BuildContext context) async {
     final gameInvCubit = context.read<GameInventoryCubit>();
-    await gameInvCubit.fetchInventory();
-    final inv = gameInvCubit.state.inventory;
-    GameAudio.instance.play(Sfx.banana);
-    await gameInvCubit.updateInventory(
-      inv.copyWith(
-        bananas: inv.bananas + 10,
-      ),
-    );
+    // Once a day: a second tap or another visit today gives nothing.
+    if (await DailyBananas().claim()) {
+      await gameInvCubit.fetchInventory();
+      final inv = gameInvCubit.state.inventory;
+      GameAudio.instance.play(Sfx.banana);
+      await gameInvCubit.updateInventory(
+        inv.copyWith(bananas: inv.bananas + DailyBananas.amount),
+      );
+    }
     onClose();
   }
 

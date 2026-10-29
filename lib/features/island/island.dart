@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
+import 'package:pushup_bro/features/island/model/daily_bananas.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
 import 'package:pushup_bro/features/island/widgets/game_menu.dart';
 import 'package:pushup_bro/features/island/widgets/island_dock.dart';
@@ -92,10 +93,13 @@ class _IslandState extends State<Island> {
     if (_firstTimeVisiting) {
       _menuVisible = true;
     }
-    const newDay = true;
-    if (newDay) {
-      _isNewDayVisible = true;
-    }
+    unawaited(_offerDailyBananas());
+  }
+
+  /// Opens the daily gift only when today's bananas are still to claim.
+  Future<void> _offerDailyBananas() async {
+    final available = await DailyBananas().available();
+    if (available && mounted) setState(() => _isNewDayVisible = true);
   }
 
   bool get _hudVisible =>
