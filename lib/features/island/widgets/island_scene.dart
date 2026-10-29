@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart';
@@ -11,6 +12,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
+import 'package:pushup_bro/features/island/model/island_snapshot.dart';
 import 'package:pushup_bro/features/island/scene/island_world.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
@@ -46,8 +48,22 @@ class IslandScene extends StatefulWidget {
     this.onJourneyChanged,
     this.locked = false,
     this.onLockedTap,
+    this.snapshot,
+    this.greetings,
+    this.rise,
     super.key,
   });
+
+  /// A friend's island to visit instead of the player's own: read-only,
+  /// with no shop, quests or jungle trip. Drag still turns it, and tapping
+  /// their Carlos makes him wave and say one of [greetings].
+  final IslandSnapshot? snapshot;
+  final List<String>? greetings;
+
+  /// 0 for the normal view; towards 1 the camera rises until it looks
+  /// straight down on the island, turning a little and closing in (the
+  /// start of "Share my island").
+  final ValueListenable<double>? rise;
 
   /// Called with true when Carlos sets off for the jungle and with false
   /// once he is back on the island.
@@ -147,10 +163,11 @@ class IslandSceneState extends State<IslandScene> {
     }
     if (nearCarlos || (hit != null && world.isCarlos(hit.node))) {
       world.greet(camera.position - world.gorilla.root.position);
-      setState(
-        () => _bubble = _greetings(context.l10n)[_greetingCount++ % 7],
-      );
-    } else if (hit != null && world.isJungle(hit.node)) {
+      final lines = widget.greetings ?? _greetings(context.l10n);
+      setState(() => _bubble = lines[_greetingCount++ % lines.length]);
+    } else if (widget.snapshot == null &&
+        hit != null &&
+        world.isJungle(hit.node)) {
       goToJungle();
     }
   }
@@ -158,7 +175,14 @@ class IslandSceneState extends State<IslandScene> {
   void _populate(Scene scene) {
     _scene = scene;
     final world = _world = IslandWorld();
-    _syncInventory(context.read<GameInventoryCubit>().state.inventory);
+    final snapshot = widget.snapshot;
+    if (snapshot == null) {
+      _syncInventory(context.read<GameInventoryCubit>().state.inventory);
+    } else {
+      world
+        ..showOwned(snapshot.bought)
+        ..gorilla.look = snapshot.look;
+    }
     final horizon = linearColor(islandSky(context).horizon);
     scene
       ..directionalLight = DirectionalLight(
@@ -274,14 +298,23 @@ class IslandSceneState extends State<IslandScene> {
     _scene?.fog
       ?..start = distance * 1.9
       ..end = distance * 4.5;
+    // Rising to look straight down: the same distance, all of it overhead
+    // (a sliver stays sideways so the camera still knows which way is
+    // up), turning a little and closing in by about 12%.
+    final rise = widget.rise?.value ?? 0;
+    final range = math.sqrt(distance * distance + height * height);
+    final sideways = distance * (1 - rise * 0.985);
+    final turned = angle + rise * 0.6;
+    final up = (height + (range - height) * rise) * (1 - 0.12 * rise);
+    if (rise > 0) target = target + (vm.Vector3(0, 0, 0) - target) * rise;
 
     return _lastCamera = PerspectiveCamera(
       fovRadiansY: 32 * vm.degrees2Radians,
       position: target +
           vm.Vector3(
-            math.sin(angle) * distance,
-            height,
-            math.cos(angle) * distance,
+            math.sin(turned) * sideways,
+            up,
+            math.cos(turned) * sideways,
           ),
       target: target,
     );
@@ -290,6 +323,7 @@ class IslandSceneState extends State<IslandScene> {
   @override
   Widget build(BuildContext context) =>
       BlocListener<GameInventoryCubit, GameInventoryState>(
+        listenWhen: (_, __) => widget.snapshot == null,
         listener: (context, state) => _syncInventory(state.inventory),
         child: LayoutBuilder(
           builder: (context, constraints) {

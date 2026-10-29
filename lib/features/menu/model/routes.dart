@@ -3,8 +3,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/features/debug/debug.dart';
+import 'package:pushup_bro/features/friends/add_bro_page.dart';
+import 'package:pushup_bro/features/friends/bros_added_page.dart';
 import 'package:pushup_bro/features/friends/friends.dart';
 import 'package:pushup_bro/features/island/island.dart';
+import 'package:pushup_bro/features/island/share/island_share_page.dart';
+import 'package:pushup_bro/features/island/visit/island_visit_page.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/leaderboard/leaderboard.dart';
@@ -18,6 +22,8 @@ import 'package:pushup_bro/features/settings/settings.dart';
 import 'package:pushup_bro/features/settings/view/settings_body.dart';
 import 'package:pushup_bro/features/settings/view/settings_language.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
+import 'package:pushup_bro/features/social/domain/friend_code.dart';
+import 'package:pushup_bro/features/social/model/bro_profile.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/trek_map_page.dart';
 import 'package:pushup_bro/features/trek/trek_stage_page.dart';
@@ -50,7 +56,7 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
         ),
       Friends.routeName => _revealCircular(
           settings.arguments as BuildContext?,
-          PageContainer(
+          const PageContainer(
             Friends(),
             menuTab: MenuTabInfo.friends,
           ),
@@ -150,6 +156,36 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
         ),
       BodySetting.routeName => CupertinoPageRoute(
           builder: (context) => const BodySetting(),
+        ),
+      AddBroPage.routeName => CupertinoPageRoute(
+          settings: settings,
+          builder: (context) => AddBroPage(code: settings.arguments as String?),
+        ),
+      BrosAddedPage.routeName => CupertinoPageRoute(
+          settings: settings,
+          builder: (context) {
+            final (friend, name) = settings.arguments! as (BroProfile, String);
+            return BrosAddedPage(friend: friend, name: name);
+          },
+        ),
+      IslandVisitPage.routeName => CupertinoPageRoute(
+          settings: settings,
+          builder: (context) => MusicScope(
+            track: MusicTrack.home,
+            child: IslandVisitPage(uid: settings.arguments! as String),
+          ),
+        ),
+      IslandSharePage.routeName => PageRouteBuilder(
+          settings: settings,
+          transitionDuration: const Duration(milliseconds: 200),
+          pageBuilder: (context, _, __) => const IslandSharePage(),
+          transitionsBuilder: (context, animation, _, child) =>
+              FadeTransition(opacity: animation, child: child),
+        ),
+      // A friend's QR (or link) opened the app: add them.
+      final String name when name.startsWith('/pb/') => CupertinoPageRoute(
+          settings: settings,
+          builder: (context) => AddBroPage(code: FriendCode.normalize(name)),
         ),
       // The app's start: the onboarding first, once.
       _ => _revealCircular(

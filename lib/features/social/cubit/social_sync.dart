@@ -5,6 +5,7 @@ import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
+import 'package:pushup_bro/features/island/model/island_snapshot.dart';
 import 'package:pushup_bro/features/social/cubit/account_cubit.dart';
 import 'package:pushup_bro/features/social/cubit/account_state.dart';
 import 'package:pushup_bro/features/social/domain/local_day.dart';
@@ -72,6 +73,7 @@ class SocialSync {
       streak: streak,
       total: sets.fold<int>(0, (sum, set) => sum + set.pushups.length),
       islandLevel: islandLevelOf(inv),
+      island: IslandSnapshot.of(inv).toJson(),
     );
     final day = localDayKey(now);
     final count = pushupsOn(sets, now);

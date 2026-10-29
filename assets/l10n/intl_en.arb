@@ -1302,5 +1302,242 @@
   "boardAddBros": "Add bros",
   "boardEmptyEveryone": "Nobody has done pushups yet today. Be the first!",
   "socialOffline": "Connect to the internet to see your bros.",
-  "socialRetry": "Try again"
+  "socialRetry": "Try again",
+  "brosYourCode": "Your friend code",
+  "brosShareIsland": "Share my island",
+  "brosScanCode": "Scan a code",
+  "brosCount": "{count, plural, =0{No bros yet} =1{1 bro} other{{count} bros}}",
+  "@brosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "brosAddByCode": "+ Add by code",
+  "brosTodayStreak": "{count} today",
+  "@brosTodayStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "brosNotStarted": "Not started",
+  "brosDone": "✓ Done",
+  "brosNudge": "👋 Nudge",
+  "brosNudged": "Nudged",
+  "brosEmptyTitle": "Pushups are better with bros",
+  "brosEmptyText": "Share your code or scan a friend's. You'll race each other on today's board and can visit each other's islands.",
+  "brosRemove": "Remove bro",
+  "brosBlock": "Block",
+  "brosRemoveConfirm": "Remove {name}?",
+  "@brosRemoveConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "brosBlockConfirm": "Block {name}? You won't see each other anywhere.",
+  "@brosBlockConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "brosCancel": "Cancel",
+  "brosLimit": "That's 100 bros, the most you can have.",
+  "addTitle": "Add a bro",
+  "addText": "Type their code or scan their QR. You both see each other right away.",
+  "addFound": "Found",
+  "addIslandLevel": "Island level {level}",
+  "@addIslandLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "addStreakDays": "{days}-day streak",
+  "@addStreakDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "addOr": "or",
+  "addScanQr": "Scan a QR code",
+  "addButton": "Add {name}",
+  "@addButton": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addButtonEmpty": "Add bro",
+  "addUnknown": "No bro with that code",
+  "addSelf": "That's you, bro 😄",
+  "addAlready": "Already bros",
+  "addFailed": "That didn't work. Try again?",
+  "addedTitle": "You and {name} are",
+  "@addedTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addedTitleBros": "bros",
+  "addedTitleNow": "now",
+  "addedText": "You'll see each other on today's board and can visit each other's islands.",
+  "addedLevel": "Island level {level}",
+  "@addedLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "addedDays": "{days} days",
+  "@addedDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "addedToday": "{count} today",
+  "@addedToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addedVisit": "Visit {name}'s island",
+  "@addedVisit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addedDone": "Done",
+  "scanUnavailable": "The camera isn't available. Type the code instead.",
+  "inboxWave": "{name} waved at you 👋",
+  "@inboxWave": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxBanana": "{name} sent you a banana 🍌",
+  "@inboxBanana": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxNudge": "{name} nudged you: time for pushups! 💪",
+  "@inboxNudge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inboxClaim": "Claim",
+  "inboxOk": "Nice",
+  "visitTitle": "{name}'s island",
+  "@visitTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "visitSubtitle": "Level {level} · {friends, plural, =0{no friends yet} =1{1 friend lives here} other{{friends} friends live here}}",
+  "@visitSubtitle": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      },
+      "friends": {
+        "type": "int"
+      }
+    }
+  },
+  "visitToday": "{count} today",
+  "@visitToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "visitRank": "#{rank} of bros",
+  "@visitRank": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "visitFriends": "{count, plural, =1{1 friend} other{{count} friends}}",
+  "@visitFriends": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "visitWave": "Wave",
+  "visitBanana": "Send a banana",
+  "visitWaved": "Waved 👋",
+  "visitBananaSent": "Banana sent 🍌",
+  "visitGone": "This bro's island can't be visited right now.",
+  "visitGreet1": "Hey bro! Did your pushups? 💪",
+  "visitGreet2": "Welcome to my island!",
+  "visitGreet3": "Race you on today's board 🏆",
+  "visitGreet4": "Nice to see you, bro!",
+  "visitGreet5": "Want a banana? Just kidding, they're mine 🍌",
+  "shareTitle": "My island",
+  "shareCodeLabel": "Friend code",
+  "shareLevel": "✓ Island level {level}",
+  "@shareLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "shareHeadline": "Scan to be my pushup bro",
+  "shareBrightness": "Brightness is turned up while this is open",
+  "shareScan": "Scan a friend's code",
+  "shareMessage": "Be my pushup bro: {link}",
+  "@shareMessage": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "islandShareText": "Carlos, {friends, plural, =0{no friends yet} =1{1 friend} other{{friends} friends}} and {streak, plural, =1{1 day} other{{streak} days}} of streak live here.",
+  "@islandShareText": {
+    "placeholders": {
+      "friends": {
+        "type": "int"
+      },
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "islandShareButton": "Share my island"
 }
