@@ -140,7 +140,15 @@ class FirestoreSocialBackend implements SocialBackend {
     for (final friend in friends.docs) {
       batch.delete(_user(friend.id).collection('friends').doc(me));
     }
-    for (final sub in ['friends', 'blocked', 'inbox', 'backup', 'private']) {
+    final subs = [
+      'friends',
+      'blocked',
+      'inbox',
+      'private',
+      // Only a linked account may touch its backup (and only it has one).
+      if (linkedProviders.isNotEmpty) 'backup',
+    ];
+    for (final sub in subs) {
       for (final doc in (await _user(me).collection(sub).get()).docs) {
         batch.delete(doc.reference);
       }
@@ -222,17 +230,16 @@ class FirestoreSocialBackend implements SocialBackend {
     required String friend,
     required String code,
   }) async {
-    final myCode = (await _user(me).get()).data()?['code'] as String?;
+    // Both edges carry the friend's code: the rules only let someone who
+    // knows it (codes/{code}.uid == friend) make the two of them bros.
     final now = FieldValue.serverTimestamp();
     final batch = _db.batch()
       ..set(_user(me).collection('friends').doc(friend), {
         'code': code,
         'since': now,
       })
-      // The edge on their side carries my code, which the rules check
-      // against codes/{code}.uid == me.
       ..set(_user(friend).collection('friends').doc(me), {
-        'code': myCode,
+        'code': code,
         'since': now,
       });
     await batch.commit();

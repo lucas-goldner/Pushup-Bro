@@ -1,0 +1,138 @@
+rules_version = '2';
+
+// Pushup Bro: anonymous accounts that Pro members link to Apple or Google.
+// The data model is in lib/features/social/data/firestore_social_backend.dart.
+// Tests: firebase/test (npm test, against the emulator).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMe(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Connected to Apple or Google, not just anonymous.
+    function linked() {
+      return request.auth.token.firebase.sign_in_provider in ['apple.com', 'google.com'];
+    }
+
+    function codeOwner(code) {
+      return get(/databases/$(database)/documents/codes/$(code)).data.uid;
+    }
+
+    function areFriends(a, b) {
+      return exists(/databases/$(database)/documents/users/$(a)/friends/$(b));
+    }
+
+    function hasBlocked(owner, other) {
+      return exists(/databases/$(database)/documents/users/$(owner)/blocked/$(other));
+    }
+
+
+    match /users/{uid} {
+      // Public fields only: the bro name, code, look, streak, totals and
+      // the island snapshot. Real names live in private/profile.
+      allow read: if signedIn();
+      allow create: if isMe(uid)
+        && request.resource.data.keys().hasOnly([
+          'broName', 'code', 'look', 'streak', 'total', 'islandLevel',
+          'friendCount', 'showOnEveryone', 'island', 'updatedAt'
+        ])
+        && request.resource.data.broName is string
+        && request.resource.data.broName.size() <= 16
+        && codeOwner(request.resource.data.code) == uid;
+      allow update: if isMe(uid)
+        && request.resource.data.keys().hasOnly([
+          'broName', 'code', 'look', 'streak', 'total', 'islandLevel',
+          'friendCount', 'showOnEveryone', 'island', 'updatedAt'
+        ])
+        // The code and the generated name never change.
+        && request.resource.data.code == resource.data.code
+        && request.resource.data.broName == resource.data.broName;
+      allow delete: if isMe(uid);
+
+      // The name for friends: only friends see it.
+      match /private/{docId} {
+        allow read: if isMe(uid) || (signedIn() && areFriends(uid, request.auth.uid));
+        allow write: if isMe(uid)
+          && request.resource.data.keys().hasOnly(['friendName'])
+          && request.resource.data.friendName is string
+          && request.resource.data.friendName.size() <= 24;
+        allow delete: if isMe(uid);
+      }
+
+      // Cloud save: only the owner, and only once Apple or Google is linked.
+      match /backup/{docId} {
+        allow read, write: if isMe(uid) && linked();
+      }
+
+      // users/A/friends/B. Making A and B bros writes both edges; whoever
+      // writes them must know B's code (codes/{code}.uid == B), so a
+      // stranger can't add themselves to anyone.
+      match /friends/{friend} {
+        allow read: if isMe(uid) || isMe(friend);
+        allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['code', 'since'])
+          && (
+            (request.auth.uid == uid && codeOwner(request.resource.data.code) == friend)
+            || (request.auth.uid == friend && codeOwner(request.resource.data.code) == uid)
+          )
+          && !hasBlocked(uid, friend)
+          && !hasBlocked(friend, uid);
+        allow delete: if isMe(uid) || isMe(friend);
+      }
+
+      match /blocked/{other} {
+        allow read, write: if isMe(uid);
+      }
+
+      // Waves, bananas and nudges from friends. Nothing is ever overwritten,
+      // and a nudge's id is one per sender and day, so a second nudge the
+      // same day is refused.
+      match /inbox/{itemId} {
+        allow read, delete: if isMe(uid);
+        allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['kind', 'fromUid', 'fromName', 'sentAt'])
+          && request.resource.data.fromUid == request.auth.uid
+          && request.resource.data.kind in ['wave', 'banana', 'nudge']
+          && request.resource.data.fromName is string
+          && request.resource.data.fromName.size() <= 24
+          && areFriends(uid, request.auth.uid)
+          && !hasBlocked(uid, request.auth.uid)
+          && (request.resource.data.kind != 'nudge'
+              || itemId.matches('nudge_' + request.auth.uid + '_[0-9]{4}-[0-9]{2}-[0-9]{2}'));
+      }
+    }
+
+    // Friend codes: claimed once by their owner, looked up one at a time,
+    // never listed.
+    match /codes/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && code.matches('[2-9A-HJKMNP-Z]{6}')
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Today's pushups per player, under their own calendar day.
+    match /days/{day}/scores/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isMe(uid)
+        && day.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && request.resource.data.keys().hasOnly([
+          'count', 'broName', 'look', 'streak', 'public', 'updatedAt'
+        ])
+        && request.resource.data.count is int
+        && request.resource.data.count >= 0
+        && request.resource.data.count <= 1500
+        // Only ever up within a day.
+        && (resource == null || request.resource.data.count >= resource.data.count);
+      allow delete: if isMe(uid);
+    }
+  }
+}
