@@ -9,6 +9,10 @@ abstract final class AppConfig {
   static const revenueCatGoogleApiKey =
       String.fromEnvironment('REVENUECAT_GOOGLE_API_KEY');
 
+  /// Fills the social screens with sample bros instead of Firebase, for
+  /// previews and screenshots: `--dart-define=SOCIAL_DEMO=true`.
+  static const socialDemo = bool.fromEnvironment('SOCIAL_DEMO');
+
   /// The RevenueCat offering with the weekly, yearly and lifetime plans,
   /// and the entitlement they unlock.
   static const proOffering = 'pro';
