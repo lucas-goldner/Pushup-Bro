@@ -19,6 +19,7 @@ import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
+import 'package:pushup_bro/core/widgets/one_move.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
@@ -93,7 +94,7 @@ class TrekStagePage extends StatefulWidget {
   State<TrekStagePage> createState() => _TrekStagePageState();
 }
 
-class _TrekStagePageState extends State<TrekStagePage> {
+class _TrekStagePageState extends State<TrekStagePage> with OneMove {
   _Phase _phase = _Phase.title;
   int _line = 0;
   late Battle _battle;
@@ -456,13 +457,13 @@ class _TrekStagePageState extends State<TrekStagePage> {
     );
   }
 
-  Future<void> _leave() async {
-    _stopListening();
-    GameAudio.instance.play(Sfx.whoosh);
-    setState(() => _white = true);
-    await Future<void>.delayed(const Duration(milliseconds: 450));
-    if (mounted) Navigator.of(context).pop();
-  }
+  Future<void> _leave() => oneMove(() async {
+        _stopListening();
+        GameAudio.instance.play(Sfx.whoosh);
+        setState(() => _white = true);
+        await Future<void>.delayed(const Duration(milliseconds: 450));
+        popIfOnTop();
+      });
 
   void _populate(Scene scene) {
     final inventory = context.read<GameInventoryCubit>().state.inventory;

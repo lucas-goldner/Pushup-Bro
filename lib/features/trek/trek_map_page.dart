@@ -15,6 +15,7 @@ import 'package:pushup_bro/core/model/trek_progress.dart';
 import 'package:pushup_bro/core/style/extensions/game_colors_theme_extension.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
+import 'package:pushup_bro/core/widgets/one_move.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/pro/pro_access.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
@@ -101,7 +102,7 @@ class TrekMapPage extends StatefulWidget {
   State<TrekMapPage> createState() => _TrekMapPageState();
 }
 
-class _TrekMapPageState extends State<TrekMapPage> {
+class _TrekMapPageState extends State<TrekMapPage> with OneMove {
   TrekStage? _selected;
   bool _soon = false;
   bool _white = true;
@@ -115,7 +116,9 @@ class _TrekMapPageState extends State<TrekMapPage> {
     });
   }
 
-  Future<void> _play(TrekStage stage) async {
+  Future<void> _play(TrekStage stage) => oneMove(() => _openStage(stage));
+
+  Future<void> _openStage(TrekStage stage) async {
     if (!await ensureProAccess(context) || !mounted) return;
     GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
@@ -128,12 +131,12 @@ class _TrekMapPageState extends State<TrekMapPage> {
     if (mounted) setState(() => _white = false);
   }
 
-  Future<void> _leave() async {
-    GameAudio.instance.play(Sfx.whoosh);
-    setState(() => _white = true);
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-    if (mounted) Navigator.of(context).pop();
-  }
+  Future<void> _leave() => oneMove(() async {
+        GameAudio.instance.play(Sfx.whoosh);
+        setState(() => _white = true);
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        popIfOnTop();
+      });
 
   @override
   Widget build(BuildContext context) =>
