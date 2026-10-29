@@ -49,14 +49,33 @@ class SocialSync {
   int? _written;
   String? _writtenDay;
 
+  StreamSubscription<List<String>>? _friends;
+
   void start() {
     _subscriptions.addAll([
       db.stream.listen((_) => unawaited(sync())),
       inventory.stream.listen((_) => unawaited(sync())),
       account.stream
           .where((state) => state.status == AccountStatus.ready)
-          .listen((_) => unawaited(sync())),
+          .map((state) => state.uid)
+          .distinct()
+          .listen((uid) {
+        unawaited(sync());
+        unawaited(_watchFriends(uid));
+      }),
     ]);
+  }
+
+  /// Keeps the friend count on the profile, which visits and codes show.
+  Future<void> _watchFriends(String? uid) async {
+    await _friends?.cancel();
+    if (uid == null) return;
+    _friends = account.backend.friends(uid).listen(
+          (friends) => unawaited(
+            account.updateProfile(friendCount: friends.length),
+          ),
+          onError: (_) {},
+        );
   }
 
   Future<void> sync() async {
@@ -99,6 +118,7 @@ class SocialSync {
   }
 
   Future<void> dispose() async {
+    await _friends?.cancel();
     for (final subscription in _subscriptions) {
       await subscription.cancel();
     }

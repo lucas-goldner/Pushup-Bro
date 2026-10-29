@@ -28,6 +28,7 @@ import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_stage.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_tracking_bottom_row.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_tracking_top_row.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker.dart';
+import 'package:pushup_bro/features/social/account/upgrade_sheet.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 import 'package:rive/rive.dart';
 
@@ -255,6 +256,7 @@ class _PushupTrackingState extends State<PushupTracking> {
                   },
                 ),
               ),
+            const AccountUpgradePrompt(),
           ],
         ),
       );

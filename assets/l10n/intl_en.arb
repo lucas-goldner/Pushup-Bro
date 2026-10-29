@@ -1539,5 +1539,90 @@
       }
     }
   },
-  "islandShareButton": "Share my island"
+  "islandShareButton": "Share my island",
+  "accountTitle": "Account",
+  "accountSaved": "Saved",
+  "accountPro": "Pro",
+  "accountLocalOnly": "Saved on this iPhone only",
+  "accountApple": "Apple",
+  "accountGoogle": "Google",
+  "accountConnected": "Connected",
+  "accountConnect": "Connect",
+  "accountLastSaved": "Last saved",
+  "accountNever": "Not yet",
+  "accountSyncNow": "Sync now",
+  "accountPaused": "Backups paused. Renew Pro to keep saving.",
+  "accountFriendName": "Name for friends",
+  "accountFriendNameHint": "Only your bros see it",
+  "accountShowEveryone": "Show me on Everyone",
+  "accountBlocked": "Blocked bros",
+  "accountUnblock": "Unblock",
+  "accountSignOut": "Sign out",
+  "accountSignOutConfirm": "Sign out? Your progress stays on this iPhone, and you start a fresh account for bros and the board.",
+  "accountDelete": "Delete account",
+  "accountDeleteConfirm": "Delete your account? Your saved progress, friends, scores and island are removed from our servers, and Apple and Google are disconnected. Progress on this iPhone stays.",
+  "accountDeleteNote": "Deleting removes your saved progress, friends, scores and island from our servers and disconnects Apple and Google. Progress on this iPhone stays.",
+  "accountFreeNote": "You already have a private account for the leaderboard and friends. It needs no sign-in and works on this iPhone.",
+  "accountBackupTitle": "Back up your island",
+  "accountBackupText": "With Pro, connect Apple or Google and your island, pushups, streak and bros are saved and come back on any iPhone.",
+  "accountSeePro": "See Pro",
+  "accountRestore": "Restore with Apple or Google",
+  "accountLinkFailed": "That didn't work. Try again?",
+  "accountOk": "OK",
+  "upgradeBadge": "👑 PRO PERK",
+  "upgradeTitle": "Never lose your",
+  "upgradeTitleIsland": "island",
+  "upgradeText": "Connect an account and everything is saved. Get it all back on a new iPhone.",
+  "upgradeIsland": "Your island and Carlos's look",
+  "upgradePushups": "Every pushup, streak and quest",
+  "upgradeBros": "Your bros and your friend code",
+  "upgradeApple": "Continue with Apple",
+  "upgradeGoogle": "Continue with Google",
+  "upgradeLater": "Maybe later",
+  "restoreTitle": "Welcome back,",
+  "restoreTitleBro": "bro!",
+  "restoreFound": "We found your saved island from {time}.",
+  "@restoreFound": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "restorePushups": "pushups",
+  "restoreStreak": "day streak",
+  "restoreBros": "bros",
+  "restoreIsland": "island",
+  "restoreLocal": "This iPhone has {count} pushups from today. They're added on top, nothing is lost.",
+  "@restoreLocal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "restoreButton": "Restore my island",
+  "restoreFresh": "Start fresh on this iPhone",
+  "restoreOnboarding": "I already have an island",
+  "accountJustNow": "Just now",
+  "accountMinutesAgo": "{count} min ago",
+  "@accountMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountHoursAgo": "{count} h ago",
+  "@accountHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountFriends": "Bros",
+  "accountOn": "On",
+  "accountOff": "Off",
+  "accountSettingsRow": "Account"
 }

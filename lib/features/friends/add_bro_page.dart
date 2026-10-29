@@ -248,10 +248,15 @@ class _AddBroState extends State<_AddBro> with SingleTickerProviderStateMixin {
                       children: [
                         const Icon(CarbonIcons.qr_code, size: 20),
                         const SizedBox(width: PBSpace.sm),
-                        Text(
-                          QrScanner.available ? l.addScanQr : l.scanUnavailable,
-                          style: context.textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
+                        Flexible(
+                          child: Text(
+                            QrScanner.available
+                                ? l.addScanQr
+                                : l.scanUnavailable,
+                            textAlign: TextAlign.center,
+                            style: context.textTheme.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ],

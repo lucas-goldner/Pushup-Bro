@@ -1,12 +1,15 @@
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/motion.dart';
 import 'package:pushup_bro/core/widgets/pb_button.dart';
+import 'package:pushup_bro/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:pushup_bro/features/onboarding/model/onboarding_answers.dart';
 import 'package:pushup_bro/features/onboarding/onboarding_page.dart';
 import 'package:pushup_bro/features/onboarding/widgets/onboarding_kit.dart';
+import 'package:pushup_bro/features/social/account/connect_account.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 /// "You've started working out a hundred times." Carlos waves in.
@@ -23,9 +26,26 @@ class HookStep extends StatelessWidget {
       cta: PBButton(l.onbGetStarted, callback: args.next, expanded: true),
       secondary: Reveal(
         at: 1.2,
-        child: Padding(
-          padding: const EdgeInsets.only(top: PBSpace.md),
-          child: Text(l.onbTakesTwoMinutes, style: context.textTheme.bodySmall),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: PBSpace.md),
+              child: Text(
+                l.onbTakesTwoMinutes,
+                style: context.textTheme.bodySmall,
+              ),
+            ),
+            // On a new iPhone: sign in and get the saved island back.
+            TextButton(
+              onPressed: () async {
+                final onboarding = context.read<OnboardingCubit>();
+                if (await pickAndRestore(context)) {
+                  await onboarding.complete();
+                }
+              },
+              child: Text(l.restoreOnboarding),
+            ),
+          ],
         ),
       ),
       children: [

@@ -1,10 +1,22 @@
+import 'dart:math' as math;
+
 import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/features/social/data/fake_social_backend.dart';
 import 'package:pushup_bro/features/social/domain/bro_name.dart';
+import 'package:pushup_bro/features/social/domain/friend_code.dart';
 import 'package:pushup_bro/features/social/domain/local_day.dart';
 import 'package:pushup_bro/features/social/model/bro_profile.dart';
 import 'package:pushup_bro/features/social/model/day_score.dart';
 import 'package:pushup_bro/features/social/model/inbox_item.dart';
+
+const _codes = {
+  'mia': 'MAZ9QK',
+  'jonas': 'J7N4SX',
+  'yuki': 'Y8K2UP',
+  'leo': 'L3E6VR',
+  'sam': 'S5M8TW',
+  'nina': 'N4N8BR',
+};
 
 /// A [FakeSocialBackend] with bros to look at: for previews and
 /// screenshots (`--dart-define=SOCIAL_DEMO=true`), never in a release.
@@ -24,7 +36,10 @@ FakeSocialBackend demoSocialBackend({DateTime? now}) {
     required int level,
     bool friend = true,
   }) {
-    final code = 'DEMO${uid.hashCode.abs() % 90 + 10}';
+    final code = _codes[uid] ??
+        FriendCode.generate(
+          math.Random(uid.codeUnits.fold<int>(0, (a, b) => a * 31 + b)),
+        );
     backend
       ..profiles[uid] = BroProfile(
         uid: uid,
@@ -98,6 +113,16 @@ FakeSocialBackend demoSocialBackend({DateTime? now}) {
     today: 0,
     streak: 30,
     level: 6,
+  );
+  bro(
+    'nina',
+    'Nina',
+    const BroName(9, 13, 5120),
+    const MonkeyLook(fur: 'fur.mint', hat: 'hat.flowers'),
+    today: 75,
+    streak: 12,
+    level: 5,
+    friend: false,
   );
   for (final (i, (score, look)) in [
     (610, const MonkeyLook(fur: 'fur.jade')),

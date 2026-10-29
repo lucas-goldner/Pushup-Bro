@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
+import 'package:pushup_bro/features/island/share/island_share_page.dart';
 import 'package:pushup_bro/features/island/widgets/game_menu.dart';
 import 'package:pushup_bro/features/island/widgets/island_dock.dart';
 import 'package:pushup_bro/features/island/widgets/island_scene.dart';
@@ -16,6 +20,8 @@ import 'package:pushup_bro/features/pro/model/pro_feature.dart';
 import 'package:pushup_bro/features/pro/model/pro_state.dart';
 import 'package:pushup_bro/features/pro/paywall/show_paywall.dart';
 import 'package:pushup_bro/features/pro/pro_access.dart';
+import 'package:pushup_bro/features/social/account/upgrade_sheet.dart';
+import 'package:pushup_bro/features/social/widgets/inbox_banner.dart';
 import 'package:pushup_bro/features/wardrobe/wardrobe.dart';
 
 class Island extends StatefulWidget {
@@ -160,6 +166,21 @@ class _IslandState extends State<Island> {
                 ),
               ),
             ),
+            // Friends' waves and bananas, and sharing the island.
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 68, 16, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _ShareIslandButton(onTap: () => openIslandShare(context)),
+                    const SizedBox(height: 12),
+                    const InboxBanner(),
+                  ],
+                ),
+              ),
+            ),
+            const AccountUpgradePrompt(),
           ],
           if (locked)
             const SizedBox.shrink()
@@ -188,5 +209,35 @@ class _IslandState extends State<Island> {
               ),
           ],
         ],
+      );
+}
+
+/// A round button with the share icon: "Share my island".
+class _ShareIslandButton extends StatelessWidget {
+  const _ShareIslandButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: context.l10n.islandShareButton,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: context.colorScheme.surface,
+              shape: BoxShape.circle,
+              boxShadow: context.cardShadow,
+            ),
+            child: Icon(
+              CarbonIcons.qr_code,
+              size: 22,
+              color: context.colorScheme.onSurface,
+            ),
+          ),
+        ),
       );
 }

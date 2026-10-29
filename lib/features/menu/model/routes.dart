@@ -22,6 +22,8 @@ import 'package:pushup_bro/features/settings/settings.dart';
 import 'package:pushup_bro/features/settings/view/settings_body.dart';
 import 'package:pushup_bro/features/settings/view/settings_language.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
+import 'package:pushup_bro/features/social/account/account_page.dart';
+import 'package:pushup_bro/features/social/account/restore_page.dart';
 import 'package:pushup_bro/features/social/domain/friend_code.dart';
 import 'package:pushup_bro/features/social/model/bro_profile.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
@@ -156,6 +158,15 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
         ),
       BodySetting.routeName => CupertinoPageRoute(
           builder: (context) => const BodySetting(),
+        ),
+      AccountPage.routeName => CupertinoPageRoute(
+          settings: settings,
+          builder: (context) => const AccountPage(),
+        ),
+      RestorePage.routeName => CupertinoPageRoute(
+          settings: settings,
+          fullscreenDialog: true,
+          builder: (context) => const RestorePage(),
         ),
       AddBroPage.routeName => CupertinoPageRoute(
           settings: settings,
