@@ -10,6 +10,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/quest_log.dart';
 import 'package:pushup_bro/core/model/trek_progress.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
+import 'package:pushup_bro/core/widgets/one_move.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/jungle/widgets/jungle_loader.dart';
 import 'package:pushup_bro/features/jungle/widgets/jungle_scene.dart';
@@ -39,7 +40,7 @@ const _kLoadTimeout = Duration(seconds: 8);
 /// The quest pops up this long after the clearing appears.
 const _kQuestDelay = Duration(milliseconds: 1300);
 
-class _JungleState extends State<Jungle> {
+class _JungleState extends State<Jungle> with OneMove {
   bool _white = true;
   bool _loaded = false;
   bool _questShown = false;
@@ -77,14 +78,16 @@ class _JungleState extends State<Jungle> {
     super.dispose();
   }
 
-  Future<void> _leave() async {
-    GameAudio.instance.play(Sfx.whoosh);
-    setState(() => _white = true);
-    await Future<void>.delayed(const Duration(milliseconds: 450));
-    if (mounted) Navigator.of(context).pop();
-  }
+  Future<void> _leave() => oneMove(() async {
+        GameAudio.instance.play(Sfx.whoosh);
+        setState(() => _white = true);
+        await Future<void>.delayed(const Duration(milliseconds: 450));
+        popIfOnTop();
+      });
 
-  Future<void> _trek() async {
+  Future<void> _trek() => oneMove(_openTrek);
+
+  Future<void> _openTrek() async {
     if (!await ensureProAccess(context) || !mounted) return;
     GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);
@@ -94,7 +97,10 @@ class _JungleState extends State<Jungle> {
     if (mounted) setState(() => _white = false);
   }
 
-  Future<void> _play(JungleQuest quest, {required bool replay}) async {
+  Future<void> _play(JungleQuest quest, {required bool replay}) =>
+      oneMove(() => _openQuest(quest, replay: replay));
+
+  Future<void> _openQuest(JungleQuest quest, {required bool replay}) async {
     if (!await ensureProAccess(context) || !mounted) return;
     GameAudio.instance.play(Sfx.whoosh);
     setState(() => _white = true);

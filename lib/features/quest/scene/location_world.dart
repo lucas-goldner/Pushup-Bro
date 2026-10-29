@@ -14,6 +14,8 @@ import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
+part 'location_life.dart';
+
 /// The sky behind each location, top to bottom, drawn by Flutter behind
 /// the transparent scene.
 (Color, Color) skyFor(ChallengeLocation location) => switch (location) {
@@ -108,6 +110,7 @@ class LocationWorld {
       ChallengeLocation.gorge => _gorge(),
       ChallengeLocation.throne => _throne(),
     };
+    _enliven(scenery);
     // Merge the scenery that stays put into a few meshes; whatever the
     // animations move, light up or reveal as the challenge goes on stays
     // live.

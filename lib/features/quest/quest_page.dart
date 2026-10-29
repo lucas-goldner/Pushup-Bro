@@ -15,6 +15,7 @@ import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
+import 'package:pushup_bro/core/widgets/one_move.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
@@ -58,7 +59,7 @@ class QuestPage extends StatefulWidget {
   State<QuestPage> createState() => _QuestPageState();
 }
 
-class _QuestPageState extends State<QuestPage> {
+class _QuestPageState extends State<QuestPage> with OneMove {
   _Phase _phase = _Phase.title;
   int _line = 0;
   LocationWorld? _world;
@@ -258,19 +259,19 @@ class _QuestPageState extends State<QuestPage> {
     });
   }
 
-  Future<void> _leave() async {
-    if (_started) {
-      _started = false;
-      _clock?.cancel();
-      unawaited(_pushupSubscription?.cancel());
-      context.read<AirPodsTrackerCubit>().stopListening();
-      context.read<PushupCubit>().resetAndReturnCurrentPushupSet();
-    }
-    GameAudio.instance.play(Sfx.whoosh);
-    setState(() => _white = true);
-    await Future<void>.delayed(const Duration(milliseconds: 450));
-    if (mounted) Navigator.of(context).pop(_won);
-  }
+  Future<void> _leave() => oneMove(() async {
+        if (_started) {
+          _started = false;
+          _clock?.cancel();
+          unawaited(_pushupSubscription?.cancel());
+          context.read<AirPodsTrackerCubit>().stopListening();
+          context.read<PushupCubit>().resetAndReturnCurrentPushupSet();
+        }
+        GameAudio.instance.play(Sfx.whoosh);
+        setState(() => _white = true);
+        await Future<void>.delayed(const Duration(milliseconds: 450));
+        popIfOnTop(_won);
+      });
 
   void _populate(Scene scene) {
     final inventory = context.read<GameInventoryCubit>().state.inventory;
