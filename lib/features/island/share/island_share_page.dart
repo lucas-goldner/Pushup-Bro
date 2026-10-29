@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
@@ -14,6 +15,7 @@ import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/friends/widgets/code_card.dart';
 import 'package:pushup_bro/features/island/widgets/island_scene.dart';
 import 'package:pushup_bro/features/share/data/recap_video.dart';
+import 'package:pushup_bro/features/social/cubit/account_cubit.dart';
 import 'package:pushup_bro/features/social/data/screen_brightness.dart';
 import 'package:pushup_bro/features/social/domain/friend_code.dart';
 import 'package:pushup_bro/features/social/model/bro_profile.dart';
@@ -505,6 +507,11 @@ class _CodeSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    // The latest profile: the friend count and streak follow the game.
+    final me = context.select<AccountCubit, BroProfile?>(
+          (account) => account.state.profile,
+        ) ??
+        this.me;
     final code = FriendCode.format(me.code);
     final game = context.gameColors;
 

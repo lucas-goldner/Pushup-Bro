@@ -142,19 +142,25 @@ class _BrosAddedPageState extends State<BrosAddedPage>
                       ),
                     ),
                     const Spacer(flex: 2),
-                    PillButton(
-                      label: l.addedVisit(name),
-                      onPressed: () => openIslandVisit(
-                        context,
-                        uid: widget.friend.uid,
-                        replace: true,
+                    SizedBox(
+                      width: double.infinity,
+                      child: PillButton(
+                        label: l.addedVisit(name),
+                        onPressed: () => openIslandVisit(
+                          context,
+                          uid: widget.friend.uid,
+                          replace: true,
+                        ),
                       ),
                     ),
                     const SizedBox(height: PBSpace.md),
-                    PillButton(
-                      label: l.addedDone,
-                      color: context.colorScheme.secondary,
-                      onPressed: () => Navigator.of(context).pop(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: PillButton(
+                        label: l.addedDone,
+                        color: context.colorScheme.secondary,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
                     ),
                   ],
                 ),

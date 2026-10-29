@@ -389,9 +389,19 @@ class _BackupCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SocialChip(
-            '👑 PRO',
-            color: context.colorScheme.primary.withValues(alpha: 0.9),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: context.colorScheme.primary,
+              borderRadius: BorderRadius.circular(PBRadius.pill),
+            ),
+            child: Text(
+              '👑 PRO',
+              style: context.textTheme.labelMedium?.copyWith(
+                color: context.gameColors.banana,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ),
           const SizedBox(height: PBSpace.md),
           Text(
