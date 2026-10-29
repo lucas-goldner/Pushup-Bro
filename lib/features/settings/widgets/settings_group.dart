@@ -68,6 +68,7 @@ class SettingsRow extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.icon,
+    this.glyph,
     this.color,
     this.trailing,
     super.key,
@@ -75,6 +76,10 @@ class SettingsRow extends StatelessWidget {
 
   final String label;
   final IconData? icon;
+
+  /// Drawn in the icon tile instead of [icon], for logos the icon font
+  /// lacks. It reads its colour and size from the [IconTheme].
+  final Widget? glyph;
 
   /// The icon tile's colour; the theme's secondary by default.
   final Color? color;
@@ -94,7 +99,7 @@ class SettingsRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            if (icon != null) ...[
+            if (icon != null || glyph != null) ...[
               Container(
                 width: 34,
                 height: 34,
@@ -102,7 +107,10 @@ class SettingsRow extends StatelessWidget {
                   color: context.tint(color),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, size: 18, color: color),
+                child: IconTheme(
+                  data: IconThemeData(size: 18, color: color),
+                  child: glyph ?? Icon(icon),
+                ),
               ),
               const SizedBox(width: 14),
             ],
