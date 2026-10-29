@@ -129,7 +129,7 @@
   "monkeyConfirm": "Huh-huh-gut!",
   "shareProfile": "Profil teilen",
   "friends": "Bros",
-  "leaderboard": "Rangliste",
+  "leaderboard": "Heute",
   "openChallenges": "{xChallenges} Offene Herausforderungen",
   "@openChallenges": {
     "placeholders": {
@@ -843,5 +843,28 @@
   "recapQuestDone": "Quest geschafft",
   "recapStageCleared": "Etappe geschafft",
   "recapNewQuestDaily": "Jeden Tag eine neue Quest",
-  "recapJoin": "Trainiere mit Carlos in Pushup Bro"
+  "recapJoin": "Trainiere mit Carlos in Pushup Bro",
+  "boardFriends": "Friends",
+  "boardEveryone": "Everyone",
+  "boardResetsIn": "Resets in {hours} h {minutes} m",
+  "boardPlayers": "{count, plural, =1{1 bro} other{{count} bros}}",
+  "boardYou": "You",
+  "boardToday": "today",
+  "boardStreak": "{days}-day streak",
+  "boardNotStarted": "Not started today",
+  "boardPass": "{more} more to pass {name}.",
+  "boardPassSub": "That's one good set.",
+  "boardOnTop": "You're on top.",
+  "boardOnTopSub": "Defend the crown.",
+  "boardStart": "Do your first set today",
+  "boardStartSub": "Every pushup counts on the board.",
+  "boardGo": "Go",
+  "boardYouName": "You · {name}",
+  "boardTopPercent": "Top {percent}% today",
+  "boardNotOnYet": "Do a set to get on the board",
+  "boardNoFriends": "Add bros to race them every day",
+  "boardAddBros": "Add bros",
+  "boardEmptyEveryone": "Nobody has done pushups yet today. Be the first!",
+  "socialOffline": "Connect to the internet to see your bros.",
+  "socialRetry": "Try again"
 }

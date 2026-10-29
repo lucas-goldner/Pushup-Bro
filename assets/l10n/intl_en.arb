@@ -129,7 +129,7 @@
   "monkeyConfirm": "oo oo ok!",
   "shareProfile": "Share profile",
   "friends": "Bros",
-  "leaderboard": "Leaderboard",
+  "leaderboard": "Today",
   "sharedStreak": "Shared streak",
   "openChallenges": "{xChallenges} Open challenges",
   "@openChallenges": {
@@ -1231,5 +1231,76 @@
   "recapQuestDone": "Quest complete",
   "recapStageCleared": "Stage cleared",
   "recapNewQuestDaily": "A new quest every day",
-  "recapJoin": "Train with Carlos in Pushup Bro"
+  "recapJoin": "Train with Carlos in Pushup Bro",
+  "boardFriends": "Friends",
+  "boardEveryone": "Everyone",
+  "boardResetsIn": "Resets in {hours} h {minutes} m",
+  "@boardResetsIn": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "boardPlayers": "{count, plural, =1{1 bro} other{{count} bros}}",
+  "@boardPlayers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "boardYou": "You",
+  "boardToday": "today",
+  "boardStreak": "{days}-day streak",
+  "@boardStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "boardNotStarted": "Not started today",
+  "boardPass": "{more} more to pass {name}.",
+  "@boardPass": {
+    "placeholders": {
+      "more": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "boardPassSub": "That's one good set.",
+  "boardOnTop": "You're on top.",
+  "boardOnTopSub": "Defend the crown.",
+  "boardStart": "Do your first set today",
+  "boardStartSub": "Every pushup counts on the board.",
+  "boardGo": "Go",
+  "boardYouName": "You · {name}",
+  "@boardYouName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "boardTopPercent": "Top {percent}% today",
+  "@boardTopPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "boardNotOnYet": "Do a set to get on the board",
+  "boardNoFriends": "Add bros to race them every day",
+  "boardAddBros": "Add bros",
+  "boardEmptyEveryone": "Nobody has done pushups yet today. Be the first!",
+  "socialOffline": "Connect to the internet to see your bros.",
+  "socialRetry": "Try again"
 }

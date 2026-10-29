@@ -119,6 +119,12 @@ FakeSocialBackend demoSocialBackend({DateTime? now}) {
       friend: false,
     );
   }
+  (backend.scores[day] ??= {})['me'] = DayScore(
+    uid: 'me',
+    count: 85,
+    broName: const BroName(0, 0, 4821),
+    updatedAt: at,
+  );
   backend.inboxes['me'] = {
     'wave_mia': InboxItem(
       id: 'wave_mia',
