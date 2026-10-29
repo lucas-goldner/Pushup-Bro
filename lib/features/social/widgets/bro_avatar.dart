@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/model/cosmetics.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
+import 'package:pushup_bro/features/social/widgets/head_portraits.dart';
 
-/// A bro's face in a round tile: their gorilla drawn from their [look]
-/// (fur, face and mat colours) with their hat on top.
+/// A bro's face in a round tile: the 3D head of their gorilla in their
+/// [look] (fur, face, hat and glasses) on a tint of their mat colour.
+/// Until that portrait is rendered, a drawn face stands in.
 class BroAvatar extends StatelessWidget {
   const BroAvatar({required this.look, this.size = 44, super.key});
 
@@ -11,7 +13,28 @@ class BroAvatar extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: HeadPortraits.instance,
+        builder: (context, _) {
+          final head = HeadPortraits.instance.of(look);
+          if (head == null) return _drawn();
+          final tile = _color(look.matColor, const Color(0xFF5E9EFF));
+          return SizedBox.square(
+            dimension: size,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color.lerp(tile, Colors.white, 0.45),
+              ),
+              child: ClipOval(
+                child: RawImage(image: head, fit: BoxFit.cover),
+              ),
+            ),
+          );
+        },
+      );
+
+  Widget _drawn() {
     final hat = Cosmetic.byId(look.hat);
     final emoji = hat == null || look.hat == 'hat.none' ? '' : hat.emoji;
 

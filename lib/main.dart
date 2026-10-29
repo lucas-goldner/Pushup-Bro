@@ -44,6 +44,7 @@ import 'package:pushup_bro/features/social/cubit/cloud_save.dart';
 import 'package:pushup_bro/features/social/cubit/social_sync.dart';
 import 'package:pushup_bro/features/social/data/social_backend.dart';
 import 'package:pushup_bro/features/social/social_setup.dart';
+import 'package:pushup_bro/features/social/widgets/head_portraits.dart';
 import 'package:pushup_bro/features/widgets/widget_sync.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 
@@ -297,7 +298,10 @@ class _ThemedApp extends StatelessWidget {
         builder: (context, child) => WidgetSyncScope(
           child: AppIconProGuard(
             child: RemindersScope(
-              child: Theme(data: themeData, child: child!),
+              child: Theme(
+                data: themeData,
+                child: HeadPortraitStudio(child: child!),
+              ),
             ),
           ),
         ),
