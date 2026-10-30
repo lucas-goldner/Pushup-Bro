@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pushup_bro/core/widgets/one_move.dart';
@@ -11,14 +13,21 @@ class _Fading extends StatefulWidget {
 }
 
 class _FadingState extends State<_Fading> with OneMove {
+  bool _white = false;
+
   Future<void> _close() => oneMove(() async {
+        setState(() => _white = true);
         await Future<void>.delayed(const Duration(milliseconds: 450));
-        popIfOnTop();
+        if (!popIfOnTop() && mounted) setState(() => _white = false);
       });
 
   @override
-  Widget build(BuildContext context) =>
-      TextButton(onPressed: _close, child: const Text('close'));
+  Widget build(BuildContext context) => Column(
+        children: [
+          TextButton(onPressed: _close, child: const Text('close')),
+          if (_white) const Text('white'),
+        ],
+      );
 }
 
 void main() {
@@ -57,5 +66,26 @@ void main() {
     await tester.tap(find.text('close'));
     await tester.pumpAndSettle(const Duration(seconds: 1));
     expect(find.text('island'), findsOneWidget);
+  });
+
+  testWidgets('fades back in when something covers it instead of closing',
+      (tester) async {
+    await open(tester, depth: 1);
+    final state = tester.state<_FadingState>(find.byType(_Fading));
+    unawaited(state._close());
+    await tester.pump();
+    expect(find.text('white'), findsOneWidget);
+    // A sheet opens over it while it fades out.
+    unawaited(
+      showDialog<void>(
+        context: state.context,
+        builder: (_) => const Text('sheet'),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+
+    expect(find.text('sheet'), findsOneWidget);
+    expect(find.text('white'), findsNothing);
+    expect(find.text('close'), findsOneWidget);
   });
 }

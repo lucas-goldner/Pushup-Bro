@@ -135,7 +135,7 @@ class _TrekMapPageState extends State<TrekMapPage> with OneMove {
         GameAudio.instance.play(Sfx.whoosh);
         setState(() => _white = true);
         await Future<void>.delayed(const Duration(milliseconds: 400));
-        popIfOnTop();
+        if (!popIfOnTop() && mounted) setState(() => _white = false);
       });
 
   @override

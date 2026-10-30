@@ -97,6 +97,8 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
       _controller = controller;
       _tracker.reset();
       await controller.startImageStream(_onImage);
+      // Closed while the stream started: dispose stopped it already.
+      if (!mounted) return;
       setState(() => _error = null);
     } on CameraException catch (e) {
       if (mounted) setState(() => _error = e.code);
@@ -125,6 +127,7 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_stop());
     _mask?.dispose();
+    _mask = null;
     super.dispose();
   }
 
@@ -178,20 +181,30 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
       _feedback.update(reading, _clock.elapsed);
 
       final mask = reply['mask'];
-      if (mask is Uint8List) {
-        final next = await _maskImage(
+      ui.Image? next;
+      if (mask is Uint8List && mounted) {
+        next = await _maskImage(
           mask,
           reply['maskWidth']! as int,
           reply['maskHeight']! as int,
         );
-        _mask?.dispose();
-        _mask = next;
       }
-      if (mounted) {
-        setState(() {
-          _pose = pose;
-          _upright = upright;
-        });
+      // A frame still on its way when the camera closed: dispose already
+      // freed the mask, so it must not be touched again.
+      if (!mounted) {
+        next?.dispose();
+        return;
+      }
+      final old = next == null ? null : _mask;
+      setState(() {
+        if (next != null) _mask = next;
+        _pose = pose;
+        _upright = upright;
+      });
+      // The old mask goes once the new one is painted, never while the
+      // preview might still draw it.
+      if (old != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
       }
     } on Object catch (e) {
       debugPrint('Camera tracking frame failed: $e');

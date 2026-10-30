@@ -104,6 +104,9 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
   Camera? _lastCamera;
   bool _white = true;
 
+  /// Leaving: the camera window is gone.
+  bool _closing = false;
+
   vm.Vector3 _cameraTarget = vm.Vector3(0, 0.6, -2);
   vm.Vector3 _cameraPosition = vm.Vector3(1.5, 2.6, 7);
 
@@ -195,23 +198,23 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
 
   /// The camera window, while the camera counts: a preview to line up in
   /// while getting ready, counting once the fight is on.
-  Widget _cameraWindow(EdgeInsets safe, {required bool active}) =>
-      context.watch<SharedPreferencesCubit>().state.trackingMode ==
+  Widget _cameraWindow(EdgeInsets safe, {required bool active}) => !_closing &&
+          context.watch<SharedPreferencesCubit>().state.trackingMode ==
               TrackingMode.camera
-          ? Positioned.fill(
-              child: CameraWindow(
-                key: _cameraKey,
-                corner: active ? Alignment.bottomRight : Alignment.topRight,
-                topInset: 124,
-                bottomInset: 8,
-                child: CameraTrackerView(
-                  active: active,
-                  onDown: context.read<PushupCubit>().down,
-                  onUp: () => context.read<PushupCubit>().up(_volume ?? 10),
-                ),
-              ),
-            )
-          : const SizedBox.shrink();
+      ? Positioned.fill(
+          child: CameraWindow(
+            key: _cameraKey,
+            corner: active ? Alignment.bottomRight : Alignment.topRight,
+            topInset: 124,
+            bottomInset: 8,
+            child: CameraTrackerView(
+              active: active,
+              onDown: context.read<PushupCubit>().down,
+              onUp: () => context.read<PushupCubit>().up(_volume ?? 10),
+            ),
+          ),
+        )
+      : const SizedBox.shrink();
 
   void _startListening() {
     if (_listening) return;
@@ -460,9 +463,18 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
   Future<void> _leave() => oneMove(() async {
         _stopListening();
         GameAudio.instance.play(Sfx.whoosh);
-        setState(() => _white = true);
+        // The camera shuts down first, while this screen is still up.
+        setState(() {
+          _white = true;
+          _closing = true;
+        });
         await Future<void>.delayed(const Duration(milliseconds: 450));
-        popIfOnTop();
+        if (!popIfOnTop() && mounted) {
+          setState(() {
+            _white = false;
+            _closing = false;
+          });
+        }
       });
 
   void _populate(Scene scene) {

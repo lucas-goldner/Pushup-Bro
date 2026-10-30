@@ -18,9 +18,14 @@ mixin OneMove<T extends StatefulWidget> on State<T> {
     }
   }
 
-  /// Closes this screen, but only while it is the one on top.
-  void popIfOnTop<R extends Object?>([R? result]) {
-    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) return;
+  /// Closes this screen, but only while it is the one on top. Returns
+  /// whether it closed: when something else is on top, the screen that
+  /// faded to white must fade back in, or it stays white for good.
+  bool popIfOnTop<R extends Object?>([R? result]) {
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) {
+      return false;
+    }
     Navigator.of(context).pop(result);
+    return true;
   }
 }

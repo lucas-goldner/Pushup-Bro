@@ -3,10 +3,14 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_scene/scene.dart';
 
-/// How many frames the scene draws after warming up before [SceneStage]
-/// calls `onReady`, so the first frames (which can still be paced or held
-/// by the engine) are on screen at full size.
+/// How many full-size frames the scene draws before [SceneStage] calls
+/// `onReady`, so the first frames (which can still be paced or held by the
+/// engine) are on screen.
 const _kReadyFrames = 3;
+
+/// How far a drawn frame's shape may be from the stage's and still count as
+/// full size (the engine can render below the screen's resolution).
+const _kAspectTolerance = 0.02;
 
 /// Hosts a flutter_scene [Scene] over a transparent background, so the
 /// Flutter UI behind it shows through as the backdrop.
@@ -54,14 +58,29 @@ class _SceneStageState extends State<SceneStage> {
     );
   }
 
-  /// The scene view only ticks once it reveals the scene, so counting ticks
-  /// counts drawn frames.
+  /// The scene view only ticks once it reveals the scene. A tick isn't a
+  /// drawn frame though: warming up renders a 64×64 frame, and while
+  /// materials still load the engine shows its last frame again, stretched
+  /// over the whole view (a squashed clearing). Only frames drawn in the
+  /// stage's own shape count.
   void _tick(double deltaSeconds) {
     widget.onTick?.call(deltaSeconds);
+    if (_frames >= _kReadyFrames || !_drewFullFrame()) return;
     if (++_frames != _kReadyFrames) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) widget.onReady?.call();
     });
+  }
+
+  bool _drewFullFrame() {
+    final size = context.size;
+    final last = _scene.surface.lastSwapchainColorTexture();
+    if (size == null || size.isEmpty || last == null) return false;
+    // Bigger than the warm-up frame, and shaped like the stage.
+    if (last.width <= 64 && last.height <= 64) return false;
+    final drawn = last.width / last.height;
+    final stage = size.width / size.height;
+    return (drawn - stage).abs() / stage < _kAspectTolerance;
   }
 
   @override
