@@ -92,6 +92,11 @@ const _buddies = <_Look>[
   ),
 ];
 
+/// How many buddies work out behind Carlos: 1 to 4, drawn once when the
+/// app starts (on first use), so the gym stays the same until it's opened
+/// again.
+final int gymBuddyCount = 1 + math.Random().nextInt(_buddies.length);
+
 /// How fast (m/s) the buddies run to fetch their mats and back.
 const _runSpeed = 1.9;
 
@@ -115,7 +120,9 @@ const _exitZ = -2.6;
 /// Build it once the engine is ready, add [root] to a scene and call
 /// [update] every frame.
 class GymWorld {
-  GymWorld() {
+  /// With [buddies] of the gym's buddies, nearest first; by default the
+  /// number drawn for this run of the app ([gymBuddyCount]).
+  GymWorld({int? buddies}) {
     // A frame whose -Z points away from the camera, so the room and the
     // stations are laid out in screen terms whichever way the camera looks.
     _view = Node(name: 'gym-view')
@@ -131,7 +138,8 @@ class GymWorld {
       ..add(_carlosMat)
       ..add(carlos.root);
 
-    for (final (i, look) in _buddies.indexed) {
+    final count = (buddies ?? gymBuddyCount).clamp(0, _buddies.length);
+    for (final (i, look) in _buddies.take(count).indexed) {
       final rig = GorillaRig(
         furColor: look.fur,
         faceColor: look.face,
