@@ -56,6 +56,22 @@ class _JungleState extends State<Jungle> with OneMove {
     _loadTimeout = Timer(_kLoadTimeout, _onLoaded);
   }
 
+  /// The scene is drawn. On an iPhone the jungle can be laid out short of
+  /// the screen for a moment (the clearing then shows squashed into the
+  /// top of it), so the white only lifts once the screen is full size;
+  /// the stage says it's ready again after it's laid out at that size.
+  void _onSceneReady() {
+    if (!mounted) return;
+    final size = context.size;
+    final screen = MediaQuery.sizeOf(context);
+    if (size == null ||
+        (size.width - screen.width).abs() > 1 ||
+        (size.height - screen.height).abs() > 1) {
+      return;
+    }
+    _onLoaded();
+  }
+
   /// The clearing is fully drawn: it appears out of white, then the quest
   /// pops up.
   void _onLoaded() {
@@ -142,7 +158,7 @@ class _JungleState extends State<Jungle> with OneMove {
                 ),
               ),
             ),
-            Positioned.fill(child: JungleScene(onReady: _onLoaded)),
+            Positioned.fill(child: JungleScene(onReady: _onSceneReady)),
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),

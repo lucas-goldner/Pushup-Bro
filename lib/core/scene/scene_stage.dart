@@ -46,6 +46,10 @@ class _SceneStageState extends State<SceneStage> {
   bool _ready = false;
   int _frames = 0;
 
+  /// The size the frames were counted at; counting starts over when the
+  /// stage is laid out at another size.
+  Size? _countedAt;
+
   @override
   void initState() {
     super.initState();
@@ -65,6 +69,13 @@ class _SceneStageState extends State<SceneStage> {
   /// stage's own shape count.
   void _tick(double deltaSeconds) {
     widget.onTick?.call(deltaSeconds);
+    final size = context.size;
+    if (size != _countedAt) {
+      // Laid out at another size (a route can be laid out short for a
+      // moment): wait for full frames at the new size, then say so again.
+      _countedAt = size;
+      _frames = 0;
+    }
     if (_frames >= _kReadyFrames || !_drewFullFrame()) return;
     if (++_frames != _kReadyFrames) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
