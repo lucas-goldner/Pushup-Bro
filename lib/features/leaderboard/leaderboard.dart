@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart' show NumberFormat;
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
+import 'package:pushup_bro/features/island/island.dart';
 import 'package:pushup_bro/features/leaderboard/widgets/board_rows.dart';
 import 'package:pushup_bro/features/leaderboard/widgets/podium.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
@@ -197,7 +198,14 @@ class _NoBros extends StatelessWidget {
           ),
           const SizedBox(height: PBSpace.md),
           TextButton(
-            onPressed: () => MenuTabInfo.friends.navigate(context),
+            onPressed: () {
+              // Opened from the island's dock: the bros open the same way.
+              if (ModalRoute.of(context)?.settings.name == Island.todayRoute) {
+                Navigator.of(context).pushReplacementNamed(Island.brosRoute);
+              } else {
+                unawaited(MenuTabInfo.friends.navigate(context));
+              }
+            },
             child: Text(context.l10n.boardAddBros),
           ),
         ],

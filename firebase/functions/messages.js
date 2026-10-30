@@ -30,7 +30,7 @@ const texts = {
 };
 
 /** Where a tap on the notification takes the player. */
-export const route = '/friends';
+export const route = '/island/bros';
 
 /** The text for an inbox [item] in [language], or null for an unknown kind. */
 export function textFor(item, language) {
