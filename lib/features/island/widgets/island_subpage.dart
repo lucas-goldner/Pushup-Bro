@@ -19,42 +19,49 @@ class IslandSubpage extends StatelessWidget {
       backgroundColor: scheme.surfaceContainerLow,
       body: Stack(
         children: [
-          child,
-          SafeArea(
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Text(title, style: context.textTheme.headlineLarge),
-                  Positioned(
-                    left: PBSpace.md,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: context.cardShadow,
-                      ),
-                      child: Material(
-                        color: scheme.surface,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: () => Navigator.of(context).maybePop(),
-                          child: SizedBox.square(
-                            dimension: 48,
-                            child: Icon(
-                              CarbonIcons.arrow_left,
-                              color: scheme.onSurface,
-                              semanticLabel: MaterialLocalizations.of(context)
-                                  .backButtonTooltip,
+          Positioned.fill(child: child),
+          // Positioned, so the page under it keeps the whole screen.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Text(title, style: context.textTheme.headlineLarge),
+                    Positioned(
+                      left: PBSpace.md,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: context.cardShadow,
+                        ),
+                        child: Material(
+                          color: scheme.surface,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () => Navigator.of(context).maybePop(),
+                            child: SizedBox.square(
+                              dimension: 48,
+                              child: Icon(
+                                CarbonIcons.arrow_left,
+                                color: scheme.onSurface,
+                                semanticLabel: MaterialLocalizations.of(context)
+                                    .backButtonTooltip,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

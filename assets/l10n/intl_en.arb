@@ -1625,5 +1625,34 @@
   "accountFriends": "Bros",
   "accountOn": "On",
   "accountOff": "Off",
-  "accountSettingsRow": "Account"
+  "accountSettingsRow": "Account",
+  "islandBrosPlace": "#{place} today",
+  "@islandBrosPlace": {
+    "placeholders": {
+      "place": {
+        "type": "int"
+      }
+    }
+  },
+  "islandBrosPass": "{more} to pass {name}",
+  "@islandBrosPass": {
+    "placeholders": {
+      "more": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "islandBrosTop": "You're on top",
+  "islandBrosAdd": "Add your bros",
+  "islandBrosWaiting": "{count} new",
+  "@islandBrosWaiting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

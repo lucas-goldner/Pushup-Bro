@@ -7,14 +7,16 @@ import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
 
 class BananaCounter extends StatelessWidget {
-  const BananaCounter({super.key});
+  const BananaCounter({this.height = 40, super.key});
+
+  final double height;
 
   @override
   Widget build(BuildContext context) =>
       BlocSelector<GameInventoryCubit, GameInventoryState, int>(
         selector: (state) => state.inventory.bananas,
         builder: (context, count) => Container(
-          height: 40,
+          height: height,
           padding: const EdgeInsets.only(left: 8, right: 14),
           decoration: BoxDecoration(
             color: context.colorScheme.surface,

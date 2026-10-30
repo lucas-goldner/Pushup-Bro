@@ -994,5 +994,10 @@
   "accountFriends": "Bros",
   "accountOn": "Sí",
   "accountOff": "No",
-  "accountSettingsRow": "Cuenta"
+  "accountSettingsRow": "Cuenta",
+  "islandBrosPlace": "#{place} hoy",
+  "islandBrosPass": "{more} para pasar a {name}",
+  "islandBrosTop": "Vas primero",
+  "islandBrosAdd": "Añade a tus bros",
+  "islandBrosWaiting": "{count} nuevos"
 }

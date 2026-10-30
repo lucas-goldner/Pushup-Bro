@@ -6,9 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/core/style/theme.dart';
 import 'package:pushup_bro/features/friends/friends.dart';
+import 'package:pushup_bro/features/island/widgets/bros_bubble.dart';
+import 'package:pushup_bro/features/island/widgets/bros_hub.dart';
 import 'package:pushup_bro/features/leaderboard/leaderboard.dart';
 import 'package:pushup_bro/features/social/cubit/account_cubit.dart';
 import 'package:pushup_bro/features/social/data/demo_social_backend.dart';
+import 'package:pushup_bro/features/social/widgets/social_widgets.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -93,6 +96,43 @@ void main() {
     expect(find.text('5 bros'), findsOneWidget);
     expect(find.text('✓ Done'), findsNWidgets(4));
     expect(find.text('👋 Nudge'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets("the island's bubble: the place today and the next small win",
+      (tester) async {
+    var opened = false;
+    await pump(
+      tester,
+      Align(
+        alignment: Alignment.bottomRight,
+        child: BrosBubble(onTap: () => opened = true),
+      ),
+    );
+
+    expect(find.text('#3 today'), findsOneWidget);
+    expect(find.text('36 to pass Jonas'), findsOneWidget);
+    await tester.tap(find.byType(BrosBubble));
+    expect(opened, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the bros hub: today first, the bros one tap away',
+      (tester) async {
+    await pump(tester, const BrosHub());
+
+    expect(find.text('36 more to pass Jonas.'), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(SocialTabs),
+        matching: find.text('Bros'),
+      ),
+    );
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+    expect(find.text('Your friend code'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

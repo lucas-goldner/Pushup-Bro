@@ -2,7 +2,6 @@ import 'package:circular_clip_route/circular_clip_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/audio/music_scope.dart';
-import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/features/debug/debug.dart';
 import 'package:pushup_bro/features/friends/add_bro_page.dart';
 import 'package:pushup_bro/features/friends/bros_added_page.dart';
@@ -10,7 +9,7 @@ import 'package:pushup_bro/features/friends/friends.dart';
 import 'package:pushup_bro/features/island/island.dart';
 import 'package:pushup_bro/features/island/share/island_share_page.dart';
 import 'package:pushup_bro/features/island/visit/island_visit_page.dart';
-import 'package:pushup_bro/features/island/widgets/island_subpage.dart';
+import 'package:pushup_bro/features/island/widgets/bros_hub.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 import 'package:pushup_bro/features/leaderboard/leaderboard.dart';
@@ -185,22 +184,14 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
             return BrosAddedPage(friend: friend, name: name);
           },
         ),
-      // Today and Bros from the island's dock, with a way back to it.
-      Island.todayRoute => CupertinoPageRoute(
+      // The bros from the island: today's board or the friends list.
+      Island.todayRoute || Island.brosRoute => CupertinoPageRoute(
           settings: settings,
           builder: (context) => MusicScope(
             track: MusicTrack.home,
-            child: IslandSubpage(
-              title: context.l10n.leaderboard,
-              child: const Leaderboard(),
+            child: BrosHub(
+              initialTab: settings.name == Island.brosRoute ? 1 : 0,
             ),
-          ),
-        ),
-      Island.brosRoute => CupertinoPageRoute(
-          settings: settings,
-          builder: (context) => IslandSubpage(
-            title: context.l10n.friends,
-            child: const Friends(),
           ),
         ),
       IslandVisitPage.routeName => CupertinoPageRoute(

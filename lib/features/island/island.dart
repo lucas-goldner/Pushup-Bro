@@ -7,15 +7,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/island/model/daily_bananas.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
 import 'package:pushup_bro/features/island/share/island_share_page.dart';
+import 'package:pushup_bro/features/island/widgets/bros_bubble.dart';
 import 'package:pushup_bro/features/island/widgets/game_menu.dart';
 import 'package:pushup_bro/features/island/widgets/island_dock.dart';
 import 'package:pushup_bro/features/island/widgets/island_scene.dart';
 import 'package:pushup_bro/features/island/widgets/island_top_bar.dart';
 import 'package:pushup_bro/features/island/widgets/quest_dialog.dart';
+import 'package:pushup_bro/features/menu/widgets/menu_circle_button.dart';
 import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
 import 'package:pushup_bro/features/pro/model/pro_feature.dart';
 import 'package:pushup_bro/features/pro/model/pro_state.dart';
@@ -163,33 +164,50 @@ class _IslandState extends State<Island> {
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                  child: IslandDock(
-                    locked: locked,
-                    onShop: () => _guarded(ProLockPlace.shop, openMenu),
-                    onAccessories: () =>
-                        _guarded(ProLockPlace.carlos, openWardrobe),
-                    onCarlos: () => _guarded(ProLockPlace.carlos, openWardrobe),
-                    onJungle: () => _guarded(ProLockPlace.jungle, _goToJungle),
-                    // Free for everyone, like the rest of the social side.
-                    onToday: () =>
-                        Navigator.of(context).pushNamed(Island.todayRoute),
-                    onBros: () =>
-                        Navigator.of(context).pushNamed(Island.brosRoute),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      // The bros, free for everyone like the rest of the
+                      // social side.
+                      BrosBubble(
+                        onTap: () =>
+                            Navigator.of(context).pushNamed(Island.todayRoute),
+                      ),
+                      const SizedBox(height: 12),
+                      IslandDock(
+                        locked: locked,
+                        onShop: () => _guarded(ProLockPlace.shop, openMenu),
+                        onCarlos: () =>
+                            _guarded(ProLockPlace.carlos, openWardrobe),
+                        onJungle: () =>
+                            _guarded(ProLockPlace.jungle, _goToJungle),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-            // Friends' waves and bananas, and sharing the island.
+            // Sharing the island, right under the menu button.
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 68, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    _ShareIslandButton(onTap: () => openIslandShare(context)),
-                    const SizedBox(height: 12),
-                    const InboxBanner(),
-                  ],
+                padding: const EdgeInsets.only(left: 8, top: 60),
+                child: Semantics(
+                  label: context.l10n.islandShareButton,
+                  child: MenuCircleButton(
+                    icon: CarbonIcons.qr_code,
+                    onTap: () => openIslandShare(context),
+                  ),
+                ),
+              ),
+            ),
+            // Friends' waves and bananas, under the top row.
+            const SafeArea(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(76, 64, 12, 0),
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: InboxBanner(),
                 ),
               ),
             ),
@@ -222,35 +240,5 @@ class _IslandState extends State<Island> {
               ),
           ],
         ],
-      );
-}
-
-/// A round button with the share icon: "Share my island".
-class _ShareIslandButton extends StatelessWidget {
-  const _ShareIslandButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-        button: true,
-        label: context.l10n.islandShareButton,
-        child: GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: context.colorScheme.surface,
-              shape: BoxShape.circle,
-              boxShadow: context.cardShadow,
-            ),
-            child: Icon(
-              CarbonIcons.qr_code,
-              size: 22,
-              color: context.colorScheme.onSurface,
-            ),
-          ),
-        ),
       );
 }
