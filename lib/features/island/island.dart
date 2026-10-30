@@ -29,6 +29,10 @@ class Island extends StatefulWidget {
   const Island({super.key});
   static const routeName = '/island';
 
+  /// Today's leaderboard and the bros, opened from the dock.
+  static const todayRoute = '/island/today';
+  static const brosRoute = '/island/bros';
+
   @override
   State<Island> createState() => _IslandState();
 }
@@ -158,7 +162,7 @@ class _IslandState extends State<Island> {
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                   child: IslandDock(
                     locked: locked,
                     onShop: () => _guarded(ProLockPlace.shop, openMenu),
@@ -166,6 +170,11 @@ class _IslandState extends State<Island> {
                         _guarded(ProLockPlace.carlos, openWardrobe),
                     onCarlos: () => _guarded(ProLockPlace.carlos, openWardrobe),
                     onJungle: () => _guarded(ProLockPlace.jungle, _goToJungle),
+                    // Free for everyone, like the rest of the social side.
+                    onToday: () =>
+                        Navigator.of(context).pushNamed(Island.todayRoute),
+                    onBros: () =>
+                        Navigator.of(context).pushNamed(Island.brosRoute),
                   ),
                 ),
               ),

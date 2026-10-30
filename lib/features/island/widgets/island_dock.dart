@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +10,12 @@ import 'package:pushup_bro/core/extensions/shop_buyables.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 
+/// A tile's width when the dock has room.
+const _kTileWidth = 74.0;
+
+/// The space on each side of a tile.
+const _kTileGap = 3.0;
+
 /// The island's actions, as a floating row of tiles at the bottom.
 class IslandDock extends StatelessWidget {
   const IslandDock({
@@ -15,6 +23,8 @@ class IslandDock extends StatelessWidget {
     required this.onAccessories,
     required this.onCarlos,
     required this.onJungle,
+    required this.onToday,
+    required this.onBros,
     this.locked = false,
     super.key,
   });
@@ -26,55 +36,85 @@ class IslandDock extends StatelessWidget {
   final VoidCallback onAccessories;
   final VoidCallback onCarlos;
   final VoidCallback onJungle;
+  final VoidCallback onToday;
+  final VoidCallback onBros;
 
   @override
   Widget build(BuildContext context) =>
       BlocSelector<GameInventoryCubit, GameInventoryState, List<ShopBuyables>>(
         selector: (state) => state.inventory.boughtItems,
-        builder: (context, boughtItems) => Container(
-          padding: const EdgeInsets.all(PBSpace.sm),
-          decoration: BoxDecoration(
-            color: context.colorScheme.surface,
-            borderRadius: BorderRadius.circular(PBRadius.lg + 2),
-            boxShadow: context.cardShadow,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _DockTile(
-                icon: CarbonIcons.store,
-                label: context.l10n.islandShop,
-                onTap: onShop,
-                highlighted: !locked,
-                locked: locked,
+        builder: (context, boughtItems) => LayoutBuilder(
+          builder: (context, constraints) {
+            final tiles = boughtItems.hasAccessories ? 6 : 5;
+            // As wide as it used to be, narrower when the tiles need it.
+            final tileWidth = math.min(
+              _kTileWidth,
+              (constraints.maxWidth - PBSpace.sm * 2) / tiles - _kTileGap * 2,
+            );
+
+            return Container(
+              padding: const EdgeInsets.all(PBSpace.sm),
+              decoration: BoxDecoration(
+                color: context.colorScheme.surface,
+                borderRadius: BorderRadius.circular(PBRadius.lg + 2),
+                boxShadow: context.cardShadow,
               ),
-              if (boughtItems.hasAccessories)
-                _DockTile(
-                  icon: CarbonIcons.shopping_bag,
-                  label: context.l10n.islandAccessories,
-                  onTap: onAccessories,
-                  locked: locked,
-                ),
-              _DockTile(
-                icon: CarbonIcons.face_satisfied,
-                label: context.l10n.islandCarlos,
-                onTap: onCarlos,
-                locked: locked,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _DockTile(
+                    width: tileWidth,
+                    icon: CarbonIcons.store,
+                    label: context.l10n.islandShop,
+                    onTap: onShop,
+                    highlighted: !locked,
+                    locked: locked,
+                  ),
+                  if (boughtItems.hasAccessories)
+                    _DockTile(
+                      width: tileWidth,
+                      icon: CarbonIcons.shopping_bag,
+                      label: context.l10n.islandAccessories,
+                      onTap: onAccessories,
+                      locked: locked,
+                    ),
+                  _DockTile(
+                    width: tileWidth,
+                    icon: CarbonIcons.face_satisfied,
+                    label: context.l10n.islandCarlos,
+                    onTap: onCarlos,
+                    locked: locked,
+                  ),
+                  _DockTile(
+                    width: tileWidth,
+                    icon: CarbonIcons.tree,
+                    label: context.l10n.islandJungle,
+                    onTap: onJungle,
+                    locked: locked,
+                  ),
+                  _DockTile(
+                    width: tileWidth,
+                    icon: CarbonIcons.trophy,
+                    label: context.l10n.leaderboard,
+                    onTap: onToday,
+                  ),
+                  _DockTile(
+                    width: tileWidth,
+                    icon: CarbonIcons.group,
+                    label: context.l10n.friends,
+                    onTap: onBros,
+                  ),
+                ],
               ),
-              _DockTile(
-                icon: CarbonIcons.tree,
-                label: context.l10n.islandJungle,
-                onTap: onJungle,
-                locked: locked,
-              ),
-            ],
-          ),
+            );
+          },
         ),
       );
 }
 
 class _DockTile extends StatelessWidget {
   const _DockTile({
+    required this.width,
     required this.icon,
     required this.label,
     required this.onTap,
@@ -82,6 +122,7 @@ class _DockTile extends StatelessWidget {
     this.locked = false,
   });
 
+  final double width;
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -94,7 +135,7 @@ class _DockTile extends StatelessWidget {
     final foreground = highlighted ? scheme.onPrimary : scheme.onSurface;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
+      padding: const EdgeInsets.symmetric(horizontal: _kTileGap),
       child: Material(
         color: highlighted ? scheme.primary : scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(PBRadius.md + 2),
@@ -102,7 +143,7 @@ class _DockTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(PBRadius.md + 2),
           onTap: onTap,
           child: SizedBox(
-            width: 74,
+            width: width,
             height: 68,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -136,13 +177,18 @@ class _DockTile extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.textTheme.labelMedium?.copyWith(
-                    fontSize: 12,
-                    color: foreground,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      style: context.textTheme.labelMedium?.copyWith(
+                        fontSize: 12,
+                        color: foreground,
+                      ),
+                    ),
                   ),
                 ),
               ],
