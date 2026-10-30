@@ -20,8 +20,11 @@ import 'package:pushup_bro/features/social/widgets/social_widgets.dart';
 /// The player's bros: their code to share, and every friend with today's
 /// pushups and streak, done or ready for a nudge.
 class Friends extends StatelessWidget {
-  const Friends({super.key});
+  const Friends({this.topPadding = 72, super.key});
   static const routeName = '/friends';
+
+  /// Room left above the list for what sits on top of it.
+  final double topPadding;
 
   @override
   Widget build(BuildContext context) => SocialGate(
@@ -29,15 +32,16 @@ class Friends extends StatelessWidget {
           key: ValueKey(me.uid),
           create: (context) =>
               BrosCubit(context.read<AccountCubit>().backend, me: me)..start(),
-          child: _BrosList(me: me),
+          child: _BrosList(me: me, topPadding: topPadding),
         ),
       );
 }
 
 class _BrosList extends StatelessWidget {
-  const _BrosList({required this.me});
+  const _BrosList({required this.me, required this.topPadding});
 
   final BroProfile me;
+  final double topPadding;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -48,9 +52,9 @@ class _BrosList extends StatelessWidget {
               ..sort((a, b) => b.today.compareTo(a.today));
 
             return ListView(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
                 PBSpace.lg,
-                72,
+                topPadding,
                 PBSpace.lg,
                 PBSpace.xxl,
               ),

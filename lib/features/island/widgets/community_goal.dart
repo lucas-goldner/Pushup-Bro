@@ -9,8 +9,14 @@ import 'package:pushup_bro/core/style/pb_tokens.dart';
 class CommunityGoal extends StatelessWidget {
   const CommunityGoal({
     required this.openMenu,
+    this.width = 150,
+    this.height = 40,
     super.key,
   });
+
+  /// Null fills the width it's given.
+  final double? width;
+  final double height;
 
   final void Function() openMenu;
 
@@ -25,8 +31,8 @@ class CommunityGoal extends StatelessWidget {
       builder: (context, count) => GestureDetector(
         onTap: openMenu,
         child: Container(
-          height: 40,
-          width: 150,
+          height: height,
+          width: width,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: context.colorScheme.surface,

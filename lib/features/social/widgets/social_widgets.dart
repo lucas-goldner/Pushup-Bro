@@ -70,6 +70,7 @@ class SocialTabs extends StatelessWidget {
     required this.labels,
     required this.selected,
     required this.onSelect,
+    this.compact = false,
     super.key,
   });
 
@@ -77,9 +78,12 @@ class SocialTabs extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onSelect;
 
+  /// A smaller switch, for one that sits under other tabs.
+  final bool compact;
+
   @override
   Widget build(BuildContext context) => Container(
-        height: 44,
+        height: compact ? 34 : 44,
         padding: const EdgeInsets.all(PBSpace.xs),
         decoration: BoxDecoration(
           color: context.colorScheme.surfaceContainerHigh,
@@ -104,7 +108,10 @@ class SocialTabs extends StatelessWidget {
                     ),
                     child: Text(
                       label,
-                      style: context.textTheme.labelLarge?.copyWith(
+                      style: (compact
+                              ? context.textTheme.labelMedium
+                              : context.textTheme.labelLarge)
+                          ?.copyWith(
                         fontWeight:
                             i == selected ? FontWeight.w800 : FontWeight.w600,
                         color: i == selected

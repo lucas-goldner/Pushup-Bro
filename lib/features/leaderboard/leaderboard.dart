@@ -21,8 +21,18 @@ import 'package:pushup_bro/features/social/widgets/social_widgets.dart';
 /// everyone (the top 50 and the player's own place). Free for everyone,
 /// and it resets at each player's local midnight.
 class Leaderboard extends StatelessWidget {
-  const Leaderboard({super.key});
+  const Leaderboard({
+    this.topPadding = 72,
+    this.compactTabs = false,
+    super.key,
+  });
   static const routeName = '/leaderboard';
+
+  /// Room left above the board for what sits on top of it.
+  final double topPadding;
+
+  /// A smaller Friends and Everyone switch, under the bros' own tabs.
+  final bool compactTabs;
 
   @override
   Widget build(BuildContext context) => SocialGate(
@@ -41,15 +51,25 @@ class Leaderboard extends StatelessWidget {
               )..start(),
             ),
           ],
-          child: _Board(me: me),
+          child: _Board(
+            me: me,
+            topPadding: topPadding,
+            compactTabs: compactTabs,
+          ),
         ),
       );
 }
 
 class _Board extends StatefulWidget {
-  const _Board({required this.me});
+  const _Board({
+    required this.me,
+    required this.topPadding,
+    required this.compactTabs,
+  });
 
   final BroProfile me;
+  final double topPadding;
+  final bool compactTabs;
 
   @override
   State<_Board> createState() => _BoardState();
@@ -82,7 +102,12 @@ class _BoardState extends State<_Board> {
     return SafeArea(
       bottom: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(PBSpace.lg, 72, PBSpace.lg, 0),
+        padding: EdgeInsets.fromLTRB(
+          PBSpace.lg,
+          widget.topPadding,
+          PBSpace.lg,
+          0,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -103,6 +128,7 @@ class _BoardState extends State<_Board> {
             ),
             const SizedBox(height: PBSpace.md),
             SocialTabs(
+              compact: widget.compactTabs,
               labels: [l.boardFriends, l.boardEveryone],
               selected: _tab,
               onSelect: (tab) => setState(() => _tab = tab),

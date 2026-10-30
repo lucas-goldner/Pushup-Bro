@@ -994,5 +994,10 @@
   "accountFriends": "兄貴",
   "accountOn": "オン",
   "accountOff": "オフ",
-  "accountSettingsRow": "アカウント"
+  "accountSettingsRow": "アカウント",
+  "islandBrosPlace": "今日{place}位",
+  "islandBrosPass": "{name}まであと{more}",
+  "islandBrosTop": "今日のトップ",
+  "islandBrosAdd": "兄貴を追加しよう",
+  "islandBrosWaiting": "新着{count}件"
 }
