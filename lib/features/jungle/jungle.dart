@@ -82,7 +82,7 @@ class _JungleState extends State<Jungle> with OneMove {
         GameAudio.instance.play(Sfx.whoosh);
         setState(() => _white = true);
         await Future<void>.delayed(const Duration(milliseconds: 450));
-        popIfOnTop();
+        if (!popIfOnTop() && mounted) setState(() => _white = false);
       });
 
   Future<void> _trek() => oneMove(_openTrek);

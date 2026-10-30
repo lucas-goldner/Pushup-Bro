@@ -10,10 +10,13 @@ class XLogo extends StatelessWidget {
     final theme = IconTheme.of(context);
     final size = theme.size ?? 24;
 
-    return SizedBox.square(
-      dimension: size,
-      child: CustomPaint(
-        painter: _XPainter(theme.color ?? const Color(0xFF000000)),
+    // Centred like an Icon, so a tile that stretches it keeps it small.
+    return Center(
+      child: SizedBox.square(
+        dimension: size,
+        child: CustomPaint(
+          painter: _XPainter(theme.color ?? const Color(0xFF000000)),
+        ),
       ),
     );
   }

@@ -94,6 +94,9 @@ class _QuestPageState extends State<QuestPage> with OneMove {
   /// Fades in out of white, and back to white when leaving.
   bool _white = true;
 
+  /// Leaving: the camera window is gone.
+  bool _closing = false;
+
   JungleQuest get _quest => widget.quest;
 
   List<Line> get _lines => switch (_phase) {
@@ -268,9 +271,19 @@ class _QuestPageState extends State<QuestPage> with OneMove {
           context.read<PushupCubit>().resetAndReturnCurrentPushupSet();
         }
         GameAudio.instance.play(Sfx.whoosh);
-        setState(() => _white = true);
+        // The camera shuts down first, while this screen is still up, not
+        // in the middle of closing it.
+        setState(() {
+          _white = true;
+          _closing = true;
+        });
         await Future<void>.delayed(const Duration(milliseconds: 450));
-        popIfOnTop(_won);
+        if (!popIfOnTop(_won) && mounted) {
+          setState(() {
+            _white = false;
+            _closing = false;
+          });
+        }
       });
 
   void _populate(Scene scene) {
@@ -556,8 +569,9 @@ class _QuestPageState extends State<QuestPage> with OneMove {
               onFinish: _finish,
             ),
           ),
-          if (context.watch<SharedPreferencesCubit>().state.trackingMode ==
-              TrackingMode.camera)
+          if (!_closing &&
+              context.watch<SharedPreferencesCubit>().state.trackingMode ==
+                  TrackingMode.camera)
             Positioned.fill(
               child: CameraWindow(
                 topInset: 60,
