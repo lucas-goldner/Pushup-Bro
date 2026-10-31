@@ -13,6 +13,7 @@ import 'package:pushup_bro/core/provider/db_provider.dart';
 import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/core/style/theme.dart';
 import 'package:pushup_bro/core/widgets/fold_safe.dart';
+import 'package:pushup_bro/core/widgets/phone_page.dart';
 import 'package:pushup_bro/features/island/widgets/bros_bubble.dart';
 import 'package:pushup_bro/features/island/widgets/bros_hub.dart';
 import 'package:pushup_bro/features/island/widgets/island_dock.dart';
@@ -153,7 +154,7 @@ void main() {
         'onboarding ${step.name}': () => OnboardingPage(initialStep: step),
     'paywall': () => const PaywallPage(),
     'welcome to pro': () => const ProSuccessPage(plan: ProPlanKind.yearly),
-    'reminders': () => const RemindersPage(),
+    'reminders': () => const PhonePage(child: RemindersPage()),
     'bros hub': () => const BrosHub(),
     'bros hub, bros tab': () => const BrosHub(initialTab: 1),
     'island controls': () => const _IslandControls(),
@@ -169,6 +170,39 @@ void main() {
       }
     });
   }
+
+  group('nothing to tap on the fold of an iPhone Duo open like a book', () {
+    const pose = FoldTestPose.duoHalfOpenedLandscape;
+    final fold = pose.data.displayFeatures
+        .firstWhere((feature) => feature.type == DisplayFeatureType.fold)
+        .bounds;
+    for (final MapEntry(key: name, value: screen) in screens.entries) {
+      testWidgets(name, (tester) async {
+        await pump(tester, pose, screen());
+        final taps = [
+          ...find.byType(InkWell).evaluate(),
+          ...find.byType(ButtonStyleButton).evaluate(),
+          ...find.byType(CupertinoButton).evaluate(),
+          ...find
+              .byWidgetPredicate(
+                (widget) => widget is GestureDetector && widget.onTap != null,
+              )
+              .evaluate(),
+        ];
+        for (final element in taps) {
+          final box = element.renderObject;
+          if (box is! RenderBox || !box.hasSize || !box.attached) continue;
+          final rect = box.localToGlobal(Offset.zero) & box.size;
+          if (rect.isEmpty) continue;
+          expect(
+            rect.overlaps(fold),
+            isFalse,
+            reason: '${element.widget.runtimeType} at $rect is on the fold',
+          );
+        }
+      });
+    }
+  });
 
   testWidgets('the island bar stays off the fold of a half-open iPhone Duo',
       (tester) async {

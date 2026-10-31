@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/widgets/pb_app_bar.dart';
+import 'package:pushup_bro/core/widgets/phone_page.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 
 class PageContainer extends StatefulWidget {
@@ -50,15 +51,7 @@ class _PageContainerState extends State<PageContainer> {
                       if (widget.overScene || !widget._showTitle)
                         widget.pageContent
                       else
-                        Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxWidth: 640,
-                              minHeight: double.infinity,
-                            ),
-                            child: widget.pageContent,
-                          ),
-                        ),
+                        PhonePage(child: widget.pageContent),
                       Visibility(
                         visible: !menuIsVisible,
                         child: ClipRect(

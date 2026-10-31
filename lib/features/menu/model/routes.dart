@@ -2,6 +2,7 @@ import 'package:circular_clip_route/circular_clip_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/audio/music_scope.dart';
+import 'package:pushup_bro/core/widgets/phone_page.dart';
 import 'package:pushup_bro/features/debug/debug.dart';
 import 'package:pushup_bro/features/friends/add_bro_page.dart';
 import 'package:pushup_bro/features/friends/bros_added_page.dart';
@@ -156,32 +157,36 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
           builder: (context) => const Wardrobe(),
         ),
       LanguageSetting.routeName => CupertinoPageRoute(
-          builder: (context) => const LanguageSetting(),
+          builder: (context) => const PhonePage(child: LanguageSetting()),
         ),
       VolumeSetting.routeName => CupertinoPageRoute(
-          builder: (context) => const VolumeSetting(),
+          builder: (context) => const PhonePage(child: VolumeSetting()),
         ),
       BodySetting.routeName => CupertinoPageRoute(
-          builder: (context) => const BodySetting(),
+          builder: (context) => const PhonePage(child: BodySetting()),
         ),
       AccountPage.routeName => CupertinoPageRoute(
           settings: settings,
-          builder: (context) => const AccountPage(),
+          builder: (context) => const PhonePage(child: AccountPage()),
         ),
       RestorePage.routeName => CupertinoPageRoute(
           settings: settings,
           fullscreenDialog: true,
-          builder: (context) => const RestorePage(),
+          builder: (context) => const PhonePage(child: RestorePage()),
         ),
       AddBroPage.routeName => CupertinoPageRoute(
           settings: settings,
-          builder: (context) => AddBroPage(code: settings.arguments as String?),
+          builder: (context) => PhonePage(
+            child: AddBroPage(code: settings.arguments as String?),
+          ),
         ),
       BrosAddedPage.routeName => CupertinoPageRoute(
           settings: settings,
           builder: (context) {
             final (friend, name) = settings.arguments! as (BroProfile, String);
-            return BrosAddedPage(friend: friend, name: name);
+            return PhonePage(
+              child: BrosAddedPage(friend: friend, name: name),
+            );
           },
         ),
       // The bros from the island: today's board or the friends list.
@@ -211,7 +216,9 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
       // A friend's QR (or link) opened the app: add them.
       final String name when name.startsWith('/pb/') => CupertinoPageRoute(
           settings: settings,
-          builder: (context) => AddBroPage(code: FriendCode.normalize(name)),
+          builder: (context) => PhonePage(
+            child: AddBroPage(code: FriendCode.normalize(name)),
+          ),
         ),
       // The app's start: the onboarding first, once.
       _ => _revealCircular(

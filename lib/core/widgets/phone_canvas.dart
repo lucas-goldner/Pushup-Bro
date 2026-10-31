@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
+import 'package:pushup_bro/core/widgets/book_fold_half.dart';
 
 /// The width full-screen designs are laid out at, at most.
 const kPhoneCanvasMaxWidth = 480.0;
@@ -14,6 +15,8 @@ const kPhoneCanvasMinHeight = 760.0;
 /// - On a wide window (the iPhone Duo's inner display, an iPad) it stays
 ///   [maxWidth] wide, centred, and the side insets it no longer touches
 ///   are dropped, so a strip at the edge doesn't pad it twice.
+/// - On a foldable open like a book it sits in the right half, off the
+///   fold.
 /// - On a short window (the iPhone Duo's cover display, an iPhone SE) the
 ///   whole design is laid out at [minHeight] and scaled down to fit, rather
 ///   than overflowing at the bottom.
@@ -30,7 +33,9 @@ class PhoneCanvas extends StatelessWidget {
   final double minHeight;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
+  Widget build(BuildContext context) => BookFoldHalf(child: _canvas());
+
+  Widget _canvas() => LayoutBuilder(
         builder: (context, constraints) {
           final width = math.min(constraints.maxWidth, maxWidth);
           final height = constraints.maxHeight;

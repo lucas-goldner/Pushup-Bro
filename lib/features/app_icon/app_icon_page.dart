@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
+import 'package:pushup_bro/core/widgets/phone_page.dart';
 import 'package:pushup_bro/features/app_icon/app_icon_choice.dart';
 import 'package:pushup_bro/features/app_icon/app_icon_service.dart';
 import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
@@ -31,7 +32,9 @@ class AppIconPage extends StatefulWidget {
   static bool get isAvailable => AppIconService.isPlatformSupported;
 
   static Future<void> open(BuildContext context) => Navigator.of(context).push(
-        CupertinoPageRoute<void>(builder: (_) => const AppIconPage()),
+        CupertinoPageRoute<void>(
+          builder: (_) => const PhonePage(child: AppIconPage()),
+        ),
       );
 
   @override
