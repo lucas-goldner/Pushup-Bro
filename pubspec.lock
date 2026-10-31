@@ -377,7 +377,7 @@ packages:
     source: hosted
     version: "0.8.0"
   duo_kit:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: duo_kit
       sha256: "290575a07cba8a08cf7cbd5aab7b2917c3bc922f6744dede17e8484146d8fd84"
