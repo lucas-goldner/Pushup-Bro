@@ -45,7 +45,20 @@ class _PageContainerState extends State<PageContainer> {
                   ignoring: !menuIsVisible,
                   child: Stack(
                     children: [
-                      widget.pageContent,
+                      // Pages of text and lists stay phone-wide on a wide
+                      // window (iPhone Duo's inner display, an iPad).
+                      if (widget.overScene || !widget._showTitle)
+                        widget.pageContent
+                      else
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              maxWidth: 640,
+                              minHeight: double.infinity,
+                            ),
+                            child: widget.pageContent,
+                          ),
+                        ),
                       Visibility(
                         visible: !menuIsVisible,
                         child: ClipRect(

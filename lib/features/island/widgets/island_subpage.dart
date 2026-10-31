@@ -19,7 +19,19 @@ class IslandSubpage extends StatelessWidget {
       backgroundColor: scheme.surfaceContainerLow,
       body: Stack(
         children: [
-          Positioned.fill(child: child),
+          // Phone-wide on a wide window (iPhone Duo's inner display).
+          Positioned.fill(
+            child: Center(
+              child: ConstrainedBox(
+                // Full height: the page fills it whatever its own size.
+                constraints: const BoxConstraints(
+                  maxWidth: 640,
+                  minHeight: double.infinity,
+                ),
+                child: child,
+              ),
+            ),
+          ),
           // Positioned, so the page under it keeps the whole screen.
           Positioned(
             top: 0,

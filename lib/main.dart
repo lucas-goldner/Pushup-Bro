@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:foldable/foldable.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/constants.dart';
@@ -105,9 +106,8 @@ class Main extends StatelessWidget {
   ) async {
     await initializeDateFormatting();
     if (!kIsWeb) {
-      await SystemChrome.setPreferredOrientations(
-        [DeviceOrientation.portraitUp],
-      );
+      // No orientation lock in code: on iPhone Duo's inner display it would
+      // turn the app on its side. Info.plist keeps phones in portrait.
       SystemChrome.setSystemUIOverlayStyle(
         SystemUiOverlayStyle.dark.copyWith(
           statusBarBrightness: Brightness.light,
@@ -304,30 +304,36 @@ class _ThemedApp extends StatelessWidget {
         appearance.resolve(MediaQuery.platformBrightnessOf(context));
     final themeData = brightness == Brightness.dark ? darkTheme : lightTheme;
 
-    return Theme(
-      data: themeData,
-      child: CupertinoApp(
-        debugShowCheckedModeBanner:
-            Flavor.getCurrentEnvironment == Environment.dev.getFlavorName(),
-        key: const Key('MainApp'),
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
-        locale: locale,
-        supportedLocales: S.delegate.supportedLocales,
-        theme: MaterialBasedCupertinoThemeData(materialTheme: themeData),
-        navigatorKey: appNavigatorKey,
-        onGenerateRoute: generateRoutes,
-        // Below Localizations: these read translated strings.
-        builder: (context, child) => WidgetSyncScope(
-          child: AppIconProGuard(
-            child: RemindersScope(
-              child: Theme(
-                data: themeData,
-                child: HeadPortraitStudio(child: child!),
+    // The iPhone Duo's fold, in MediaQuery.displayFeatures while the
+    // device is half open, so dialogs, sheets and FoldSafe controls stay off
+    // it. Nothing changes on other phones.
+    return FoldableProvider(
+      bridgeMode: DisplayFeatureBridgeMode.full,
+      child: Theme(
+        data: themeData,
+        child: CupertinoApp(
+          debugShowCheckedModeBanner:
+              Flavor.getCurrentEnvironment == Environment.dev.getFlavorName(),
+          key: const Key('MainApp'),
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          locale: locale,
+          supportedLocales: S.delegate.supportedLocales,
+          theme: MaterialBasedCupertinoThemeData(materialTheme: themeData),
+          navigatorKey: appNavigatorKey,
+          onGenerateRoute: generateRoutes,
+          // Below Localizations: these read translated strings.
+          builder: (context, child) => WidgetSyncScope(
+            child: AppIconProGuard(
+              child: RemindersScope(
+                child: Theme(
+                  data: themeData,
+                  child: HeadPortraitStudio(child: child!),
+                ),
               ),
             ),
           ),
