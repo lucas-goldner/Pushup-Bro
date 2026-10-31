@@ -147,7 +147,12 @@ class _JungleState extends State<Jungle> with OneMove {
         children: [
           Scaffold(
             backgroundColor: whiteout,
+            // Fills the Scaffold: left loose, the Stack takes the height of
+            // its tallest non-positioned child, which while the quest is
+            // still hidden is the header alone (152 pt on an iPhone). The
+            // clearing is then drawn into that strip, squashed.
             body: Stack(
+              fit: StackFit.expand,
               children: [
                 Positioned.fill(
                   child: DecoratedBox(
@@ -162,54 +167,63 @@ class _JungleState extends State<Jungle> with OneMove {
                   ),
                 ),
                 Positioned.fill(child: JungleScene(onReady: _onSceneReady)),
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    child: Row(
-                      children: [
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            boxShadow: context.cardShadow,
-                          ),
-                          child: Material(
-                            color: scheme.surface,
-                            shape: const CircleBorder(),
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              onTap: _leave,
-                              child: SizedBox(
-                                width: 48,
-                                height: 48,
-                                child: Icon(
-                                  CarbonIcons.arrow_left,
-                                  color: scheme.onSurface,
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: Row(
+                        children: [
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: context.cardShadow,
+                            ),
+                            child: Material(
+                              color: scheme.surface,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: _leave,
+                                child: SizedBox(
+                                  width: 48,
+                                  height: 48,
+                                  child: Icon(
+                                    CarbonIcons.arrow_left,
+                                    color: scheme.onSurface,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: PBSpace.md),
-                        Text(
-                          context.l10n.islandJungle,
-                          style: context.textTheme.headlineLarge?.copyWith(
-                            color: game.onGame,
-                            shadows: [
-                              Shadow(
-                                color: scheme.shadow.withValues(alpha: 0.35),
-                                blurRadius: 12,
-                              ),
-                            ],
+                          const SizedBox(width: PBSpace.md),
+                          Text(
+                            context.l10n.islandJungle,
+                            style: context.textTheme.headlineLarge?.copyWith(
+                              color: game.onGame,
+                              shadows: [
+                                Shadow(
+                                  color: scheme.shadow.withValues(alpha: 0.35),
+                                  blurRadius: 12,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 if (_questShown)
-                  SafeArea(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: SafeArea(
+                      top: false,
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         child: BlocSelector<GameInventoryCubit,
