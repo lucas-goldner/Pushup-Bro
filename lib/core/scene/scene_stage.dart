@@ -20,7 +20,9 @@ const _kAspectTolerance = 0.02;
 ///
 /// With [warmUp] the scene's shaders compile before its first frame, so it
 /// never shows half drawn; [onReady] says when the whole scene is on screen,
-/// for a loading screen to step aside.
+/// for a loading screen to step aside. It carries the size the scene was
+/// drawn at: a stage laid out short of the screen draws short full frames
+/// too, so only the caller knows whether that size is the one it wanted.
 class SceneStage extends StatefulWidget {
   const SceneStage({
     required this.populate,
@@ -35,7 +37,7 @@ class SceneStage extends StatefulWidget {
   final Camera Function(Duration elapsed) cameraBuilder;
   final void Function(double deltaSeconds)? onTick;
   final bool warmUp;
-  final VoidCallback? onReady;
+  final void Function(Size size)? onReady;
 
   @override
   State<SceneStage> createState() => _SceneStageState();
@@ -79,7 +81,7 @@ class _SceneStageState extends State<SceneStage> {
     if (_frames >= _kReadyFrames || !_drewFullFrame()) return;
     if (++_frames != _kReadyFrames) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) widget.onReady?.call();
+      if (mounted && size != null) widget.onReady?.call(size);
     });
   }
 

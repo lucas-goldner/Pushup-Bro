@@ -21,8 +21,8 @@ Color jungleMistOf(BuildContext context) =>
 class JungleScene extends StatefulWidget {
   const JungleScene({this.onReady, super.key});
 
-  /// Called once the whole clearing is drawn.
-  final VoidCallback? onReady;
+  /// Called once the whole clearing is drawn, with the size it was drawn at.
+  final void Function(Size size)? onReady;
 
   @override
   State<JungleScene> createState() => _JungleSceneState();
