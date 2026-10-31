@@ -56,6 +56,22 @@ class _JungleState extends State<Jungle> with OneMove {
     _loadTimeout = Timer(_kLoadTimeout, _onLoaded);
   }
 
+  /// The clearing is drawn, at [stage]. On an iPhone the Scaffold's body is
+  /// laid out short of the screen for a moment (the clearing then shows
+  /// squashed into the top of it) while the Scaffold itself is already full
+  /// size, so the stage's own size is what says whether the clearing is the
+  /// one the player should see. The white only lifts once it's drawn at the
+  /// screen's size; the stage says it's ready again after it's laid out there.
+  void _onSceneReady(Size stage) {
+    if (!mounted) return;
+    final screen = MediaQuery.sizeOf(context);
+    if ((stage.width - screen.width).abs() > 1 ||
+        (stage.height - screen.height).abs() > 1) {
+      return;
+    }
+    _onLoaded();
+  }
+
   /// The clearing is fully drawn: it appears out of white, then the quest
   /// pops up.
   void _onLoaded() {
@@ -126,136 +142,159 @@ class _JungleState extends State<Jungle> with OneMove {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) unawaited(_leave());
       },
-      child: Scaffold(
-        backgroundColor: whiteout,
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [game.jungleDeep, jungleMistOf(context)],
-                    stops: const [0, 0.6],
-                  ),
-                ),
-              ),
-            ),
-            Positioned.fill(child: JungleScene(onReady: _onLoaded)),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: Row(
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: context.cardShadow,
-                      ),
-                      child: Material(
-                        color: scheme.surface,
-                        shape: const CircleBorder(),
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: _leave,
-                          child: SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: Icon(
-                              CarbonIcons.arrow_left,
-                              color: scheme.onSurface,
-                            ),
-                          ),
-                        ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Scaffold(
+            backgroundColor: whiteout,
+            // Fills the Scaffold: left loose, the Stack takes the height of
+            // its tallest non-positioned child, which while the quest is
+            // still hidden is the header alone (152 pt on an iPhone). The
+            // clearing is then drawn into that strip, squashed.
+            body: Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [game.jungleDeep, jungleMistOf(context)],
+                        stops: const [0, 0.6],
                       ),
                     ),
-                    const SizedBox(width: PBSpace.md),
-                    Text(
-                      context.l10n.islandJungle,
-                      style: context.textTheme.headlineLarge?.copyWith(
-                        color: game.onGame,
-                        shadows: [
-                          Shadow(
-                            color: scheme.shadow.withValues(alpha: 0.35),
-                            blurRadius: 12,
+                  ),
+                ),
+                Positioned.fill(child: JungleScene(onReady: _onSceneReady)),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: Row(
+                        children: [
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: context.cardShadow,
+                            ),
+                            child: Material(
+                              color: scheme.surface,
+                              shape: const CircleBorder(),
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: _leave,
+                                child: SizedBox(
+                                  width: 48,
+                                  height: 48,
+                                  child: Icon(
+                                    CarbonIcons.arrow_left,
+                                    color: scheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: PBSpace.md),
+                          Text(
+                            context.l10n.islandJungle,
+                            style: context.textTheme.headlineLarge?.copyWith(
+                              color: game.onGame,
+                              shadows: [
+                                Shadow(
+                                  color: scheme.shadow.withValues(alpha: 0.35),
+                                  blurRadius: 12,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            if (_questShown)
-              SafeArea(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: BlocSelector<GameInventoryCubit, GameInventoryState,
-                        (QuestLog, TrekProgress)>(
-                      selector: (state) =>
-                          (state.inventory.quests, state.inventory.trek),
-                      builder: (context, progress) {
-                        final (log, trek) = progress;
-                        final done = log.completedOn(DateTime.now());
-                        final story = _story ?? done;
-
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _ModePicker(
-                              story: story,
-                              dailyDone: done,
-                              stage: currentStage(trek).number,
-                              onPick: (value) => setState(() => _story = value),
-                            ),
-                            const SizedBox(height: 10),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 250),
-                              child: story
-                                  ? TrekCard(
-                                      key: const ValueKey('story'),
-                                      trek: trek,
-                                      onPlay: _trek,
-                                    )
-                                  : QuestCard(
-                                      key: const ValueKey('daily'),
-                                      quest: quest,
-                                      done: done,
-                                      completedQuests: log.total,
-                                      onPlay: () => _play(quest, replay: done),
-                                    ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
                   ),
                 ),
-              ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: AnimatedOpacity(
-                  opacity: _white ? 1 : 0,
-                  duration: const Duration(milliseconds: 450),
-                  curve: Curves.easeOut,
-                  child: ColoredBox(color: whiteout),
-                ),
+                if (_questShown)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: BlocSelector<GameInventoryCubit,
+                            GameInventoryState, (QuestLog, TrekProgress)>(
+                          selector: (state) =>
+                              (state.inventory.quests, state.inventory.trek),
+                          builder: (context, progress) {
+                            final (log, trek) = progress;
+                            final done = log.completedOn(DateTime.now());
+                            final story = _story ?? done;
+
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _ModePicker(
+                                  story: story,
+                                  dailyDone: done,
+                                  stage: currentStage(trek).number,
+                                  onPick: (value) =>
+                                      setState(() => _story = value),
+                                ),
+                                const SizedBox(height: 10),
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 250),
+                                  child: story
+                                      ? TrekCard(
+                                          key: const ValueKey('story'),
+                                          trek: trek,
+                                          onPlay: _trek,
+                                        )
+                                      : QuestCard(
+                                          key: const ValueKey('daily'),
+                                          quest: quest,
+                                          done: done,
+                                          completedQuests: log.total,
+                                          onPlay: () =>
+                                              _play(quest, replay: done),
+                                        ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // The body is laid out short of the screen for a moment, so the
+          // white and Carlos sit over the Scaffold rather than inside its
+          // body: in there they'd be squeezed into the top of the screen too.
+          Positioned.fill(
+            child: IgnorePointer(
+              child: AnimatedOpacity(
+                opacity: _white ? 1 : 0,
+                duration: const Duration(milliseconds: 450),
+                curve: Curves.easeOut,
+                child: ColoredBox(color: whiteout),
               ),
             ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child:
-                      _loaded ? const SizedBox.shrink() : const JungleLoader(),
-                ),
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _loaded ? const SizedBox.shrink() : const JungleLoader(),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

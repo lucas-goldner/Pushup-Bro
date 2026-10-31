@@ -43,84 +43,89 @@ class _JungleLoaderState extends State<JungleLoader>
   Widget build(BuildContext context) {
     final game = context.gameColors;
 
+    // Scaled down rather than overflowing when the screen is laid out
+    // short for a moment.
     return Center(
-      child: AnimatedBuilder(
-        animation: _hop,
-        builder: (context, _) {
-          final t = _hop.value;
-          // Up and down once per loop; squashed a little on landing.
-          final up = math.sin(t * math.pi);
-          final squash = math.max(0, 1 - up * 4) * 0.08;
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: AnimatedBuilder(
+          animation: _hop,
+          builder: (context, _) {
+            final t = _hop.value;
+            // Up and down once per loop; squashed a little on landing.
+            final up = math.sin(t * math.pi);
+            final squash = math.max(0, 1 - up * 4) * 0.08;
 
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: _kCarlosHeight + _kHopHeight,
-                child: Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    // His shadow shrinks as he goes up.
-                    Container(
-                      width: 90 * (1 - up * 0.35),
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: game.jungleDeep.withValues(
-                          alpha: 0.18 * (1 - up * 0.5),
-                        ),
-                        borderRadius: const BorderRadius.all(
-                          Radius.elliptical(45, 6),
-                        ),
-                      ),
-                    ),
-                    Transform.translate(
-                      offset: Offset(0, -6 - up * _kHopHeight),
-                      child: Transform.rotate(
-                        angle: math.sin(t * math.pi * 2) * 0.06,
-                        child: Transform(
-                          alignment: Alignment.bottomCenter,
-                          transform: Matrix4.diagonal3Values(
-                            1 + squash,
-                            1 - squash,
-                            1,
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: _kCarlosHeight + _kHopHeight,
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      // His shadow shrinks as he goes up.
+                      Container(
+                        width: 90 * (1 - up * 0.35),
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: game.jungleDeep.withValues(
+                            alpha: 0.18 * (1 - up * 0.5),
                           ),
-                          child: Assets.images.proHeroWave
-                              .image(height: _kCarlosHeight),
+                          borderRadius: const BorderRadius.all(
+                            Radius.elliptical(45, 6),
+                          ),
                         ),
                       ),
-                    ),
+                      Transform.translate(
+                        offset: Offset(0, -6 - up * _kHopHeight),
+                        child: Transform.rotate(
+                          angle: math.sin(t * math.pi * 2) * 0.06,
+                          child: Transform(
+                            alignment: Alignment.bottomCenter,
+                            transform: Matrix4.diagonal3Values(
+                              1 + squash,
+                              1 - squash,
+                              1,
+                            ),
+                            child: Assets.images.proHeroWave
+                                .image(height: _kCarlosHeight),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < 3; i++)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Transform.translate(
+                          offset: Offset(0, -_bounce(t, i) * 10),
+                          child: Transform.rotate(
+                            angle: -0.4 + _bounce(t, i) * 0.6,
+                            child: Assets.images.island.banana
+                                .image(width: _kBananaSize),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var i = 0; i < 3; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Transform.translate(
-                        offset: Offset(0, -_bounce(t, i) * 10),
-                        child: Transform.rotate(
-                          angle: -0.4 + _bounce(t, i) * 0.6,
-                          child: Assets.images.island.banana
-                              .image(width: _kBananaSize),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Text(
-                context.l10n.jungleLoading,
-                style: context.textTheme.titleMedium?.copyWith(
-                  color: game.jungleDeep,
-                  fontWeight: FontWeight.w800,
+                const SizedBox(height: 14),
+                Text(
+                  context.l10n.jungleLoading,
+                  style: context.textTheme.titleMedium?.copyWith(
+                    color: game.jungleDeep,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
