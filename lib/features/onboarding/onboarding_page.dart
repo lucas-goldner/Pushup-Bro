@@ -10,6 +10,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/style/theme.dart';
 import 'package:pushup_bro/core/widgets/motion.dart';
+import 'package:pushup_bro/core/widgets/phone_canvas.dart';
 import 'package:pushup_bro/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:pushup_bro/features/onboarding/model/onboarding_answers.dart';
 import 'package:pushup_bro/features/onboarding/model/onboarding_step.dart';
@@ -124,21 +125,25 @@ class _OnboardingPageState extends State<OnboardingPage> {
             ),
             child: KeyedSubtree(
               key: ValueKey(_step),
-              child: _StepFrame(
-                step: _step,
-                progress: (_index + 1) / _flow.length,
-                onBack: _index == 0 ? null : _back,
-                child: BlocBuilder<OnboardingCubit, OnboardingState>(
-                  buildWhen: (a, b) => a.answers != b.answers,
-                  builder: (context, state) => MotionClock(
-                    child: _stepWidget(
-                      _step,
-                      StepArgs(
-                        answers: state.answers,
-                        answer: context.read<OnboardingCubit>().answer,
-                        next: _next,
-                        skipTo: _skipTo,
-                        finish: _finish,
+              // Phone sized on any window: centred on a wide one, scaled
+              // down on a short one.
+              child: PhoneCanvas(
+                child: _StepFrame(
+                  step: _step,
+                  progress: (_index + 1) / _flow.length,
+                  onBack: _index == 0 ? null : _back,
+                  child: BlocBuilder<OnboardingCubit, OnboardingState>(
+                    buildWhen: (a, b) => a.answers != b.answers,
+                    builder: (context, state) => MotionClock(
+                      child: _stepWidget(
+                        _step,
+                        StepArgs(
+                          answers: state.answers,
+                          answer: context.read<OnboardingCubit>().answer,
+                          next: _next,
+                          skipTo: _skipTo,
+                          finish: _finish,
+                        ),
                       ),
                     ),
                   ),

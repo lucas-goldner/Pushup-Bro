@@ -8,6 +8,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/provider/url_launch_provider.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pb_button.dart';
+import 'package:pushup_bro/core/widgets/phone_page.dart';
 import 'package:pushup_bro/features/reminders/cubit/reminders_cubit.dart';
 import 'package:pushup_bro/features/reminders/cubit/reminders_state.dart';
 import 'package:pushup_bro/features/reminders/model/reminder_settings.dart';
@@ -19,7 +20,9 @@ class RemindersPage extends StatelessWidget {
   const RemindersPage({super.key});
 
   static Future<void> open(BuildContext context) => Navigator.of(context).push(
-        CupertinoPageRoute<void>(builder: (_) => const RemindersPage()),
+        CupertinoPageRoute<void>(
+          builder: (_) => const PhonePage(child: RemindersPage()),
+        ),
       );
 
   @override

@@ -9,6 +9,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_colors.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/motion.dart';
+import 'package:pushup_bro/core/widgets/phone_canvas.dart';
 import 'package:pushup_bro/features/pro/model/pro_feature.dart';
 import 'package:pushup_bro/features/pro/model/pro_plan.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
@@ -120,63 +121,68 @@ class _ProSuccessPageState extends State<ProSuccessPage>
             children: [
               Positioned.fill(child: _Sunburst(spin: _loop)),
               const Positioned.fill(child: _Flash()),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: PBSpace.lg),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: PBSpace.lg),
-                      const SizedBox(height: 250, child: _Hero()),
-                      const Pop(at: 1.5, child: _ProPill()),
-                      const SizedBox(height: PBSpace.md),
-                      BlurWords(
-                        l.proSuccessTitle,
-                        at: 1.75,
-                        stagger: 0.12,
-                        textAlign: TextAlign.center,
-                        accent: context.gameColors.banana,
-                        style: context.textTheme.headlineLarge
-                            ?.copyWith(color: white, fontSize: 34),
-                      ),
-                      Reveal(
-                        at: 2.3,
-                        offset: 8,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: PBSpace.xs),
-                          child: Text(
-                            l.proSuccessSub,
+              Positioned.fill(
+                child: PhoneCanvas(
+                  child: SafeArea(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: PBSpace.lg),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: PBSpace.lg),
+                          const SizedBox(height: 250, child: _Hero()),
+                          const Pop(at: 1.5, child: _ProPill()),
+                          const SizedBox(height: PBSpace.md),
+                          BlurWords(
+                            l.proSuccessTitle,
+                            at: 1.75,
+                            stagger: 0.12,
                             textAlign: TextAlign.center,
-                            style: context.textTheme.bodyMedium?.copyWith(
-                              color: white.withValues(alpha: 0.88),
+                            accent: context.gameColors.banana,
+                            style: context.textTheme.headlineLarge
+                                ?.copyWith(color: white, fontSize: 34),
+                          ),
+                          Reveal(
+                            at: 2.3,
+                            offset: 8,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: PBSpace.xs),
+                              child: Text(
+                                l.proSuccessSub,
+                                textAlign: TextAlign.center,
+                                style: context.textTheme.bodyMedium?.copyWith(
+                                  color: white.withValues(alpha: 0.88),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: PBSpace.lg),
-                      const Expanded(child: _FeatureGrid()),
-                      Reveal(
-                        at: 5.3,
-                        offset: 6,
-                        child: Text(
-                          _planLine(context),
-                          textAlign: TextAlign.center,
-                          style: context.textTheme.labelMedium?.copyWith(
-                            color: white.withValues(alpha: 0.88),
+                          const SizedBox(height: PBSpace.lg),
+                          const Expanded(child: _FeatureGrid()),
+                          Reveal(
+                            at: 5.3,
+                            offset: 6,
+                            child: Text(
+                              _planLine(context),
+                              textAlign: TextAlign.center,
+                              style: context.textTheme.labelMedium?.copyWith(
+                                color: white.withValues(alpha: 0.88),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: PBSpace.md),
-                      Reveal(
-                        at: 5.5,
-                        child: _Breathing(
-                          child: _WhiteButton(
-                            label: l.proSuccessCta,
-                            onTap: () => Navigator.of(context).pop(),
+                          const SizedBox(height: PBSpace.md),
+                          Reveal(
+                            at: 5.5,
+                            child: _Breathing(
+                              child: _WhiteButton(
+                                label: l.proSuccessCta,
+                                onTap: () => Navigator.of(context).pop(),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: PBSpace.lg),
+                        ],
                       ),
-                      const SizedBox(height: PBSpace.lg),
-                    ],
+                    ),
                   ),
                 ),
               ),

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/widgets/pb_app_bar.dart';
+import 'package:pushup_bro/core/widgets/phone_page.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 
 class PageContainer extends StatefulWidget {
@@ -45,7 +46,12 @@ class _PageContainerState extends State<PageContainer> {
                   ignoring: !menuIsVisible,
                   child: Stack(
                     children: [
-                      widget.pageContent,
+                      // Pages of text and lists stay phone-wide on a wide
+                      // window (iPhone Duo's inner display, an iPad).
+                      if (widget.overScene || !widget._showTitle)
+                        widget.pageContent
+                      else
+                        PhonePage(child: widget.pageContent),
                       Visibility(
                         visible: !menuIsVisible,
                         child: ClipRect(

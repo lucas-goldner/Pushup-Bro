@@ -12,6 +12,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
+import 'package:pushup_bro/core/widgets/fold_safe.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/pro/widgets/free_days_home_chip.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
@@ -135,90 +136,97 @@ class _PushupTrackingState extends State<PushupTracking> {
                 ),
               ),
             ),
-            SafeArea(
-              child: Column(
-                children: [
-                  PushupTrackingTopRow(
-                    toggleNewsVisibility: toggleNewsVisibility,
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    height: 140,
-                    // Counting happens in the listener, which sees every
-                    // motion sample; a builder only sees the one that is
-                    // current when a frame is drawn, and would miss reps
-                    // whenever a frame takes longer than a sample.
-                    child:
-                        BlocConsumer<AirPodsTrackerCubit, AirPodsTrackerState>(
-                      listener: (context, airPodsState) {
-                        if (airPodsState.isListening && started) {
-                          context.read<PushupCubit>().listenForPushupEvents(
-                                airPodsState.currentMotionData,
-                                future.data ?? 10,
-                              );
-                        }
-                      },
-                      buildWhen: (previous, current) =>
-                          previous.isListening != current.isListening,
-                      builder: (context, airPodsState) {
-                        final camera = context
-                                .watch<SharedPreferencesCubit>()
-                                .state
-                                .trackingMode ==
-                            TrackingMode.camera;
-                        if (started && (camera || airPodsState.isListening)) {
-                          return BlocSelector<PushupCubit, PushupState, int>(
-                            selector: (state) => state.pushups.length,
-                            builder: (context, pushups) =>
-                                PushupCounter(pushups),
-                          );
-                        }
+            // On a half-open iPhone Duo, in one half, off the fold; never
+            // wider than a phone's.
+            FoldSafe(
+              maxWidth: 560,
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    PushupTrackingTopRow(
+                      toggleNewsVisibility: toggleNewsVisibility,
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 140,
+                      // Counting happens in the listener, which sees every
+                      // motion sample; a builder only sees the one that is
+                      // current when a frame is drawn, and would miss reps
+                      // whenever a frame takes longer than a sample.
+                      child: BlocConsumer<AirPodsTrackerCubit,
+                          AirPodsTrackerState>(
+                        listener: (context, airPodsState) {
+                          if (airPodsState.isListening && started) {
+                            context.read<PushupCubit>().listenForPushupEvents(
+                                  airPodsState.currentMotionData,
+                                  future.data ?? 10,
+                                );
+                          }
+                        },
+                        buildWhen: (previous, current) =>
+                            previous.isListening != current.isListening,
+                        builder: (context, airPodsState) {
+                          final camera = context
+                                  .watch<SharedPreferencesCubit>()
+                                  .state
+                                  .trackingMode ==
+                              TrackingMode.camera;
+                          if (started && (camera || airPodsState.isListening)) {
+                            return BlocSelector<PushupCubit, PushupState, int>(
+                              selector: (state) => state.pushups.length,
+                              builder: (context, pushups) =>
+                                  PushupCounter(pushups),
+                            );
+                          }
 
-                        return Align(
-                          alignment: Alignment.topCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: PBSpace.xxl,
-                            ),
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: context.colorScheme.surface,
-                                borderRadius:
-                                    BorderRadius.circular(PBRadius.lg),
-                                boxShadow: context.cardShadow,
+                          return Align(
+                            alignment: Alignment.topCenter,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: PBSpace.xxl,
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: PBSpace.xl,
-                                  vertical: PBSpace.lg,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: context.colorScheme.surface,
+                                  borderRadius:
+                                      BorderRadius.circular(PBRadius.lg),
+                                  boxShadow: context.cardShadow,
                                 ),
-                                child: Text(
-                                  started
-                                      ? context.l10n.lookingForAirpods
-                                      : context.l10n.readyCaption,
-                                  textAlign: TextAlign.center,
-                                  style: context.textTheme.bodyMedium?.copyWith(
-                                    color: context.colorScheme.onSurfaceVariant,
-                                    height: 1.4,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: PBSpace.xl,
+                                    vertical: PBSpace.lg,
+                                  ),
+                                  child: Text(
+                                    started
+                                        ? context.l10n.lookingForAirpods
+                                        : context.l10n.readyCaption,
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        context.textTheme.bodyMedium?.copyWith(
+                                      color:
+                                          context.colorScheme.onSurfaceVariant,
+                                      height: 1.4,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  if (!started) ...[
-                    const TrackingModePicker(),
-                    const SizedBox(height: 14),
+                    const Spacer(),
+                    if (!started) ...[
+                      const TrackingModePicker(),
+                      const SizedBox(height: 14),
+                    ],
+                    PushupTrackingBottomRow(
+                      toggleListeningUpdates: toggleListeningUpdates,
+                    ),
+                    const SizedBox(height: 32),
                   ],
-                  PushupTrackingBottomRow(
-                    toggleListeningUpdates: toggleListeningUpdates,
-                  ),
-                  const SizedBox(height: 32),
-                ],
+                ),
               ),
             ),
             if (started)

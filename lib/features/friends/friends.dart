@@ -71,9 +71,16 @@ class _BrosList extends StatelessWidget {
                         ),
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => openAddBro(context),
-                      child: Text(context.l10n.brosAddByCode),
+                    // Shrinks rather than overflowing where the words are
+                    // long (German, a narrow window).
+                    Flexible(
+                      child: TextButton(
+                        onPressed: () => openAddBro(context),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(context.l10n.brosAddByCode),
+                        ),
+                      ),
                     ),
                   ],
                 ),

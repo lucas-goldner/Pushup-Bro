@@ -186,27 +186,34 @@ class _Bubble extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(width: 10),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: context.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: scheme.onSurface,
-                          height: 1.15,
-                        ),
-                      ),
-                      if (subtitle != null)
+                  // Ellipsized rather than overflowing on a narrow window.
+                  Flexible(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          subtitle,
-                          style: context.textTheme.labelMedium?.copyWith(
-                            color: scheme.onSurfaceVariant,
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: scheme.onSurface,
                             height: 1.15,
                           ),
                         ),
-                    ],
+                        if (subtitle != null)
+                          Text(
+                            subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.textTheme.labelMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                              height: 1.15,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                   if (waiting > 0) ...[
                     const SizedBox(width: 10),
