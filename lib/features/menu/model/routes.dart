@@ -36,7 +36,10 @@ import 'package:pushup_bro/features/wardrobe/wardrobe.dart';
 /// (a tapped push notification).
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey();
 
-Route<CupertinoPageRoute<Widget>> generateRoutes(
+/// A route's type argument is what it may be popped with, not what builds
+/// it, so these are left open: the quest closes with whether it was won,
+/// and the sheets close with a choice of their own.
+Route<dynamic> generateRoutes(
   RouteSettings settings,
 ) =>
     switch (settings.name) {
@@ -228,7 +231,7 @@ Route<CupertinoPageRoute<Widget>> generateRoutes(
         ),
     };
 
-Route<CupertinoPageRoute<Widget>> navigateToPushupTracking(
+Route<dynamic> navigateToPushupTracking(
   BuildContext context,
 ) =>
     _revealCircular(
@@ -242,7 +245,7 @@ Route<CupertinoPageRoute<Widget>> navigateToPushupTracking(
       ),
     );
 
-Route<CupertinoPageRoute<Widget>> _revealCircular(
+Route<dynamic> _revealCircular(
   BuildContext? context,
   Widget widget,
 ) {
