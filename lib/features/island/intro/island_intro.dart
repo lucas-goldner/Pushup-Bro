@@ -280,7 +280,7 @@ class _IslandIntroState extends State<IslandIntro>
         if (beat.card != null) {
           // Establishing: the whole village round the fire.
           return (
-            vm.Vector3(drift, 2.4, 7.2 - _setTime * 0.25),
+            vm.Vector3(drift, 2.4, 7.2 - math.min(_setTime, 3) * 0.25),
             vm.Vector3(0, 0.6, -1.2),
           );
         }
@@ -326,7 +326,7 @@ class _IslandIntroState extends State<IslandIntro>
           );
         }
         // Both of them in the frame, leaning towards whoever speaks.
-        final mid = (IntroWorld.carlosBeach + IntroWorld.cocoBeach) * 0.5;
+        final mid = IntroWorld.carlosBeach * 0.7 + IntroWorld.cocoBeach * 0.3;
         final speaker = beat.line?.$1;
         final lean = speaker == Character.coco ? 0.2 : -0.2;
         return (
