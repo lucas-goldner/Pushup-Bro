@@ -9,6 +9,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/website_links.dart';
 import 'package:pushup_bro/core/provider/url_launch_provider.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
+import 'package:pushup_bro/core/widgets/phone_canvas.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
 import 'package:pushup_bro/features/pro/model/pro_feature.dart';
@@ -207,88 +208,90 @@ class _PaywallPageState extends State<PaywallPage>
 
     return Material(
       color: scheme.surfaceContainerLow,
-      child: SafeArea(
-        bottom: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            PBSpace.sm,
-            20,
-            MediaQuery.paddingOf(context).bottom + 28,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _in(0, _topBar(context, state, now)),
-              const SizedBox(height: PBSpace.lg),
-              _in(
-                0.1,
-                PaywallStage(
-                  scene: _feature,
-                  progress: _scene,
-                  loop: _loop,
-                  onTap: () {
-                    GameAudio.instance.play(Sfx.tap);
-                    _show(_next);
-                  },
+      child: PhoneCanvas(
+        child: SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              PBSpace.sm,
+              20,
+              MediaQuery.paddingOf(context).bottom + 28,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _in(0, _topBar(context, state, now)),
+                const SizedBox(height: PBSpace.lg),
+                _in(
+                  0.1,
+                  PaywallStage(
+                    scene: _feature,
+                    progress: _scene,
+                    loop: _loop,
+                    onTap: () {
+                      GameAudio.instance.play(Sfx.tap);
+                      _show(_next);
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: PBSpace.lg),
-              _in(0.25, _headline(context, trial: trial)),
-              const SizedBox(height: PBSpace.lg),
-              _in(
-                0.4,
-                PaywallFeatures(
-                  current: _feature,
-                  onSelected: (feature) {
-                    GameAudio.instance.play(Sfx.tap);
-                    _show(feature);
-                  },
+                const SizedBox(height: PBSpace.lg),
+                _in(0.25, _headline(context, trial: trial)),
+                const SizedBox(height: PBSpace.lg),
+                _in(
+                  0.4,
+                  PaywallFeatures(
+                    current: _feature,
+                    onSelected: (feature) {
+                      GameAudio.instance.play(Sfx.tap);
+                      _show(feature);
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: PBSpace.lg),
-              _in(
-                0.55,
-                PaywallPlans(
-                  plans: plans,
-                  selected: plan.kind,
-                  onSelected: (kind) => setState(() {
-                    _selected = kind;
-                    _error = null;
-                  }),
+                const SizedBox(height: PBSpace.lg),
+                _in(
+                  0.55,
+                  PaywallPlans(
+                    plans: plans,
+                    selected: plan.kind,
+                    onSelected: (kind) => setState(() {
+                      _selected = kind;
+                      _error = null;
+                    }),
+                  ),
                 ),
-              ),
-              const SizedBox(height: PBSpace.lg),
-              _in(0.65, _price(context, plan)),
-              const SizedBox(height: PBSpace.lg),
-              _cta(context, plan, trial: trial),
-              AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                child: _error == null
-                    ? const SizedBox(width: double.infinity)
-                    : Padding(
-                        padding: const EdgeInsets.only(top: PBSpace.md),
-                        child: Text(
-                          _error!,
-                          textAlign: TextAlign.center,
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: context.gameColors.red,
+                const SizedBox(height: PBSpace.lg),
+                _in(0.65, _price(context, plan)),
+                const SizedBox(height: PBSpace.lg),
+                _cta(context, plan, trial: trial),
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  child: _error == null
+                      ? const SizedBox(width: double.infinity)
+                      : Padding(
+                          padding: const EdgeInsets.only(top: PBSpace.md),
+                          child: Text(
+                            _error!,
+                            textAlign: TextAlign.center,
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              color: context.gameColors.red,
+                            ),
                           ),
                         ),
-                      ),
-              ),
-              const SizedBox(height: PBSpace.lg),
-              _assurance(context, plan),
-              const SizedBox(height: PBSpace.md),
-              _links(context),
-              const SizedBox(height: PBSpace.md),
-              Text(
-                plan.terms(context),
-                textAlign: TextAlign.center,
-                style: context.textTheme.bodySmall
-                    ?.copyWith(fontSize: 11, height: 1.5),
-              ),
-            ],
+                ),
+                const SizedBox(height: PBSpace.lg),
+                _assurance(context, plan),
+                const SizedBox(height: PBSpace.md),
+                _links(context),
+                const SizedBox(height: PBSpace.md),
+                Text(
+                  plan.terms(context),
+                  textAlign: TextAlign.center,
+                  style: context.textTheme.bodySmall
+                      ?.copyWith(fontSize: 11, height: 1.5),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -455,8 +458,11 @@ class _PaywallPageState extends State<PaywallPage>
           child: ExcludeSemantics(child: Text('·', style: style)),
         );
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    // Wraps onto two lines where the words are long (German, a narrow
+    // window).
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         link(context.l10n.proRestore, _restore),
         dot(),

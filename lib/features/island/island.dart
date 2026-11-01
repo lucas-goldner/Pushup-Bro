@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/widgets/fold_safe.dart';
 import 'package:pushup_bro/features/island/model/daily_bananas.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
 import 'package:pushup_bro/features/island/share/island_share_page.dart';
@@ -151,39 +152,48 @@ class _IslandState extends State<Island> {
             ),
           ),
           if (locked ? !_journeying : _hudVisible) ...[
-            IslandTopBar(
-              openQuest: (quest) => _guarded(
-                ProLockPlace.jungle,
-                () => openQuest(quest),
+            FoldSafe(
+              anchor: const Offset(double.maxFinite, 0),
+              alignment: Alignment.topCenter,
+              child: IslandTopBar(
+                openQuest: (quest) => _guarded(
+                  ProLockPlace.jungle,
+                  () => openQuest(quest),
+                ),
+                locked: locked,
+                onJustLooking: () => showPaywall(context),
               ),
-              locked: locked,
-              onJustLooking: () => showPaywall(context),
             ),
-            SafeArea(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      // The bros, free for everyone like the rest of the
-                      // social side.
-                      BrosBubble(
-                        onTap: () =>
-                            Navigator.of(context).pushNamed(Island.todayRoute),
-                      ),
-                      const SizedBox(height: 12),
-                      IslandDock(
-                        locked: locked,
-                        onShop: () => _guarded(ProLockPlace.shop, openMenu),
-                        onCarlos: () =>
-                            _guarded(ProLockPlace.carlos, openWardrobe),
-                        onJungle: () =>
-                            _guarded(ProLockPlace.jungle, _goToJungle),
-                      ),
-                    ],
+            // On a half-open iPhone Duo, in the half by the thumb and off
+            // the fold; never wider than a phone's.
+            FoldSafe(
+              maxWidth: 560,
+              child: SafeArea(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        // The bros, free for everyone like the rest of the
+                        // social side.
+                        BrosBubble(
+                          onTap: () => Navigator.of(context)
+                              .pushNamed(Island.todayRoute),
+                        ),
+                        const SizedBox(height: 12),
+                        IslandDock(
+                          locked: locked,
+                          onShop: () => _guarded(ProLockPlace.shop, openMenu),
+                          onCarlos: () =>
+                              _guarded(ProLockPlace.carlos, openWardrobe),
+                          onJungle: () =>
+                              _guarded(ProLockPlace.jungle, _goToJungle),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
