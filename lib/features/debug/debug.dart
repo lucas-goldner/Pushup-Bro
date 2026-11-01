@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
+import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/pushup.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
@@ -51,6 +52,11 @@ class _DebugState extends State<Debug> {
   }
 
   Future<void> wiperUser() => context.read<DBCubit>().wipeUser();
+
+  /// Shows the island's intro film again on the next visit.
+  Future<void> replayIslandIntro() => context
+      .read<SharedPreferencesCubit>()
+      .setFirstTimeIslandVisited(isFirstVisit: true);
 
   void add100Bananas() => context.read<GameInventoryCubit>().updateInventory(
         context.read<GameInventoryCubit>().state.inventory.copyWith(
@@ -102,6 +108,12 @@ class _DebugState extends State<Debug> {
               PBButton(
                 'Add 100 Bananas',
                 callback: add100Bananas,
+                expanded: true,
+              ),
+              const SizedBox(height: 12),
+              PBButton(
+                'Replay island intro',
+                callback: replayIslandIntro,
                 expanded: true,
               ),
               const SizedBox(height: 32),

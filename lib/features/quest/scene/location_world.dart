@@ -82,6 +82,7 @@ Actor actorFor(Character character) => switch (character) {
       Character.shifty => Chameleon(const Color(0xFF8B5FD9)),
       Character.hiss => Snake(const Color(0xFFC2457A)),
       Character.komo => KingKomo(),
+      Character.gus => GorillaActor(look: kGusLook),
     };
 
 /// A quest location in 3D: its scenery, Carlos and the quest's guest.
