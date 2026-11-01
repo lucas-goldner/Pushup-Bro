@@ -16,7 +16,10 @@ enum Character {
   snap('🐊', Color(0xFF2F8443)),
   shifty('🦎', Color(0xFF8B5FD9)),
   hiss('🐍', Color(0xFFC2457A)),
-  komo('👑', Color(0xFF2FA37A));
+  komo('👑', Color(0xFF2FA37A)),
+
+  /// Grandpa Gus, chief of Carlos's tribe, in the island intro.
+  gus('🦍', Color(0xFF6E7487));
 
   const Character(this.emoji, this.color);
 
@@ -36,6 +39,7 @@ enum Character {
         shifty => l.charShifty,
         hiss => l.charHiss,
         komo => l.charKomo,
+        gus => l.charGus,
       };
 }
 
