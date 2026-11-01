@@ -21,7 +21,6 @@ import 'package:pushup_bro/features/social/widgets/social_widgets.dart';
 /// pushups and streak, done or ready for a nudge.
 class Friends extends StatelessWidget {
   const Friends({this.topPadding = 72, super.key});
-  static const routeName = '/friends';
 
   /// Room left above the list for what sits on top of it.
   final double topPadding;

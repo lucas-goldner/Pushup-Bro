@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pushup_bro/features/progress/model/level_scalings.dart';
+import 'package:pushup_bro/core/model/level_scalings.dart';
 
 void main() {
   final levelScaler = LevelScaler();

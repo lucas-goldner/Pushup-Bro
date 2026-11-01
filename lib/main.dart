@@ -11,10 +11,7 @@ import 'package:foldable/foldable.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/constants.dart';
-import 'package:pushup_bro/core/cubit/active_effects_cubit.dart';
-import 'package:pushup_bro/core/cubit/booster_item_cubit.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
-import 'package:pushup_bro/core/cubit/feature_switch_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_state.dart';
@@ -34,7 +31,6 @@ import 'package:pushup_bro/features/menu/model/routes.dart';
 import 'package:pushup_bro/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:pushup_bro/features/pro/cubit/pro_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
-import 'package:pushup_bro/features/pushup_tracking/cubit/news_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/provider/airpods_motion_provider.dart';
 import 'package:pushup_bro/features/reminders/cubit/reminders_cubit.dart';
@@ -185,10 +181,6 @@ class Main extends StatelessWidget {
     final sharedPreferencesCubit =
         SharedPreferencesCubit(sharedPreferencesProvider);
     final dbCubit = DBCubit(dbProvider);
-    final activeEffectsCubit = ActiveEffectsCubit();
-    final boosterItemsCubit = BoosterItemCubit();
-    final newsCubit = NewsCubit();
-    final featureSwitchCubit = FeatureSwitchCubit();
     final gameInventoryCubit = GameInventoryCubit(dbProvider);
     final proCubit = ProCubit(sharedPreferencesProvider);
     final remindersCubit =
@@ -232,18 +224,6 @@ class Main extends StatelessWidget {
         ),
         BlocProvider<DBCubit>(
           create: (context) => dbCubit,
-        ),
-        BlocProvider<ActiveEffectsCubit>(
-          create: (context) => activeEffectsCubit,
-        ),
-        BlocProvider<BoosterItemCubit>(
-          create: (context) => boosterItemsCubit,
-        ),
-        BlocProvider<NewsCubit>(
-          create: (context) => newsCubit,
-        ),
-        BlocProvider<FeatureSwitchCubit>(
-          create: (context) => featureSwitchCubit,
         ),
         BlocProvider<GameInventoryCubit>(
           create: (context) => gameInventoryCubit,

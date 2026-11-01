@@ -5,23 +5,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
-import 'package:pushup_bro/core/cubit/active_effects_cubit.dart';
-import 'package:pushup_bro/core/cubit/active_effects_state.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/cubit/db_state.dart';
-import 'package:pushup_bro/core/cubit/feature_switch_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/extensions/int_ext.dart';
-import 'package:pushup_bro/core/model/active_effects.dart';
-import 'package:pushup_bro/core/model/feature_variants.dart';
+import 'package:pushup_bro/core/model/level_scalings.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/model/user.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
-import 'package:pushup_bro/features/progress/model/level_scalings.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/finished_pushup_sheet/finished_set_stats_item.dart';
 import 'package:pushup_bro/features/share/model/recap.dart';
 import 'package:pushup_bro/features/share/widgets/share_recap_button.dart';
@@ -52,16 +47,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
       vsync: this,
     );
 
-    // `clearEffects` leaves the cubit activated with no effects after every
-    // saved set, so an empty list has to fall back to the plain 1x rate.
-    final activeEffects =
-        BlocProvider.of<ActiveEffectsCubit>(context).state.effects;
-    final activeEffectsFactors = activeEffects.isEmpty
-        ? 1
-        : activeEffects
-            .map((effect) => effect.factor)
-            .reduce((value, element) => value + element);
-    amountOfXP = widget.pushupSet.pushups.length * 2 * activeEffectsFactors;
+    amountOfXP = widget.pushupSet.pushups.length * 2;
     final user = BlocProvider.of<DBCubit>(context).state.user;
     level = user.level;
     final initialScaling = LevelScaler().getCurrentExperienceRelativeToLevel(
@@ -164,7 +150,6 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
     final sharedPrefsCubit = BlocProvider.of<SharedPreferencesCubit>(context);
     final dbCubit = BlocProvider.of<DBCubit>(context);
     final gameInventoryCubit = BlocProvider.of<GameInventoryCubit>(context);
-    final activeEffectsCubit = context.read<ActiveEffectsCubit>();
     final finished = await sharedPrefsCubit.getFirstPushupCompleted();
     final leftOverXP = (LevelScaler().getLevelScaling(level) * _animation.value)
         .toInt()
@@ -186,7 +171,6 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
       ),
     );
     await savePushupSet();
-    activeEffectsCubit.clearEffects();
     navigator.pop(finished);
   }
 
@@ -225,8 +209,6 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
   @override
   Widget build(BuildContext context) {
     final localized = context.l10n;
-    final featureVariant =
-        context.read<FeatureSwitchCubit>().state.featureVariant;
     final pushups = widget.pushupSet.pushups.length;
 
     return BlocSelector<DBCubit, DBState, User>(
@@ -323,10 +305,7 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
                       ],
                     ),
                     const SizedBox(height: 22),
-                    switch (featureVariant) {
-                      FeatureVariants.hookmodel => _levelProgress(),
-                      FeatureVariants.gamification => _bananas(pushups),
-                    },
+                    _bananas(pushups),
                     const SizedBox(height: 22),
                     Center(
                       child: PillButton(
@@ -403,58 +382,6 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
                 fontSize: 26,
                 color: context.gameColors.orange,
               ),
-            ),
-          ],
-        ),
-      );
-
-  Widget _levelProgress() => SheetCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Text(
-                  context.l10n.progress,
-                  style: context.textTheme.titleMedium,
-                ),
-                const Spacer(),
-                SheetTag(context.l10n.level(level), icon: CarbonIcons.trophy),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(PBRadius.pill),
-              child: LinearProgressIndicator(
-                value: _animation.value,
-                minHeight: 12,
-                backgroundColor: context.colorScheme.surfaceContainerHigh,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  context.colorScheme.secondary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                context.l10n.pointsReceived(amountOfXP),
-                style: context.textTheme.titleSmall,
-              ),
-            ),
-            BlocBuilder<ActiveEffectsCubit, ActiveEffectsState>(
-              builder: (context, state) => state is ActiveEffectsStateActivated
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        for (final effect in state.effects)
-                          Text(
-                            effect.getLocalizedWithFactor(context),
-                            style: context.textTheme.bodySmall,
-                          ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
             ),
           ],
         ),

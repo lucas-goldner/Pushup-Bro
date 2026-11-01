@@ -19,15 +19,12 @@ import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/airpods_tracker_state.dart';
-import 'package:pushup_bro/features/pushup_tracking/cubit/news_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_state.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/finished_pushup_sheet/finished_set_bottom_sheet.dart';
-import 'package:pushup_bro/features/pushup_tracking/widgets/news_banner/news_banner.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_counter.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_stage.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_tracking_bottom_row.dart';
-import 'package:pushup_bro/features/pushup_tracking/widgets/pushup_tracking_top_row.dart';
 import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker.dart';
 import 'package:pushup_bro/features/social/account/upgrade_sheet.dart';
 import 'package:pushup_bro/generated/assets.gen.dart';
@@ -44,7 +41,6 @@ class PushupTracking extends StatefulWidget {
 class _PushupTrackingState extends State<PushupTracking> {
   bool finished = false;
   bool started = false;
-  bool newsVisible = true;
 
   void toggleListeningUpdates() {
     final airpodsCubit = BlocProvider.of<AirPodsTrackerCubit>(context);
@@ -62,9 +58,6 @@ class _PushupTrackingState extends State<PushupTracking> {
       // The camera counts on its own; only AirPods need their stream.
       final mode = context.read<SharedPreferencesCubit>().state.trackingMode;
       if (mode == TrackingMode.airpods) airpodsCubit.getAirPodsMotionData();
-      if (newsVisible) {
-        setState(() => newsVisible = false);
-      }
       setState(() {
         finished = false;
         started = true;
@@ -72,40 +65,14 @@ class _PushupTrackingState extends State<PushupTracking> {
     }
   }
 
-  Future<void> openBottomSheet(PushupSet pushups) async {
-    // final navigator = Navigator.of(context);
-    // final firstPushupCompleted =
-    await showCupertinoModalBottomSheet<bool>(
-      context: context,
-      useRootNavigator: true,
-      enableDrag: false,
-      isDismissible: false,
-      builder: (context) => FinishedSetBottomSheet(pushups),
-    );
-
-    // ?? false;
-    // TODO(Implement-onboarding): Reenable onboarding and finish feature
-    // if (!firstPushupCompleted) {
-    //   await navigator.pushNamed(
-    //     Onboarding.routeName,
-    //     arguments: PushupSet([], 0),
-    //   );
-    // }
-  }
-
-  void toggleNewsVisibility() => setState(() => newsVisible = !newsVisible);
-
-  @override
-  void initState() {
-    super.initState();
-    newsVisible = false;
-    unawaited(context.read<NewsCubit>().getNews());
-  }
-
-  @override
-  void didUpdateWidget(covariant PushupTracking oldWidget) {
-    super.didUpdateWidget(oldWidget);
-  }
+  Future<void> openBottomSheet(PushupSet pushups) =>
+      showCupertinoModalBottomSheet<bool>(
+        context: context,
+        useRootNavigator: true,
+        enableDrag: false,
+        isDismissible: false,
+        builder: (context) => FinishedSetBottomSheet(pushups),
+      );
 
   @override
   Widget build(BuildContext context) => FutureBuilder(
@@ -143,10 +110,8 @@ class _PushupTrackingState extends State<PushupTracking> {
               child: SafeArea(
                 child: Column(
                   children: [
-                    PushupTrackingTopRow(
-                      toggleNewsVisibility: toggleNewsVisibility,
-                    ),
-                    const SizedBox(height: 24),
+                    // Where the old top row was, so the counter stays put.
+                    const SizedBox(height: 60),
                     SizedBox(
                       height: 140,
                       // Counting happens in the listener, which sees every
@@ -250,7 +215,6 @@ class _PushupTrackingState extends State<PushupTracking> {
                       )
                     : const SizedBox.shrink(),
               ),
-            NewsBanner(newsVisible: newsVisible),
             if (finished)
               IgnorePointer(
                 child: RiveWidgetBuilder(

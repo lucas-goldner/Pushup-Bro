@@ -4,9 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pushup_bro/core/cubit/active_effects_cubit.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
-import 'package:pushup_bro/core/cubit/feature_switch_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
@@ -87,21 +85,17 @@ PushupSet buildPushupSet(int pushups) => PushupSet(
 
 void main() {
   late _InMemoryDBProvider dbProvider;
-  late ActiveEffectsCubit activeEffectsCubit;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     dbProvider = _InMemoryDBProvider();
-    activeEffectsCubit = ActiveEffectsCubit();
   });
 
   /// Mirrors the real app shell in lib/main.dart: a dark `CupertinoApp`
   /// under the app's Material [lightTheme].
   Widget wrapInApp(Widget child) => MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => activeEffectsCubit),
           BlocProvider(create: (_) => DBCubit(dbProvider)),
-          BlocProvider(create: (_) => FeatureSwitchCubit()),
           BlocProvider(create: (_) => GameInventoryCubit(dbProvider)),
           BlocProvider(
             create: (_) => SharedPreferencesCubit(SharedPreferencesProvider()),
@@ -160,21 +154,6 @@ void main() {
         contrastRatio(textColor, sheetMaterial(tester).color!),
         greaterThan(4.5),
       );
-    });
-
-    testWidgets('opens after a previous set cleared the active effects',
-        (tester) async {
-      // Saving a set calls `clearEffects`, which leaves the cubit activated
-      // with an empty list; the next sheet used to throw on `reduce`.
-      activeEffectsCubit.clearEffects();
-
-      await tester.pumpWidget(
-        wrapInApp(FinishedSetBottomSheet(buildPushupSet(3))),
-      );
-      await tester.pumpAndSettle(const Duration(seconds: 3));
-
-      expect(tester.takeException(), isNull);
-      expect(find.text('Congrats!'), findsOneWidget);
     });
 
     testWidgets('saving a set earns one banana per pushup', (tester) async {

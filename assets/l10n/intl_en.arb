@@ -1654,5 +1654,113 @@
         "type": "int"
       }
     }
-  }
+  },
+  "statsPushupsSoFar": "pushups so far",
+  "statsSince": "since {date}",
+  "@statsSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "statsSets": "Sets",
+  "statsActiveDays": "Days",
+  "statsTime": "Time",
+  "statsKcal": "kcal",
+  "statsMinutes": "{minutes} min",
+  "@statsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "statsHours": "{hours} h {minutes} min",
+  "@statsHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "statsStreak": "Streak",
+  "statsBestStreak": "Best streak",
+  "statsDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@statsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsActivity": "Activity",
+  "statsWeek": "Week",
+  "statsMonth": "Month",
+  "statsYear": "Year",
+  "statsLast7Days": "Last 7 days",
+  "statsLast30Days": "Last 30 days",
+  "statsLast12Months": "Last 12 months",
+  "statsPushups": "{count, plural, =1{1 pushup} other{{count} pushups}}",
+  "@statsPushups": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsNoPushupsYet": "No pushups here yet",
+  "statsConsistency": "Consistency",
+  "statsWeeks": "Last {weeks} weeks",
+  "@statsWeeks": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "statsLess": "Less",
+  "statsMore": "More",
+  "statsRecords": "Personal bests",
+  "statsBestSet": "Most in one set",
+  "statsBestDay": "Best day",
+  "statsFastest": "Fastest pace",
+  "statsPerMinute": "{count} / min",
+  "@statsPerMinute": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "statsAverageSet": "Average set",
+  "statsRhythm": "Your rhythm",
+  "statsFavouriteDay": "Favourite day",
+  "statsFavouriteTime": "Favourite time",
+  "statsMorning": "Morning",
+  "statsAfternoon": "Afternoon",
+  "statsEvening": "Evening",
+  "statsNight": "Night",
+  "statsUsualEffort": "Usually feels",
+  "statsGame": "Game",
+  "statsBananas": "Bananas",
+  "statsBuildings": "Buildings",
+  "statsMonkeys": "Monkeys",
+  "statsQuests": "Quests done",
+  "statsQuestsFound": "{have} of {of} found",
+  "@statsQuestsFound": {
+    "placeholders": {
+      "have": {
+        "type": "int"
+      },
+      "of": {
+        "type": "int"
+      }
+    }
+  },
+  "statsTrekStages": "Stages cleared",
+  "statsEmpty": "Finish your first set and your stats fill up here."
 }

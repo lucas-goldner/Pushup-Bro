@@ -33,6 +33,7 @@ import 'package:pushup_bro/features/reminders/cubit/reminders_cubit.dart';
 import 'package:pushup_bro/features/reminders/reminders_page.dart';
 import 'package:pushup_bro/features/social/cubit/account_cubit.dart';
 import 'package:pushup_bro/features/social/data/demo_social_backend.dart';
+import 'package:pushup_bro/features/stats/stats_page.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -158,6 +159,7 @@ void main() {
     'bros hub': () => const BrosHub(),
     'bros hub, bros tab': () => const BrosHub(initialTab: 1),
     'island controls': () => const _IslandControls(),
+    'stats': () => const PhonePage(child: StatsPage()),
   };
 
   for (final pose in _poses) {

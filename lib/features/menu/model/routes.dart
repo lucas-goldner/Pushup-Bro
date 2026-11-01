@@ -6,18 +6,15 @@ import 'package:pushup_bro/core/widgets/phone_page.dart';
 import 'package:pushup_bro/features/debug/debug.dart';
 import 'package:pushup_bro/features/friends/add_bro_page.dart';
 import 'package:pushup_bro/features/friends/bros_added_page.dart';
-import 'package:pushup_bro/features/friends/friends.dart';
 import 'package:pushup_bro/features/island/island.dart';
 import 'package:pushup_bro/features/island/share/island_share_page.dart';
 import 'package:pushup_bro/features/island/visit/island_visit_page.dart';
 import 'package:pushup_bro/features/island/widgets/bros_hub.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
-import 'package:pushup_bro/features/leaderboard/leaderboard.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 import 'package:pushup_bro/features/menu/widgets/page_container.dart';
 import 'package:pushup_bro/features/onboarding/onboarding_gate.dart';
-import 'package:pushup_bro/features/progress/progress.dart';
 import 'package:pushup_bro/features/pushup_tracking/pushup_tracking.dart';
 import 'package:pushup_bro/features/quest/quest_page.dart';
 import 'package:pushup_bro/features/settings/settings.dart';
@@ -28,6 +25,7 @@ import 'package:pushup_bro/features/social/account/account_page.dart';
 import 'package:pushup_bro/features/social/account/restore_page.dart';
 import 'package:pushup_bro/features/social/domain/friend_code.dart';
 import 'package:pushup_bro/features/social/model/bro_profile.dart';
+import 'package:pushup_bro/features/stats/stats_page.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/trek_map_page.dart';
 import 'package:pushup_bro/features/trek/trek_stage_page.dart';
@@ -55,30 +53,13 @@ Route<dynamic> generateRoutes(
             ),
           ),
         ),
-      Progress.routeName => _revealCircular(
+      StatsPage.routeName => _revealCircular(
           settings.arguments as BuildContext?,
           const MusicScope(
             track: MusicTrack.home,
             child: PageContainer(
-              Progress(),
-              menuTab: MenuTabInfo.progress,
-            ),
-          ),
-        ),
-      Friends.routeName => _revealCircular(
-          settings.arguments as BuildContext?,
-          const PageContainer(
-            Friends(),
-            menuTab: MenuTabInfo.friends,
-          ),
-        ),
-      Leaderboard.routeName => _revealCircular(
-          settings.arguments as BuildContext?,
-          const MusicScope(
-            track: MusicTrack.home,
-            child: PageContainer(
-              Leaderboard(),
-              menuTab: MenuTabInfo.leaderbaord,
+              StatsPage(),
+              menuTab: MenuTabInfo.stats,
             ),
           ),
         ),

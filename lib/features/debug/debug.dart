@@ -2,15 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pushup_bro/core/cubit/booster_item_cubit.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
-import 'package:pushup_bro/core/cubit/feature_switch_cubit.dart';
-import 'package:pushup_bro/core/cubit/feature_switch_state.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
-import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
-import 'package:pushup_bro/core/model/booster_items.dart';
-import 'package:pushup_bro/core/model/feature_variants.dart';
 import 'package:pushup_bro/core/model/pushup.dart';
 import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
@@ -29,19 +23,19 @@ class Debug extends StatefulWidget {
 }
 
 class _DebugState extends State<Debug> {
+  /// A set of 5 to 44 pushups, one every 2 seconds, at a random time in
+  /// the last 60 days: something for the stats page to show.
   Future<void> addPushups() async {
+    final random = math.Random();
+    final start = DateTime.now().subtract(
+      Duration(minutes: random.nextInt(60 * 24 * 60)),
+    );
     final pushupSet = PushupSet(
       List<Pushup>.generate(
-        math.Random().nextInt(40),
-        (index) => Pushup(
-          completedAt: DateTime(
-            2024,
-            math.Random().nextInt(12),
-            math.Random().nextInt(30),
-          ),
-        ),
+        5 + random.nextInt(40),
+        (index) => Pushup(completedAt: start.add(Duration(seconds: 2 * index))),
       ),
-      math.Random().nextInt(5),
+      1 + random.nextInt(5),
     );
 
     await context.read<DBCubit>().writeNewPushupsetToDB(pushupSet);
@@ -58,16 +52,6 @@ class _DebugState extends State<Debug> {
 
   Future<void> wiperUser() => context.read<DBCubit>().wipeUser();
 
-  void addBoosterItem() => context.read<BoosterItemCubit>().addItems(
-        item: BoosterItems.doublePoints,
-        amount: 1,
-      );
-
-  void addFriendShareItem() => context.read<BoosterItemCubit>().addItems(
-        item: BoosterItems.friendBoost,
-        amount: 1,
-      );
-
   void add100Bananas() => context.read<GameInventoryCubit>().updateInventory(
         context.read<GameInventoryCubit>().state.inventory.copyWith(
               bananas:
@@ -75,20 +59,6 @@ class _DebugState extends State<Debug> {
                       100,
             ),
       );
-
-  void switchToHookModel() => context.read<FeatureSwitchCubit>().switchFeature(
-        FeatureVariants.hookmodel,
-      );
-
-  Future<void> switchToGamified() async {
-    final sharedPrefsCubit = context.read<SharedPreferencesCubit>();
-    final featuredSwitchCubit = context.read<FeatureSwitchCubit>();
-
-    await sharedPrefsCubit.setFirstTimeIslandVisited(isFirstVisit: true);
-    featuredSwitchCubit.switchFeature(
-      FeatureVariants.gamification,
-    );
-  }
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -102,31 +72,7 @@ class _DebugState extends State<Debug> {
             children: [
               const SizedBox(height: 64),
               Text(
-                'General App Debug',
-                style: context.textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 12),
-              BlocBuilder<FeatureSwitchCubit, FeatureSwitchState>(
-                builder: (context, state) => Text(
-                  'Current app ${state.featureVariant.name}',
-                  style: context.textTheme.bodySmall,
-                ),
-              ),
-              const SizedBox(height: 12),
-              PBButton(
-                'Switch to hook model',
-                callback: switchToHookModel,
-                expanded: true,
-              ),
-              const SizedBox(height: 12),
-              PBButton(
-                'Switch to gamified app',
-                callback: switchToGamified,
-                expanded: true,
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Hook Model Debug',
+                'Pushups Debug',
                 style: context.textTheme.headlineSmall,
               ),
               const SizedBox(height: 12),
@@ -145,18 +91,6 @@ class _DebugState extends State<Debug> {
               PBButton(
                 'Wiper user',
                 callback: wiperUser,
-                expanded: true,
-              ),
-              const SizedBox(height: 12),
-              PBButton(
-                'Add Booster Item',
-                callback: addBoosterItem,
-                expanded: true,
-              ),
-              const SizedBox(height: 12),
-              PBButton(
-                'Add Friendshare Item',
-                callback: addFriendShareItem,
                 expanded: true,
               ),
               const SizedBox(height: 32),
