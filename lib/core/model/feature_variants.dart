@@ -1,4 +1,0 @@
-enum FeatureVariants {
-  hookmodel,
-  gamification,
-}

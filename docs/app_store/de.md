@@ -1,6 +1,6 @@
 # App-Store-Texte: Deutsch
 
-## Neuigkeiten (2.1)
+## Neuigkeiten (2.0)
 
 Der Dschungel ist offen!
 

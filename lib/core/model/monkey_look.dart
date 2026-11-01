@@ -108,3 +108,11 @@ class MonkeyLook extends Equatable {
   @override
   List<Object?> get props => [...ids, species];
 }
+
+/// Grandpa Gus, chief of Carlos's tribe: big, grey and wearing the crown.
+const kGusLook = MonkeyLook(
+  fur: 'fur.slate',
+  face: 'face.frost',
+  hat: 'hat.crown',
+  outfit: 'outfit.lei',
+);

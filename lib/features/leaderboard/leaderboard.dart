@@ -8,7 +8,6 @@ import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/island/island.dart';
 import 'package:pushup_bro/features/leaderboard/widgets/board_rows.dart';
 import 'package:pushup_bro/features/leaderboard/widgets/podium.dart';
-import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 import 'package:pushup_bro/features/social/cubit/account_cubit.dart';
 import 'package:pushup_bro/features/social/cubit/bros_cubit.dart';
 import 'package:pushup_bro/features/social/cubit/everyone_cubit.dart';
@@ -26,7 +25,6 @@ class Leaderboard extends StatelessWidget {
     this.compactTabs = false,
     super.key,
   });
-  static const routeName = '/leaderboard';
 
   /// Room left above the board for what sits on top of it.
   final double topPadding;
@@ -224,14 +222,9 @@ class _NoBros extends StatelessWidget {
           ),
           const SizedBox(height: PBSpace.md),
           TextButton(
-            onPressed: () {
-              // Opened from the island's dock: the bros open the same way.
-              if (ModalRoute.of(context)?.settings.name == Island.todayRoute) {
-                Navigator.of(context).pushReplacementNamed(Island.brosRoute);
-              } else {
-                unawaited(MenuTabInfo.friends.navigate(context));
-              }
-            },
+            // Today lives in the island's bros hub: open its Bros tab.
+            onPressed: () =>
+                Navigator.of(context).pushReplacementNamed(Island.brosRoute),
             child: Text(context.l10n.boardAddBros),
           ),
         ],

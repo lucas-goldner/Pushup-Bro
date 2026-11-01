@@ -51,8 +51,13 @@ class IslandScene extends StatefulWidget {
     this.snapshot,
     this.greetings,
     this.rise,
+    this.intro,
     super.key,
   });
+
+  /// 1 for a close-up of Carlos, 0 for the normal view: the first visit
+  /// zooms out from him to the whole island after the intro film.
+  final ValueListenable<double>? intro;
 
   /// A friend's island to visit instead of the player's own: read-only,
   /// with no shop, quests or jungle trip. Drag still turns it, and tapping
@@ -115,6 +120,15 @@ class IslandSceneState extends State<IslandScene> {
     _bubbleAnchor.dispose();
     _pins.dispose();
     super.dispose();
+  }
+
+  /// Carlos turns to the camera, waves and says [line].
+  void waveHello(String line) {
+    final world = _world;
+    final camera = _lastCamera;
+    if (world == null || camera == null) return;
+    world.greet(camera.position - world.gorilla.root.position, seconds: 3);
+    setState(() => _bubble = line);
   }
 
   /// Sends Carlos running into the jungle, then opens the jungle screen.
@@ -229,7 +243,9 @@ class IslandSceneState extends State<IslandScene> {
       _whiteout.value = math.max(0, _whiteout.value - deltaSeconds / 0.7);
     }
     final greeting = world?.greeting ?? false;
-    _closeUp = springTo(_closeUp, greeting ? 1 : 0, deltaSeconds, 3);
+    // While the first visit zooms out from him, the intro frames him.
+    final intro = (widget.intro?.value ?? 0) > 0;
+    _closeUp = springTo(_closeUp, greeting && !intro ? 1 : 0, deltaSeconds, 3);
     final camera = _lastCamera;
     _bubbleAnchor.value = greeting && world != null && camera != null
         ? camera.worldToScreen(world.carlosHead, _viewSize)
@@ -293,6 +309,13 @@ class IslandSceneState extends State<IslandScene> {
       target += (carlos - target) * _closeUp;
       distance += (5.5 - distance) * _closeUp;
       height += (2.2 - height) * _closeUp;
+    }
+    final intro = widget.intro?.value ?? 0;
+    if (world != null && intro > 0.001) {
+      final carlos = world.gorilla.root.position + vm.Vector3(0, 0.5, 0);
+      target += (carlos - target) * intro;
+      distance += (4.2 - distance) * intro;
+      height += (1.5 - height) * intro;
     }
     // Keep the fog beyond the island however far back the camera goes.
     _scene?.fog

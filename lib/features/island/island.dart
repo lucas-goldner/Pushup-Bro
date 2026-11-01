@@ -8,6 +8,7 @@ import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/widgets/fold_safe.dart';
+import 'package:pushup_bro/features/island/intro/island_intro.dart';
 import 'package:pushup_bro/features/island/model/daily_bananas.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
 import 'package:pushup_bro/features/island/share/island_share_page.dart';
@@ -39,7 +40,7 @@ class Island extends StatefulWidget {
   State<Island> createState() => _IslandState();
 }
 
-class _IslandState extends State<Island> {
+class _IslandState extends State<Island> with TickerProviderStateMixin {
   bool _menuVisible = false;
   bool _questVisible = false;
   QuestType _quest = QuestType.intro;
@@ -47,6 +48,23 @@ class _IslandState extends State<Island> {
   bool _isNewDayVisible = false;
   bool _journeying = false;
   final _sceneKey = GlobalKey<IslandSceneState>();
+
+  /// The first visit: the intro film plays, then the camera zooms out from
+  /// Carlos to the island, then the welcome card asks to help him.
+  bool _film = false;
+  bool _welcomeCard = false;
+  late final AnimationController _introZoom = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 3400),
+    value: 1,
+  );
+
+  /// White over the island while it loads after the film.
+  late final AnimationController _introWhite = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+    value: 0,
+  );
 
   /// Whether the island is view only (no Pro, free days over).
   bool _locked(ProState state) =>
@@ -82,9 +100,29 @@ class _IslandState extends State<Island> {
         _isNewDayVisible = false;
       });
 
+  /// After the film: the island fades in close on Carlos, he waves, and
+  /// the camera pulls back to show the whole island.
+  Future<void> _afterFilm() async {
+    final hello = context.l10n.greet2;
+    _introWhite.value = 1;
+    _introZoom.value = 1;
+    setState(() => _film = false);
+    // Give the island's scene a moment to load under the white.
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+    await _introWhite.reverse();
+    if (!mounted) return;
+    _sceneKey.currentState?.waveHello(hello);
+    await Future<void>.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
+    await _introZoom.animateTo(0, curve: Curves.easeInOutCubic);
+    if (mounted) setState(() => _welcomeCard = true);
+  }
+
   void firstTimeVisiting() {
     setState(() {
       _firstTimeVisiting = false;
+      _welcomeCard = false;
       _menuVisible = false;
     });
     unawaited(
@@ -103,9 +141,18 @@ class _IslandState extends State<Island> {
             true;
 
     if (_firstTimeVisiting) {
-      _menuVisible = true;
+      _film = true;
+    } else {
+      _introZoom.value = 0;
     }
     unawaited(_offerDailyBananas());
+  }
+
+  @override
+  void dispose() {
+    _introZoom.dispose();
+    _introWhite.dispose();
+    super.dispose();
   }
 
   /// Opens the daily gift only when today's bananas are still to claim.
@@ -142,15 +189,18 @@ class _IslandState extends State<Island> {
               ),
             ),
           ),
-          Positioned.fill(
-            child: IslandScene(
-              key: _sceneKey,
-              locked: locked,
-              onLockedTap: (place) => _guarded(place, () {}),
-              onJourneyChanged: (journeying) =>
-                  setState(() => _journeying = journeying),
+          // The film plays on its own stage; the island waits behind it.
+          if (!_film || locked)
+            Positioned.fill(
+              child: IslandScene(
+                key: _sceneKey,
+                intro: locked ? null : _introZoom,
+                locked: locked,
+                onLockedTap: (place) => _guarded(place, () {}),
+                onJourneyChanged: (journeying) =>
+                    setState(() => _journeying = journeying),
+              ),
             ),
-          ),
           if (locked ? !_journeying : _hudVisible) ...[
             FoldSafe(
               anchor: const Offset(double.maxFinite, 0),
@@ -242,11 +292,23 @@ class _IslandState extends State<Island> {
                 onClose: closeDailyLogin,
                 questType: QuestType.dailyLogin,
               ),
-            if (_firstTimeVisiting)
+            if (_firstTimeVisiting && _welcomeCard)
               QuestDialog(
-                questVisible: _menuVisible,
+                questVisible: _welcomeCard,
                 onClose: firstTimeVisiting,
                 questType: QuestType.intro,
+              ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: FadeTransition(
+                  opacity: _introWhite,
+                  child: ColoredBox(color: context.gameColors.onGame),
+                ),
+              ),
+            ),
+            if (_film)
+              Positioned.fill(
+                child: IslandIntro(onDone: () => unawaited(_afterFilm())),
               ),
           ],
         ],

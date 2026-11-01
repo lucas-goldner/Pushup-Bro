@@ -114,8 +114,9 @@ class _PBAppBarState extends State<PBAppBar> with TickerProviderStateMixin {
               ],
             ),
           ),
+          // No title while the menu is open: an empty pill would be left.
           Visibility(
-            visible: widget.title != null,
+            visible: widget.title?.isNotEmpty ?? false,
             child: SizedBox(
               height: 56,
               child: Row(

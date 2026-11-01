@@ -571,10 +571,7 @@
   "dailyInfo": "Come back every day for free bananas!",
   "dailyToday": "Today",
   "dailyClaim": "Claim 10 bananas",
-  "intro1": "Welcome to your new island! It used to be home to lots of monkeys.",
-  "intro2": "Then a mysterious storm swept all the monkeys away.",
   "intro3": "Carlos the gorilla feels lonely. Help him rebuild his island by earning bananas with pushups, so his friends can find their way home.",
-  "introNext": "Next",
   "introHelp": "Help Carlos!",
   "communityText": "Let's work together to reach 10,000 bananas! If we reach the goal, a new area of the island unlocks.",
   "buildingAccessories": "Accessories Shop",
@@ -1654,5 +1651,130 @@
         "type": "int"
       }
     }
-  }
+  },
+  "statsPushupsSoFar": "pushups so far",
+  "statsSince": "since {date}",
+  "@statsSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "statsSets": "Sets",
+  "statsActiveDays": "Days",
+  "statsTime": "Time",
+  "statsKcal": "kcal",
+  "statsMinutes": "{minutes} min",
+  "@statsMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "statsHours": "{hours} h {minutes} min",
+  "@statsHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "statsStreak": "Streak",
+  "statsBestStreak": "Best streak",
+  "statsDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@statsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsActivity": "Activity",
+  "statsWeek": "Week",
+  "statsMonth": "Month",
+  "statsYear": "Year",
+  "statsLast7Days": "Last 7 days",
+  "statsLast30Days": "Last 30 days",
+  "statsLast12Months": "Last 12 months",
+  "statsPushups": "{count, plural, =1{1 pushup} other{{count} pushups}}",
+  "@statsPushups": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsNoPushupsYet": "No pushups here yet",
+  "statsConsistency": "Consistency",
+  "statsWeeks": "Last {weeks} weeks",
+  "@statsWeeks": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "statsLess": "Less",
+  "statsMore": "More",
+  "statsRecords": "Personal bests",
+  "statsBestSet": "Most in one set",
+  "statsBestDay": "Best day",
+  "statsFastest": "Fastest pace",
+  "statsPerMinute": "{count} / min",
+  "@statsPerMinute": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "statsAverageSet": "Average set",
+  "statsRhythm": "Your rhythm",
+  "statsFavouriteDay": "Favourite day",
+  "statsFavouriteTime": "Favourite time",
+  "statsMorning": "Morning",
+  "statsAfternoon": "Afternoon",
+  "statsEvening": "Evening",
+  "statsNight": "Night",
+  "statsUsualEffort": "Usually feels",
+  "statsGame": "Game",
+  "statsBananas": "Bananas",
+  "statsBuildings": "Buildings",
+  "statsMonkeys": "Monkeys",
+  "statsQuests": "Quests done",
+  "statsQuestsFound": "{have} of {of} found",
+  "@statsQuestsFound": {
+    "placeholders": {
+      "have": {
+        "type": "int"
+      },
+      "of": {
+        "type": "int"
+      }
+    }
+  },
+  "statsTrekStages": "Stages cleared",
+  "statsEmpty": "Finish your first set and your stats fill up here.",
+  "charGus": "Grandpa Gus",
+  "introCardLongAgo": "Long ago, deep in the jungle…",
+  "introGus1": "Banana night! Everybody dance!",
+  "introCarlos1": "Can't… dance… forty-eight… forty-nine…",
+  "introGus2": "Carlos! Nobody does pushups on banana night.",
+  "introCarlos2": "Somebody has to stay strong for the tribe!",
+  "introCardStorm": "Then the storm came.",
+  "introGus3": "Hold on to something, everybody!",
+  "introCarlos3": "I'm holding on to my banana!",
+  "introGus4": "CARLOOOOOS!",
+  "introCardMorning": "The next morning…",
+  "introCoco1": "Psst. Big guy. You're lying on my beach.",
+  "introCarlos4": "Where… where is everyone?",
+  "introCoco2": "The storm blew your tribe all over the jungle.",
+  "introCoco3": "But build this island up, and they'll find their way here. Squawk!",
+  "introCarlos5": "Then I'll do pushups. Lots and lots of pushups!",
+  "introSkip": "Skip"
 }

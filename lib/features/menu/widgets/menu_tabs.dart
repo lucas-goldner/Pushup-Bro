@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pushup_bro/core/cubit/feature_switch_cubit.dart';
 import 'package:pushup_bro/core/flavor.dart';
 import 'package:pushup_bro/core/model/environment.dart';
-import 'package:pushup_bro/core/model/feature_variants.dart';
 import 'package:pushup_bro/features/menu/model/menu_tab_info.dart';
 import 'package:pushup_bro/features/menu/widgets/menu_tab.dart';
 
@@ -20,27 +17,10 @@ class MenuTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appFeatues = context.read<FeatureSwitchCubit>().state.featureVariant;
-    final featuresForHookmodel = [
-      MenuTabInfo.pushupTracking,
-      MenuTabInfo.progress,
-      MenuTabInfo.friends,
-      MenuTabInfo.leaderbaord,
-      MenuTabInfo.settings,
-      MenuTabInfo.debug,
-    ];
-    final featuresForGamification = [
-      MenuTabInfo.pushupTracking,
-      MenuTabInfo.island,
-      MenuTabInfo.settings,
-      MenuTabInfo.debug,
-    ];
     // The debug tools are for dev builds only.
     final dev = Flavor.getCurrentEnvironment == Environment.dev.getFlavorName();
     final menuTabsToUse = [
-      for (final tab in appFeatues == FeatureVariants.hookmodel
-          ? featuresForHookmodel
-          : featuresForGamification)
+      for (final tab in MenuTabInfo.values)
         if (dev || tab != MenuTabInfo.debug) tab,
     ];
 

@@ -22,7 +22,6 @@ dependencies:
   firebase_auth: ^7.0.1
   firebase_core: ^5.1.0
   firebase_messaging: ^17.0.1
-  fl_chart: ^1.1.1
   flutter:
     sdk: flutter
   flutter_airpods:
@@ -45,7 +44,6 @@ dependencies:
   qr: ^4.0.0
   rive: ^0.14.11
   shared_preferences: ^2.0.17
-  table_calendar: ^3.0.8
   timezone: ^0.11.2
   url_launcher: ^6.1.9
   vector_math: ^2.4.3
