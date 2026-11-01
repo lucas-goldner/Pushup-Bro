@@ -1,6 +1,6 @@
 # App Store text: English
 
-## What's New (2.1)
+## What's New (2.0)
 
 The jungle is open!
 

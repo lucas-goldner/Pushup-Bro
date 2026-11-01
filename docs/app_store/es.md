@@ -1,6 +1,6 @@
 # Textos de la App Store: Español
 
-## Novedades (2.1)
+## Novedades (2.0)
 
 ¡La selva está abierta!
 
