@@ -314,8 +314,8 @@ class IslandSceneState extends State<IslandScene> {
     if (world != null && intro > 0.001) {
       final carlos = world.gorilla.root.position + vm.Vector3(0, 0.5, 0);
       target += (carlos - target) * intro;
-      distance += (2.8 - distance) * intro;
-      height += (0.9 - height) * intro;
+      distance += (4.2 - distance) * intro;
+      height += (1.5 - height) * intro;
     }
     // Keep the fog beyond the island however far back the camera goes.
     _scene?.fog

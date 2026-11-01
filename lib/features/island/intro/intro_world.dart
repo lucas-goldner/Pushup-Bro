@@ -152,18 +152,27 @@ class IntroWorld {
     _danceRound(time, wild: false);
   }
 
-  /// The tribe dances (or clings on in the storm) in a ring round the fire.
+  /// Where Gus stands: by the fire, facing the camera, keeping an eye on
+  /// everyone.
+  static final gusSpot = vm.Vector3(-1.5, 0, 0.6);
+
+  /// The tribe dances (or waves goodbye in the storm) in a ring round the
+  /// fire; Gus leads from beside it.
   void _danceRound(double time, {required bool wild}) {
-    final everyone = [gus, ...tribe];
-    for (final (i, monkey) in everyone.indexed) {
-      final a = i / everyone.length * math.pi * 2 + time * (wild ? 0 : 0.35);
-      final ring = i == 0 ? 1.15 : 1.35;
+    for (final (i, monkey) in tribe.indexed) {
+      final a = i / tribe.length * math.pi * 2 + time * (wild ? 0 : 0.35);
+      const ring = 1.35;
       monkey.root
         ..position =
             fire + vm.Vector3(math.sin(a) * ring, 0, math.cos(a) * ring)
         ..rotation = yaw(a + math.pi);
       monkey.rig.activity = wild ? GorillaActivity.wave : GorillaActivity.dance;
     }
+    gus.root
+      ..position = gusSpot
+      ..rotation = yaw(0.5)
+      ..scale = vm.Vector3.all(1.25);
+    gus.rig.activity = wild ? GorillaActivity.wave : GorillaActivity.dance;
   }
 
   /// The storm: the trees whip about, the tribe waves goodbye and Carlos is

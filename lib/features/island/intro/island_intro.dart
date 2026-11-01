@@ -285,15 +285,11 @@ class _IslandIntroState extends State<IslandIntro>
           );
         }
         if (beat.line?.$1 == Character.gus) {
-          // From the fire's side, so we see his face.
+          // In front of him, the dancers behind.
           final gus = world.gus.root.position;
-          final front = (IntroWorld.fire - gus)
-            ..y = 0
-            ..normalize();
-          final side = vm.Vector3(front.z, 0, -front.x);
           return (
-            gus + front * 3.0 + side * (0.8 + drift) + vm.Vector3(0, 1.2, 0),
-            gus + vm.Vector3(0, 0.75, 0),
+            gus + vm.Vector3(1.2 + drift, 1.3, 3.4),
+            gus + vm.Vector3(0.2, 0.95, 0),
           );
         }
         final carlos = world.carlosHead;
@@ -329,12 +325,13 @@ class _IslandIntroState extends State<IslandIntro>
             IntroWorld.carlosBeach.clone(),
           );
         }
+        // Both of them in the frame, leaning towards whoever speaks.
         final mid = (IntroWorld.carlosBeach + IntroWorld.cocoBeach) * 0.5;
         final speaker = beat.line?.$1;
-        final lean = speaker == Character.coco ? 0.35 : -0.25;
+        final lean = speaker == Character.coco ? 0.2 : -0.2;
         return (
-          mid + vm.Vector3(lean + drift * 0.5, 1.35, 3.9),
-          mid + vm.Vector3(lean * 0.5, 0.35, 0),
+          mid + vm.Vector3(lean + drift * 0.5, 1.7, 5.4),
+          mid + vm.Vector3(lean * 0.5, 0.45, 0),
         );
     }
   }
