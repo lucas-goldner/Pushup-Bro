@@ -175,142 +175,152 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
 
   /// Locked, the island stays to look at: the HUD shows with locks and
   /// the intro, daily login, shop and quests wait until it's unlocked.
-  Widget _island(BuildContext context, {required bool locked}) => Stack(
-        children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [islandSky(context).top, islandSky(context).horizon],
-                  stops: const [0, 0.55],
-                ),
-              ),
-            ),
-          ),
-          // The film plays on its own stage; the island waits behind it.
-          if (!_film || locked)
+  ///
+  /// Always the whole screen: everything on it is positioned, and a Stack
+  /// otherwise shrinks to its unpositioned children (the hidden shop menu,
+  /// during the intro film), leaving the page blank.
+  Widget _island(BuildContext context, {required bool locked}) =>
+      SizedBox.expand(
+        child: Stack(
+          children: [
             Positioned.fill(
-              child: IslandScene(
-                key: _sceneKey,
-                intro: locked ? null : _introZoom,
-                locked: locked,
-                onLockedTap: (place) => _guarded(place, () {}),
-                onJourneyChanged: (journeying) =>
-                    setState(() => _journeying = journeying),
-              ),
-            ),
-          if (locked ? !_journeying : _hudVisible) ...[
-            FoldSafe(
-              anchor: const Offset(double.maxFinite, 0),
-              alignment: Alignment.topCenter,
-              child: IslandTopBar(
-                openQuest: (quest) => _guarded(
-                  ProLockPlace.jungle,
-                  () => openQuest(quest),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      islandSky(context).top,
+                      islandSky(context).horizon,
+                    ],
+                    stops: const [0, 0.55],
+                  ),
                 ),
-                locked: locked,
-                onJustLooking: () => showPaywall(context),
               ),
             ),
-            // On a half-open iPhone Duo, in the half by the thumb and off
-            // the fold; never wider than a phone's.
-            FoldSafe(
-              maxWidth: 560,
-              child: SafeArea(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        // The bros, free for everyone like the rest of the
-                        // social side.
-                        BrosBubble(
-                          onTap: () => Navigator.of(context)
-                              .pushNamed(Island.todayRoute),
-                        ),
-                        const SizedBox(height: 12),
-                        IslandDock(
-                          locked: locked,
-                          onShop: () => _guarded(ProLockPlace.shop, openMenu),
-                          onCarlos: () =>
-                              _guarded(ProLockPlace.carlos, openWardrobe),
-                          onJungle: () =>
-                              _guarded(ProLockPlace.jungle, _goToJungle),
-                        ),
-                      ],
+            // The film plays on its own stage; the island waits behind it.
+            if (!_film || locked)
+              Positioned.fill(
+                child: IslandScene(
+                  key: _sceneKey,
+                  intro: locked ? null : _introZoom,
+                  locked: locked,
+                  onLockedTap: (place) => _guarded(place, () {}),
+                  onJourneyChanged: (journeying) =>
+                      setState(() => _journeying = journeying),
+                ),
+              ),
+            if (locked ? !_journeying : _hudVisible) ...[
+              FoldSafe(
+                anchor: const Offset(double.maxFinite, 0),
+                alignment: Alignment.topCenter,
+                child: IslandTopBar(
+                  openQuest: (quest) => _guarded(
+                    ProLockPlace.jungle,
+                    () => openQuest(quest),
+                  ),
+                  locked: locked,
+                  onJustLooking: () => showPaywall(context),
+                ),
+              ),
+              // On a half-open iPhone Duo, in the half by the thumb and off
+              // the fold; never wider than a phone's.
+              FoldSafe(
+                maxWidth: 560,
+                child: SafeArea(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // The bros, free for everyone like the rest of the
+                          // social side.
+                          BrosBubble(
+                            onTap: () => Navigator.of(context)
+                                .pushNamed(Island.todayRoute),
+                          ),
+                          const SizedBox(height: 12),
+                          IslandDock(
+                            locked: locked,
+                            onShop: () => _guarded(ProLockPlace.shop, openMenu),
+                            onCarlos: () =>
+                                _guarded(ProLockPlace.carlos, openWardrobe),
+                            onJungle: () =>
+                                _guarded(ProLockPlace.jungle, _goToJungle),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            // Sharing the island, right under the menu button.
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8, top: 60),
-                child: Semantics(
-                  label: context.l10n.islandShareButton,
-                  child: MenuCircleButton(
-                    icon: CarbonIcons.qr_code,
-                    onTap: () => openIslandShare(context),
+              // Sharing the island, right under the menu button.
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 60),
+                  child: Semantics(
+                    label: context.l10n.islandShareButton,
+                    child: MenuCircleButton(
+                      icon: CarbonIcons.qr_code,
+                      onTap: () => openIslandShare(context),
+                    ),
                   ),
                 ),
               ),
-            ),
-            // Friends' waves and bananas, under the top row.
-            const SafeArea(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(76, 64, 12, 0),
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: InboxBanner(),
+              // Friends' waves and bananas, under the top row.
+              const SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(76, 64, 12, 0),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: InboxBanner(),
+                  ),
                 ),
               ),
-            ),
-            const AccountUpgradePrompt(),
-          ],
-          if (locked)
-            const SizedBox.shrink()
-          else ...[
-            GameMenu(
-              closeMenu: closeMenu,
-              menuVisible: _menuVisible && !_firstTimeVisiting,
-            ),
-            if (_questVisible)
-              QuestDialog(
-                questVisible: _questVisible,
-                onClose: closeQuest,
-                questType: _quest,
+              const AccountUpgradePrompt(),
+            ],
+            if (locked)
+              const SizedBox.shrink()
+            else ...[
+              GameMenu(
+                closeMenu: closeMenu,
+                menuVisible: _menuVisible && !_firstTimeVisiting,
               ),
-            if (_isNewDayVisible && !_firstTimeVisiting)
-              QuestDialog(
-                questVisible: _isNewDayVisible,
-                onClose: closeDailyLogin,
-                questType: QuestType.dailyLogin,
-              ),
-            if (_firstTimeVisiting && _welcomeCard)
-              QuestDialog(
-                questVisible: _welcomeCard,
-                onClose: firstTimeVisiting,
-                questType: QuestType.intro,
-              ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: FadeTransition(
-                  opacity: _introWhite,
-                  child: ColoredBox(color: context.gameColors.onGame),
+              if (_questVisible)
+                QuestDialog(
+                  questVisible: _questVisible,
+                  onClose: closeQuest,
+                  questType: _quest,
                 ),
-              ),
-            ),
-            if (_film)
+              if (_isNewDayVisible && !_firstTimeVisiting)
+                QuestDialog(
+                  questVisible: _isNewDayVisible,
+                  onClose: closeDailyLogin,
+                  questType: QuestType.dailyLogin,
+                ),
+              if (_firstTimeVisiting && _welcomeCard)
+                QuestDialog(
+                  questVisible: _welcomeCard,
+                  onClose: firstTimeVisiting,
+                  questType: QuestType.intro,
+                ),
               Positioned.fill(
-                child: IslandIntro(onDone: () => unawaited(_afterFilm())),
+                child: IgnorePointer(
+                  child: FadeTransition(
+                    opacity: _introWhite,
+                    child: ColoredBox(color: context.gameColors.onGame),
+                  ),
+                ),
               ),
+              if (_film)
+                Positioned.fill(
+                  child: IslandIntro(onDone: () => unawaited(_afterFilm())),
+                ),
+            ],
           ],
-        ],
+        ),
       );
 }
