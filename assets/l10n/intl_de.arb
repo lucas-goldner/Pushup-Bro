@@ -1050,14 +1050,17 @@
   "introGus2": "Carlos! An Bananennacht macht niemand Liegestütze.",
   "introCarlos2": "Einer muss ja stark bleiben für den Stamm!",
   "introCardStorm": "Dann kam der Sturm.",
-  "introGus3": "Haltet euch fest, alle zusammen!",
-  "introCarlos3": "Ich halte mich an meiner Banane fest!",
+  "introGus3": "Blitz! Alle sofort in die Hütten!",
+  "introCarlos3": "Moment … was ist das für ein großes Wirbelding?",
   "introGus4": "CARLOOOOOS!",
   "introCardMorning": "Am nächsten Morgen …",
   "introCoco1": "Psst. Großer. Du liegst auf meinem Strand.",
-  "introCarlos4": "Wo … wo sind denn alle?",
-  "introCoco2": "Der Sturm hat deinen Stamm über den ganzen Dschungel verweht.",
+  "introCarlos4": "Uff … mein Kopf. Wo bin ich? Wo sind alle?",
+  "introCoco2": "Der Tornado hat dich quer übers Meer geschleudert, Großer.",
   "introCoco3": "Aber bau diese Insel auf, dann finden sie den Weg hierher. Krächz!",
   "introCarlos5": "Dann mache ich Liegestütze. Ganz, ganz viele!",
-  "introSkip": "Überspringen"
+  "introSkip": "Überspringen",
+  "introGusTornado": "TORNADO! Carlos, halt dich irgendwo fest!",
+  "introCarlosBanana": "Ich halte mich an meiner Banane fest! Ist das … schlecht?!",
+  "introCarlosWorried": "Mein Stamm … die machen sich bestimmt riesige Sorgen."
 }

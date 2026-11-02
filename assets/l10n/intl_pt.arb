@@ -1050,14 +1050,17 @@
   "introGus2": "Carlos! Ninguém faz flexões na noite da banana.",
   "introCarlos2": "Alguém tem que ficar forte pela tribo!",
   "introCardStorm": "Então veio a tempestade.",
-  "introGus3": "Segurem em alguma coisa, todo mundo!",
-  "introCarlos3": "Estou me segurando na minha banana!",
+  "introGus3": "Raio! Todo mundo pras cabanas, já!",
+  "introCarlos3": "Espera… que coisa enorme girando é aquela?",
   "introGus4": "CARLOOOOOS!",
   "introCardMorning": "Na manhã seguinte…",
   "introCoco1": "Psiu. Grandão. Você está deitado na minha praia.",
-  "introCarlos4": "Cadê… cadê todo mundo?",
-  "introCoco2": "A tempestade espalhou sua tribo pela selva toda.",
+  "introCarlos4": "Ai… minha cabeça. Onde estou? Cadê todo mundo?",
+  "introCoco2": "Aquele tornado te jogou do outro lado do mar, grandão.",
   "introCoco3": "Mas se você construir esta ilha, eles vão achar o caminho até aqui. Croc!",
   "introCarlos5": "Então vou fazer flexões. Muitas e muitas flexões!",
-  "introSkip": "Pular"
+  "introSkip": "Pular",
+  "introGusTornado": "TORNADO! Carlos, segura em alguma coisa!",
+  "introCarlosBanana": "Estou segurando minha banana! Isso é… ruim?!",
+  "introCarlosWorried": "Minha tribo… devem estar tão preocupados comigo."
 }

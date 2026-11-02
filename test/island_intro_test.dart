@@ -63,11 +63,21 @@ void main() {
     // Carlos gets up on the beach and never lies back down.
     final poses = [
       for (final beat in introBeats)
-        if (beat.set == IntroSet.beach) beat.beachPose,
+        if (beat.set == IntroSet.beach) beat.step,
     ];
     for (var i = 1; i < poses.length; i++) {
       expect(poses[i], greaterThanOrEqualTo(poses[i - 1]));
     }
+    // The storm goes through every stage, in order: the strike, the run
+    // for the huts, the tornado coming, grabbing him, spinning him up and
+    // flinging him away.
+    expect(
+      [
+        for (final beat in introBeats)
+          if (beat.set == IntroSet.storm) beat.step,
+      ],
+      [0, 1, 2, 3, 4, 5],
+    );
   });
 
   testWidgets('plays through every line and ends in white', (tester) async {

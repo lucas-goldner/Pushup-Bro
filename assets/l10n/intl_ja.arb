@@ -1050,14 +1050,17 @@
   "introGus2": "カルロス！バナナの夜に腕立てする者はおらん。",
   "introCarlos2": "誰かが群れのために強くならなきゃ！",
   "introCardStorm": "そして、嵐がやってきた。",
-  "introGus3": "みんな、何かにつかまれ！",
-  "introCarlos3": "バナナにつかまってる！",
+  "introGus3": "雷だ！みんな、すぐ小屋に入れ！",
+  "introCarlos3": "待って…あのぐるぐる回る大きいのは何？",
   "introGus4": "カルロォォォス！",
   "introCardMorning": "次の朝…",
   "introCoco1": "ねえ、そこの大きいの。あたしのビーチで寝てるよ。",
-  "introCarlos4": "みんな…みんなはどこ？",
-  "introCoco2": "嵐で群れはジャングル中に飛ばされたのよ。",
+  "introCarlos4": "うう…頭が。ここはどこ？みんなは？",
+  "introCoco2": "あの竜巻があなたを海の向こうまで飛ばしたのよ。",
   "introCoco3": "でもこの島を育てれば、みんなここを見つけるわ。クワッ！",
   "introCarlos5": "じゃあ腕立てするよ。いっぱいいっぱい！",
-  "introSkip": "スキップ"
+  "introSkip": "スキップ",
+  "introGusTornado": "竜巻だ！カルロス、何かにつかまれ！",
+  "introCarlosBanana": "バナナにつかまってる！これって…まずい？！",
+  "introCarlosWorried": "群れのみんな…きっとすごく心配してる。"
 }
