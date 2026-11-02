@@ -1767,14 +1767,17 @@
   "introGus2": "Carlos! Nobody does pushups on banana night.",
   "introCarlos2": "Somebody has to stay strong for the tribe!",
   "introCardStorm": "Then the storm came.",
-  "introGus3": "Hold on to something, everybody!",
-  "introCarlos3": "I'm holding on to my banana!",
+  "introGus3": "Lightning! Everybody, into the huts, now!",
+  "introCarlos3": "Wait… what's that big spinning thing?",
   "introGus4": "CARLOOOOOS!",
   "introCardMorning": "The next morning…",
   "introCoco1": "Psst. Big guy. You're lying on my beach.",
-  "introCarlos4": "Where… where is everyone?",
-  "introCoco2": "The storm blew your tribe all over the jungle.",
+  "introCarlos4": "Ugh… my head. Where am I? Where is everyone?",
+  "introCoco2": "That tornado threw you all the way across the sea, big guy.",
   "introCoco3": "But build this island up, and they'll find their way here. Squawk!",
   "introCarlos5": "Then I'll do pushups. Lots and lots of pushups!",
-  "introSkip": "Skip"
+  "introSkip": "Skip",
+  "introGusTornado": "TORNADO! Carlos, hold on to something!",
+  "introCarlosBanana": "I'm holding on to my banana! Is that… bad?!",
+  "introCarlosWorried": "My tribe… they must be so worried about me."
 }
