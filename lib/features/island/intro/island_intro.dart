@@ -336,25 +336,25 @@ class _IslandIntroState extends State<IslandIntro>
           0 => (vm.Vector3(-0.4, 2.6, 7.6), vm.Vector3(1.4, 1.4, -0.8)),
           // Gus shouting the tribe into the huts.
           1 => (
-              IntroWorld.gusSpot + vm.Vector3(2.2, 1.6, 4.4),
-              IntroWorld.gusSpot + vm.Vector3(1.6, 0.9, -1.4),
+              world.gus.root.position + vm.Vector3(1, 1.5, 3.8),
+              world.gus.root.position + vm.Vector3(0, 1, 0),
             ),
-          // Over Carlos's shoulder: the tornado coming.
+          // Carlos turning to look: the tornado on the far side.
           2 => (
-              carlos + vm.Vector3(1.6, 1.5, 2.6),
-              tornado + vm.Vector3(0, 2, 0),
+              carlos + vm.Vector3(2.4, 2, 6.4),
+              (carlos + tornado) * 0.5 + vm.Vector3(0, 1.8, 0),
             ),
           // Wide: it reaches him.
-          3 => (vm.Vector3(1.2, 2.2, 8.4), tornado + vm.Vector3(0, 1.8, 0)),
+          3 => (vm.Vector3(1.6, 2.6, 10.5), tornado + vm.Vector3(0, 2, 0)),
           // Up with him, round and round.
           4 => (
-              tornado + vm.Vector3(0.4, 1.6 + carlos.y * 0.6, 6.6),
+              tornado + vm.Vector3(0.6, 1.8 + carlos.y * 0.5, 8.5),
               vm.Vector3(tornado.x, carlos.y + 0.3, tornado.z),
             ),
-          // Watching him fly off into the sky.
+          // From the side, watching him fly off into the sky.
           _ => (
-              vm.Vector3(-1.5, 1.6, 7.5),
-              vm.Vector3(2.4, 4.2, -8),
+              IntroWorld.carlosHome + vm.Vector3(4.5, 2.2, 7),
+              IntroWorld.flungTo * 0.35 + vm.Vector3(0, 2.5, 0),
             ),
         };
         return (position + shake, target);
@@ -368,11 +368,11 @@ class _IslandIntroState extends State<IslandIntro>
           );
         }
         // Both of them in the frame, leaning towards whoever speaks.
-        final mid = IntroWorld.carlosBeach * 0.7 + IntroWorld.cocoBeach * 0.3;
+        final mid = IntroWorld.carlosBeach * 0.8 + IntroWorld.cocoBeach * 0.2;
         final speaker = beat.line?.$1;
         final lean = speaker == Character.coco ? 0.2 : -0.2;
         return (
-          mid + vm.Vector3(lean + drift * 0.5, 1.7, 5.4),
+          mid + vm.Vector3(lean + drift * 0.5, 1.8, 6),
           mid + vm.Vector3(lean * 0.5, 0.45, 0),
         );
     }

@@ -327,6 +327,15 @@ class IntroWorld {
     };
     final eased = travel * travel * (3 - 2 * travel);
     _tornado.position = start + (end - start) * eased;
+    // Its job done, it wanders off and dies down.
+    if (_stormStage == 5) {
+      final leave = math.min(1, _stageTime / 2.4).toDouble();
+      _tornado
+        ..position = end + vm.Vector3(-4, 0, -6) * leave
+        ..scale = vm.Vector3.all(math.max(0.001, 1 - leave));
+    } else {
+      _tornado.scale = vm.Vector3.all(1);
+    }
     for (final (i, ring) in _funnel.indexed) {
       final h = i / _funnel.length;
       ring
@@ -640,7 +649,7 @@ class IntroWorld {
   /// A cartoon tornado: stacked grey rings, wider at the top, each turning
   /// at its own speed, with leaves and twigs whirling round it.
   Node _buildTornado() {
-    const rings = 11;
+    const rings = 18;
     for (var i = 0; i < rings; i++) {
       final h = i / (rings - 1);
       final shade = Color.lerp(
@@ -649,12 +658,12 @@ class IntroWorld {
         h,
       )!;
       final ring = Node(name: 'funnel')
-        ..position = vm.Vector3(0, 0.15 + h * 4.4, 0)
+        ..position = vm.Vector3(0, 0.1 + h * 4.6, 0)
         ..add(
           meshNode(
             TorusGeometry(
-              radius: 0.22 + h * h * 1.5,
-              tubeRadius: 0.16 + h * 0.22,
+              radius: 0.12 + h * h * 1.25,
+              tubeRadius: 0.05 + h * 0.1,
               tubularSegments: 18,
             ),
             matte(shade, roughness: 0.9),
