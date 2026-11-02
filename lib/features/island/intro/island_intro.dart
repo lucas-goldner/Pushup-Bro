@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show PointMode;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -24,31 +25,33 @@ const _kCardTime = Duration(milliseconds: 2800);
 /// How long the screen takes to fade through black between places.
 const _kCutTime = Duration(milliseconds: 450);
 
-/// How long the storm blows before anyone speaks.
-const _kStormLead = Duration(milliseconds: 1600);
+/// When the lightning strikes, in seconds into the storm.
+const _kStrike = 0.5;
 
 /// One step of the intro: a story card over the scene, or a line of
-/// dialog. Its beach pose is what Carlos does on the beach meanwhile.
+/// dialog. `step` is what happens meanwhile: the storm's stage (see
+/// [IntroWorld.stormStage]) in the storm, Carlos's pose on the beach.
 typedef IntroBeat = ({
   IntroSet set,
   String Function(S l)? card,
   Line? line,
-  int beachPose,
+  int step,
 });
 
 IntroBeat _card(IntroSet set, String Function(S l) text) =>
-    (set: set, card: text, line: null, beachPose: 0);
+    (set: set, card: text, line: null, step: 0);
 
 IntroBeat _say(
   IntroSet set,
   Character speaker,
   String Function(S l) text, {
-  int beachPose = 0,
+  int step = 0,
 }) =>
-    (set: set, card: null, line: (speaker, text), beachPose: beachPose);
+    (set: set, card: null, line: (speaker, text), step: step);
 
-/// The intro, beat by beat: banana night in the village, the storm that
-/// blows Carlos away, and waking up on the island's beach.
+/// The intro, beat by beat: banana night in the village, the storm (a
+/// lightning strike, the tribe running for the huts, and a tornado that
+/// flings Carlos far away), and waking up on the island's beach.
 final List<IntroBeat> introBeats = [
   _card(IntroSet.village, (l) => l.introCardLongAgo),
   _say(IntroSet.village, Character.gus, (l) => l.introGus1),
@@ -56,15 +59,23 @@ final List<IntroBeat> introBeats = [
   _say(IntroSet.village, Character.gus, (l) => l.introGus2),
   _say(IntroSet.village, Character.carlos, (l) => l.introCarlos2),
   _card(IntroSet.storm, (l) => l.introCardStorm),
-  _say(IntroSet.storm, Character.gus, (l) => l.introGus3),
-  _say(IntroSet.storm, Character.carlos, (l) => l.introCarlos3),
-  _say(IntroSet.storm, Character.gus, (l) => l.introGus4),
+  _say(IntroSet.storm, Character.gus, (l) => l.introGus3, step: 1),
+  _say(IntroSet.storm, Character.carlos, (l) => l.introCarlos3, step: 2),
+  _say(IntroSet.storm, Character.gus, (l) => l.introGusTornado, step: 3),
+  _say(IntroSet.storm, Character.carlos, (l) => l.introCarlosBanana, step: 4),
+  _say(IntroSet.storm, Character.gus, (l) => l.introGus4, step: 5),
   _card(IntroSet.beach, (l) => l.introCardMorning),
   _say(IntroSet.beach, Character.coco, (l) => l.introCoco1),
-  _say(IntroSet.beach, Character.carlos, (l) => l.introCarlos4, beachPose: 1),
-  _say(IntroSet.beach, Character.coco, (l) => l.introCoco2, beachPose: 1),
-  _say(IntroSet.beach, Character.coco, (l) => l.introCoco3, beachPose: 2),
-  _say(IntroSet.beach, Character.carlos, (l) => l.introCarlos5, beachPose: 3),
+  _say(IntroSet.beach, Character.carlos, (l) => l.introCarlos4, step: 1),
+  _say(IntroSet.beach, Character.coco, (l) => l.introCoco2, step: 1),
+  _say(
+    IntroSet.beach,
+    Character.carlos,
+    (l) => l.introCarlosWorried,
+    step: 1,
+  ),
+  _say(IntroSet.beach, Character.coco, (l) => l.introCoco3, step: 2),
+  _say(IntroSet.beach, Character.carlos, (l) => l.introCarlos5, step: 3),
 ];
 
 /// The sky behind each place, top to bottom.
@@ -141,6 +152,9 @@ class _IslandIntroState extends State<IslandIntro>
 
   IntroBeat get _current => introBeats[_beat];
 
+  /// Ticks every frame, for the overlays (rain, flashes, fades) only.
+  final ValueNotifier<double> _frame = ValueNotifier(0);
+
   @override
   void initState() {
     super.initState();
@@ -151,6 +165,7 @@ class _IslandIntroState extends State<IslandIntro>
   @override
   void dispose() {
     _ticker.dispose();
+    _frame.dispose();
     super.dispose();
   }
 
@@ -179,27 +194,35 @@ class _IslandIntroState extends State<IslandIntro>
         _time - _beatStart > _kCardTime.inMilliseconds / 1000) {
       unawaited(_next());
     }
-    if (beat.set == IntroSet.storm) _lightning(delta);
-    _world?.beachPose = beat.beachPose;
-    // "CARLOOOS!": off he goes.
-    if (beat.set == IntroSet.storm &&
-        beat.line?.$1 == Character.gus &&
-        _beat == introBeats.lastIndexWhere((b) => b.set == IntroSet.storm)) {
-      _world?.blowAway(_setTime);
+    if (beat.set == IntroSet.storm) {
+      _lightning(delta);
+      _world?.stormStage = beat.step;
+    } else {
+      _world?.beachPose = beat.step;
     }
-    setState(() {});
+    // Only the overlays change every frame; the rest waits for a new beat.
+    _frame.value = _time;
   }
 
-  /// Flashes at set moments in the storm, with a rumble.
+  /// The strike (two flashes and a bang, as the bolt hits the palm), then
+  /// a rumble every few seconds while the storm rages.
   void _lightning(double delta) {
-    for (final at in const [0.3, 1.9, 2.5, 4.4]) {
-      if (_setTime >= at && _thunder.add(at)) {
-        _flash = _reduceMotion ? 0.35 : 1;
-        GameAudio.instance.play(Sfx.roar, gain: 0.5);
+    final rumble = _setTime < 2 ? -1 : ((_setTime - 2) / 4.5).floor();
+    for (final at in [_kStrike, _kStrike + 0.35, 100.0 + rumble]) {
+      if (_setTime >= math.min(at, _setTime) && _thunder.add(at)) {
+        if (at < 100 || rumble >= 0) {
+          _flash = _reduceMotion ? 0.35 : (at < 100 ? 1 : 0.6);
+          if (at != _kStrike + 0.35) {
+            GameAudio.instance.play(Sfx.roar, gain: at < 100 ? 0.7 : 0.4);
+          }
+        }
       }
     }
     _flash = math.max(0, _flash - delta * 3.5);
   }
+
+  /// Whether the rain is pouring yet (after the strike).
+  bool get _pouring => _setTime > _kStrike;
 
   /// Goes on to the next beat, through black when the place changes.
   Future<void> _next() async {
@@ -298,24 +321,43 @@ class _IslandIntroState extends State<IslandIntro>
           carlos + vm.Vector3(-0.3, -0.2, 0),
         );
       case IntroSet.storm:
-        // Watch him go up, with a shudder in the wind.
+        // A shudder in the wind.
         final shake = _reduceMotion
             ? vm.Vector3.zero()
             : vm.Vector3(
-                math.sin(_time * 31) * 0.04,
-                math.sin(_time * 23) * 0.03,
+                math.sin(_time * 31) * 0.035,
+                math.sin(_time * 23) * 0.025,
                 0,
               );
         final carlos = world.carlos.root.position;
-        final follow = vm.Vector3(
-          carlos.x.clamp(-1, 3),
-          (carlos.y + 0.6).clamp(0.6, 4.5),
-          carlos.z,
-        );
-        return (
-          vm.Vector3(0.6, 1.8 + follow.y * 0.4, 6.4) + shake,
-          follow,
-        );
+        final tornado = world.tornadoFoot;
+        final (position, target) = switch (beat.step) {
+          // The strike: the whole clearing and the palm on the right.
+          0 => (vm.Vector3(-0.4, 2.6, 7.6), vm.Vector3(1.4, 1.4, -0.8)),
+          // Gus shouting the tribe into the huts.
+          1 => (
+              IntroWorld.gusSpot + vm.Vector3(2.2, 1.6, 4.4),
+              IntroWorld.gusSpot + vm.Vector3(1.6, 0.9, -1.4),
+            ),
+          // Over Carlos's shoulder: the tornado coming.
+          2 => (
+              carlos + vm.Vector3(1.6, 1.5, 2.6),
+              tornado + vm.Vector3(0, 2, 0),
+            ),
+          // Wide: it reaches him.
+          3 => (vm.Vector3(1.2, 2.2, 8.4), tornado + vm.Vector3(0, 1.8, 0)),
+          // Up with him, round and round.
+          4 => (
+              tornado + vm.Vector3(0.4, 1.6 + carlos.y * 0.6, 6.6),
+              vm.Vector3(tornado.x, carlos.y + 0.3, tornado.z),
+            ),
+          // Watching him fly off into the sky.
+          _ => (
+              vm.Vector3(-1.5, 1.6, 7.5),
+              vm.Vector3(2.4, 4.2, -8),
+            ),
+        };
+        return (position + shake, target);
       case IntroSet.beach:
         if (beat.card != null) {
           // High over the beach, sinking down to him.
@@ -374,9 +416,7 @@ class _IslandIntroState extends State<IslandIntro>
     final line = beat.line;
     final card = beat.card;
     final storm = beat.set == IntroSet.storm;
-    // The storm's speakers wait for the wind to pick up first.
-    final speaking = line != null &&
-        (!storm || _setTime > _kStormLead.inMilliseconds / 1000);
+    final speaking = line != null;
 
     return Material(
       color: Colors.black,
@@ -401,22 +441,28 @@ class _IslandIntroState extends State<IslandIntro>
               onTick: _onTick,
               warmUp: true,
             ),
-          if (storm) ...[
+          if (storm)
             IgnorePointer(
-              child: ColoredBox(
-                color: const Color(0xFF0A1020).withValues(alpha: 0.35),
+              child: ValueListenableBuilder<double>(
+                valueListenable: _frame,
+                builder: (context, time, _) => Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ColoredBox(
+                      color: const Color(0xFF0A1020)
+                          .withValues(alpha: _pouring ? 0.42 : 0.3),
+                    ),
+                    if (!_reduceMotion)
+                      CustomPaint(
+                        painter: _RainPainter(time, heavy: _pouring),
+                      ),
+                    ColoredBox(
+                      color: Colors.white.withValues(alpha: _flash * 0.75),
+                    ),
+                  ],
+                ),
               ),
             ),
-            if (!_reduceMotion)
-              IgnorePointer(
-                child: CustomPaint(painter: _RainPainter(_time)),
-              ),
-            IgnorePointer(
-              child: ColoredBox(
-                color: Colors.white.withValues(alpha: _flash * 0.75),
-              ),
-            ),
-          ],
           // Letterbox bars for the film look.
           const IgnorePointer(child: _Letterbox()),
           // Tap anywhere to go on.
@@ -468,13 +514,19 @@ class _IslandIntroState extends State<IslandIntro>
             ),
           ),
           IgnorePointer(
-            child: ColoredBox(
-              color: Colors.black.withValues(alpha: _black.clamp(0, 1)),
-            ),
-          ),
-          IgnorePointer(
-            child: ColoredBox(
-              color: context.gameColors.onGame.withValues(alpha: _white),
+            child: ValueListenableBuilder<double>(
+              valueListenable: _frame,
+              builder: (context, _, __) => Stack(
+                fit: StackFit.expand,
+                children: [
+                  ColoredBox(
+                    color: Colors.black.withValues(alpha: _black.clamp(0, 1)),
+                  ),
+                  ColoredBox(
+                    color: context.gameColors.onGame.withValues(alpha: _white),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -540,29 +592,40 @@ class _Letterbox extends StatelessWidget {
   }
 }
 
-/// Slanted rain streaks blowing across the screen.
+/// Slanted rain streaks blowing across the screen: a drizzle, then a
+/// downpour once the lightning has struck.
 class _RainPainter extends CustomPainter {
-  _RainPainter(this.time);
+  _RainPainter(this.time, {required this.heavy});
 
   final double time;
+  final bool heavy;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.35)
-      ..strokeWidth = 1.4
+      ..color = Colors.white.withValues(alpha: heavy ? 0.42 : 0.3)
+      ..strokeWidth = heavy ? 1.6 : 1.2
       ..strokeCap = StrokeCap.round;
     final random = math.Random(3);
-    for (var i = 0; i < 140; i++) {
-      final speed = 900 + random.nextDouble() * 500;
-      final x0 = random.nextDouble() * (size.width + 200);
+    final drops = heavy ? 320 : 70;
+    final slant = heavy ? 0.6 : 0.3;
+    final length = heavy ? 34.0 : 18.0;
+    final points = <Offset>[];
+    for (var i = 0; i < drops; i++) {
+      final speed = (heavy ? 1500 : 900) + random.nextDouble() * 500;
+      final x0 = random.nextDouble() * (size.width + 300);
       final y0 = random.nextDouble() * size.height;
-      final y = (y0 + time * speed) % (size.height + 40) - 20;
-      final x = (x0 - time * speed * 0.35) % (size.width + 200) - 100;
-      canvas.drawLine(Offset(x, y), Offset(x - 7, y + 20), paint);
+      final y = (y0 + time * speed) % (size.height + 60) - 30;
+      final x = (x0 - time * speed * slant) % (size.width + 300) - 150;
+      points
+        ..add(Offset(x, y))
+        ..add(Offset(x - length * slant, y + length));
     }
+    // One draw call for all the drops.
+    canvas.drawPoints(PointMode.lines, points, paint);
   }
 
   @override
-  bool shouldRepaint(_RainPainter oldDelegate) => oldDelegate.time != time;
+  bool shouldRepaint(_RainPainter oldDelegate) =>
+      oldDelegate.time != time || oldDelegate.heavy != heavy;
 }

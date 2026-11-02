@@ -1050,14 +1050,17 @@
   "introGus2": "¡Carlos! Nadie hace flexiones en la noche de plátanos.",
   "introCarlos2": "¡Alguien tiene que mantenerse fuerte por la tribu!",
   "introCardStorm": "Entonces llegó la tormenta.",
-  "introGus3": "¡Agárrense de algo, todos!",
-  "introCarlos3": "¡Me estoy agarrando a mi plátano!",
+  "introGus3": "¡Un rayo! ¡Todos a las chozas, ya!",
+  "introCarlos3": "Espera… ¿qué es esa cosa enorme que gira?",
   "introGus4": "¡CARLOOOOOS!",
   "introCardMorning": "A la mañana siguiente…",
   "introCoco1": "Psst. Grandullón. Estás tumbado en mi playa.",
-  "introCarlos4": "¿Dónde… dónde están todos?",
-  "introCoco2": "La tormenta esparció a tu tribu por toda la selva.",
+  "introCarlos4": "Uf… mi cabeza. ¿Dónde estoy? ¿Dónde están todos?",
+  "introCoco2": "Ese tornado te lanzó al otro lado del mar, grandullón.",
   "introCoco3": "Pero si levantas esta isla, encontrarán el camino hasta aquí. ¡Cuac!",
   "introCarlos5": "Entonces haré flexiones. ¡Muchísimas flexiones!",
-  "introSkip": "Saltar"
+  "introSkip": "Saltar",
+  "introGusTornado": "¡TORNADO! ¡Carlos, agárrate a algo!",
+  "introCarlosBanana": "¡Me agarro a mi plátano! ¿Eso es… malo?!",
+  "introCarlosWorried": "Mi tribu… deben estar muy preocupados por mí."
 }
