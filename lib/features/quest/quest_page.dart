@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart' hide Material;
 import 'package:pushup_bro/core/audio/game_audio.dart';
+import 'package:pushup_bro/core/audio/music_places.dart';
 import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
@@ -413,8 +414,8 @@ class _QuestPageState extends State<QuestPage> with OneMove {
       context,
       switch (_phase) {
         _Phase.challenge => MusicTrack.challenge,
-        _Phase.results when _won => MusicTrack.victory,
-        _ => MusicTrack.story,
+        _Phase.results => _won ? MusicTrack.victory : MusicTrack.defeat,
+        _ => questMusic(_quest.location),
       },
     );
     final (top, bottom) = skyFor(_quest.location);

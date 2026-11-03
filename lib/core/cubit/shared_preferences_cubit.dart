@@ -133,7 +133,23 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
     final appearance = await _sharedPreferencesProvider.getSharedPrefString(
       SharedPreferencesKey.appearance,
     );
+    final musicOn = await _sharedPreferencesProvider.getSharedPrefBool(
+      SharedPreferencesKey.musicOn,
+    );
+    final soundsOn = await _sharedPreferencesProvider.getSharedPrefBool(
+      SharedPreferencesKey.soundsOn,
+    );
+    final cameraView = await _sharedPreferencesProvider.getSharedPrefString(
+      SharedPreferencesKey.cameraView,
+    );
+    final sensitivity = await _sharedPreferencesProvider.getSharedPrefInt(
+      SharedPreferencesKey.airpodsSensitivity,
+    );
     _update(
+      musicOn: musicOn ?? true,
+      soundsOn: soundsOn ?? true,
+      cameraView: CameraView.byName(cameraView),
+      airpodsSensitivity: sensitivity ?? AirPodsSensitivity.standard,
       appearance: Appearance.byName(appearance),
       trackingMode: TrackingMode.byName(mode),
       musicVolume: music ?? 7,
@@ -165,6 +181,39 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
     _update(appearance: appearance);
   }
 
+  Future<void> setMusicOn({required bool on}) async {
+    await _sharedPreferencesProvider.writeBoolToSharedPrefs(
+      SharedPreferencesKey.musicOn,
+      value: on,
+    );
+    _update(musicOn: on);
+  }
+
+  Future<void> setSoundsOn({required bool on}) async {
+    await _sharedPreferencesProvider.writeBoolToSharedPrefs(
+      SharedPreferencesKey.soundsOn,
+      value: on,
+    );
+    _update(soundsOn: on);
+  }
+
+  Future<void> setCameraView(CameraView view) async {
+    await _sharedPreferencesProvider.writeStringToSharedPrefs(
+      SharedPreferencesKey.cameraView,
+      view.name,
+    );
+    _update(cameraView: view);
+  }
+
+  Future<void> setAirpodsSensitivity(int level) async {
+    final clamped = level.clamp(AirPodsSensitivity.min, AirPodsSensitivity.max);
+    await _sharedPreferencesProvider.writeIntToSharedPrefs(
+      SharedPreferencesKey.airpodsSensitivity,
+      value: clamped,
+    );
+    _update(airpodsSensitivity: clamped);
+  }
+
   /// Emits the loaded state with the given fields changed, keeping the rest.
   void _update({
     Locale? language,
@@ -174,6 +223,10 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
     TrackingMode? trackingMode,
     int? musicVolume,
     Appearance? appearance,
+    bool? musicOn,
+    bool? soundsOn,
+    CameraView? cameraView,
+    int? airpodsSensitivity,
   }) =>
       emit(
         SharedPreferencesLoaded(
@@ -186,6 +239,10 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
           trackingMode: trackingMode ?? state.trackingMode,
           musicVolume: musicVolume ?? state.musicVolume,
           appearance: appearance ?? state.appearance,
+          musicOn: musicOn ?? state.musicOn,
+          soundsOn: soundsOn ?? state.soundsOn,
+          cameraView: cameraView ?? state.cameraView,
+          airpodsSensitivity: airpodsSensitivity ?? state.airpodsSensitivity,
         ),
       );
 }

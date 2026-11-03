@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:carbon_icons/carbon_icons.dart';
@@ -137,7 +138,10 @@ class _FinishedSetBottomSheetState extends State<FinishedSetBottomSheet>
     return onesList;
   }
 
-  void showLevelUp() => setState(() => levelUpVisible = true);
+  void showLevelUp() {
+    unawaited(GameAudio.instance.jingle(MusicTrack.levelUp));
+    setState(() => levelUpVisible = true);
+  }
 
   Future<void> savePushupSet() async {
     await BlocProvider.of<DBCubit>(context).writeNewPushupsetToDB(

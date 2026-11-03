@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,6 +16,7 @@ import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker
 import 'package:pushup_bro/features/reminders/reminders_page.dart';
 import 'package:pushup_bro/features/settings/view/settings_body.dart';
 import 'package:pushup_bro/features/settings/view/settings_language.dart';
+import 'package:pushup_bro/features/settings/view/settings_tracking.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
 import 'package:pushup_bro/features/settings/widgets/appearance_picker.dart';
 import 'package:pushup_bro/features/settings/widgets/info_item.dart';
@@ -64,12 +67,6 @@ class _SettingsState extends State<Settings> {
                 () => navigateToSettingPage(LanguageSetting.routeName),
               ),
               Settingsitem(
-                context.l10n.setVolume,
-                CarbonIcons.volume_up,
-                () => navigateToSettingPage(VolumeSetting.routeName),
-                color: game.orange,
-              ),
-              Settingsitem(
                 context.l10n.bodySettingsTitle,
                 CarbonIcons.user,
                 () => navigateToSettingPage(BodySetting.routeName),
@@ -96,6 +93,37 @@ class _SettingsState extends State<Settings> {
               ),
             ],
           ),
+          SettingsSectionHeader(context.l10n.settingsSoundTitle),
+          BlocBuilder<SharedPreferencesCubit, SharedPreferencesState>(
+            builder: (context, state) {
+              final prefs = context.read<SharedPreferencesCubit>();
+
+              return SettingsGroup(
+                children: [
+                  SoundSwitchRow(
+                    label: context.l10n.settingsMusic,
+                    icon: CarbonIcons.music,
+                    color: game.purple,
+                    on: state.musicOn,
+                    onChanged: (on) => unawaited(prefs.setMusicOn(on: on)),
+                  ),
+                  SoundSwitchRow(
+                    label: context.l10n.settingsSoundEffects,
+                    icon: CarbonIcons.volume_up,
+                    color: game.orange,
+                    on: state.soundsOn,
+                    onChanged: (on) => unawaited(prefs.setSoundsOn(on: on)),
+                  ),
+                  Settingsitem(
+                    context.l10n.setVolume,
+                    CarbonIcons.settings_adjust,
+                    () => navigateToSettingPage(VolumeSetting.routeName),
+                    color: game.orange,
+                  ),
+                ],
+              );
+            },
+          ),
           SettingsSectionHeader(context.l10n.appearanceTitle),
           const AppearancePicker(),
           SettingsSectionHeader(context.l10n.trackingTitle),
@@ -114,6 +142,17 @@ class _SettingsState extends State<Settings> {
                 style: context.textTheme.bodySmall,
               ),
             ),
+          ),
+          const SizedBox(height: PBSpace.md),
+          SettingsGroup(
+            children: [
+              Settingsitem(
+                context.l10n.trackingAdvanced,
+                CarbonIcons.settings_adjust,
+                () => navigateToSettingPage(TrackingSettingsPage.routeName),
+                color: game.jungle,
+              ),
+            ],
           ),
           SettingsSectionHeader(context.l10n.info),
           SettingsGroup(

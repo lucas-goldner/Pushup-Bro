@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart' hide Material;
 import 'package:pushup_bro/core/audio/game_audio.dart';
+import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
@@ -160,6 +161,23 @@ class _IslandIntroState extends State<IslandIntro>
     super.initState();
     _beat = widget.startAt;
     _ticker = createTicker(_tick)..start();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _music());
+  }
+
+  /// The film's music: the storybook opening on the first card, then the
+  /// village party, the storm and the quiet morning on the beach.
+  void _music() {
+    if (!mounted) return;
+    final beat = _current;
+    MusicScope.set(
+      context,
+      switch (beat.set) {
+        IntroSet.village when _beat == 0 => MusicTrack.introTitle,
+        IntroSet.village => MusicTrack.introVillage,
+        IntroSet.storm => MusicTrack.introStorm,
+        IntroSet.beach => MusicTrack.introBeach,
+      },
+    );
   }
 
   @override
@@ -252,6 +270,7 @@ class _IslandIntroState extends State<IslandIntro>
       _beat = beat;
       _beatStart = _time;
     });
+    _music();
     final set = _current.set;
     if (set != previous) {
       _setTime = 0;

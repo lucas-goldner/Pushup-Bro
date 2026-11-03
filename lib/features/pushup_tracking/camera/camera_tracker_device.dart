@@ -5,7 +5,10 @@ import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_overlay.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/pushup_pose.dart';
 
@@ -53,6 +56,9 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
   Size _upright = Size.zero;
 
   ui.Image? _mask;
+
+  /// Only the skeleton is drawn, no picture of the player (the setting).
+  bool _skeletonOnly = false;
 
   @override
   void initState() {
@@ -147,8 +153,9 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
         (turned ? image.width : image.height).toDouble(),
       );
       final plane = image.planes.first;
-      // The cut-out every other frame is plenty and halves the work.
-      final wantsMask = (_frame++).isEven;
+      // The cut-out every other frame is plenty and halves the work; with
+      // only the skeleton showing there's no cut-out at all.
+      final wantsMask = (_frame++).isEven && !_skeletonOnly;
       final reply = await _vision.invokeMapMethod<String, Object?>(
         'process',
         {
@@ -279,6 +286,9 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
       );
     }
     final preview = CameraPreview(controller);
+    _skeletonOnly = context.select<SharedPreferencesCubit, bool>(
+      (cubit) => cubit.state.cameraView == CameraView.skeleton,
+    );
 
     return CameraBubble(
       color: _feedback.color(time, colors),
@@ -293,7 +303,9 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (_mask == null)
+                if (_skeletonOnly)
+                  const SizedBox.shrink()
+                else if (_mask == null)
                   preview
                 else
                   ShaderMask(

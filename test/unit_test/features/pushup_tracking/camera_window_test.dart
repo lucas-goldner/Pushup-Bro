@@ -1,8 +1,10 @@
+import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_scene/scene.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
+import 'package:pushup_bro/generated/l10n.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 void main() {
@@ -15,6 +17,7 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       const MaterialApp(
+        localizationsDelegates: [S.delegate],
         home: Stack(
           children: [
             Positioned.fill(
@@ -44,6 +47,40 @@ void main() {
 
     expect(tester.getTopLeft(find.byKey(window)), const Offset(16, 16));
     expect(CameraWindow.focus.value, const Offset(76 / 400, 96 / 800));
+  });
+
+  testWidgets('the hide button tucks it away at its side', (tester) async {
+    await pump(tester);
+
+    await tester.tap(find.byIcon(CarbonIcons.chevron_right));
+    await tester.pumpAndSettle();
+
+    // All but a 28 px tab is off the right edge, still there (and counting).
+    expect(tester.getTopLeft(find.byKey(window)).dx, 400 - 28);
+    expect(CameraWindow.focus.value, isNull);
+    expect(find.byIcon(CarbonIcons.video), findsOneWidget);
+
+    // Tapping the tab brings it back to its corner.
+    await tester.tap(find.byIcon(CarbonIcons.video));
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(find.byKey(window)), const Offset(264, 624));
+    expect(CameraWindow.focus.value, isNotNull);
+  });
+
+  testWidgets('flicked against the left edge, it tucks away there',
+      (tester) async {
+    await pump(tester);
+
+    await tester.fling(find.byKey(window), const Offset(-300, 0), 2000);
+    await tester.pumpAndSettle();
+
+    // Only the tab still shows at the left edge.
+    expect(tester.getTopRight(find.byKey(window)).dx, 28);
+
+    // Dragged back in, it returns to the corner on that side.
+    await tester.drag(find.byIcon(CarbonIcons.video), const Offset(200, 0));
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(find.byKey(window)).dx, 16);
   });
 
   testWidgets('forgets the spot once closed', (tester) async {

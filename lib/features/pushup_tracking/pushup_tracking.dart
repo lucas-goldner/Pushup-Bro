@@ -13,6 +13,7 @@ import 'package:pushup_bro/core/model/pushup_set.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/fold_safe.dart';
+import 'package:pushup_bro/core/widgets/music_toggle_button.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/pro/widgets/free_days_home_chip.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
@@ -233,8 +234,18 @@ class _PushupTrackingState extends State<PushupTracking> {
               child: Align(
                 alignment: Alignment.topRight,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 4, right: 12),
-                  child: FreeDaysHomeChip(visible: !started),
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: FreeDaysHomeChip(visible: !started),
+                      ),
+                      // Music on or off for the whole app.
+                      if (!started) const MusicToggleButton(),
+                    ],
+                  ),
                 ),
               ),
             ),

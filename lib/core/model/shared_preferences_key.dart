@@ -19,5 +19,9 @@ enum SharedPreferencesKey {
   accountUpgradePromptShown,
   cloudSavedAt,
   inboxBananasDay,
-  dailyBananasClaimedOn;
+  dailyBananasClaimedOn,
+  musicOn,
+  soundsOn,
+  cameraView,
+  airpodsSensitivity;
 }

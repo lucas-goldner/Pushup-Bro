@@ -87,7 +87,7 @@
   "x": "X",
   "privacyPolicy": "Privacy Policy",
   "termsOfService": "Terms of Service",
-  "setVolume": "Set volume",
+  "setVolume": "Sound & music",
   "volumeLevel": "Volume: {xVolumeLevel}",
   "@volumeLevel": {
     "placeholders": {
@@ -1779,5 +1779,70 @@
   "introSkip": "Skip",
   "introGusTornado": "TORNADO! Carlos, hold on to something!",
   "introCarlosBanana": "I'm holding on to my banana! Is that… bad?!",
-  "introCarlosWorried": "My tribe… they must be so worried about me."
+  "introCarlosWorried": "My tribe… they must be so worried about me.",
+  "settingsSoundEffects": "Sound effects",
+  "settingsSoundTitle": "Sound",
+  "settingsVolume": "Volume",
+  "settingsOff": "Off",
+  "cameraHide": "Hide camera",
+  "cameraShow": "Show camera",
+  "trackingAdvanced": "Advanced tracking",
+  "trackingCameraTitle": "Camera",
+  "cameraViewPerson": "You and your skeleton",
+  "cameraViewPersonInfo": "The standard view: you, cut out of the room, with your skeleton on top.",
+  "cameraViewSkeleton": "Skeleton only",
+  "cameraViewSkeletonInfo": "No picture of you, only your skeleton. Counting works just the same.",
+  "airpodsTitle": "AirPods",
+  "airpodsSensitivity": "Sensitivity",
+  "airpodsSensitivityInfo": "Higher counts smaller head movements, lower counts only deep pushups.",
+  "airpodsLow": "Deep only",
+  "airpodsHigh": "Every dip",
+  "airpodsLevel": "Level {level}",
+  "@airpodsLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "airpodsStandard": "standard",
+  "airpodsTest": "Find your setting",
+  "airpodsTestInfo": "Put in your AirPods, tap Start and do 5 pushups. We count them at your setting and suggest the one that fits you best.",
+  "airpodsTestStart": "Start",
+  "airpodsTestStop": "Stop",
+  "airpodsCounted": "Counted at your setting: {count}",
+  "@airpodsCounted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "airpodsFound": "Pushups we saw: {count}",
+  "@airpodsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "airpodsKeepGoing": "Keep going, a few more pushups",
+  "airpodsSuggestion": "Best for you: level {level}",
+  "@airpodsSuggestion": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "airpodsApply": "Use level {level}",
+  "@airpodsApply": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "airpodsNoMotion": "No movement from your AirPods yet. Are they in your ears?",
+  "airpodsReset": "Reset to default"
 }

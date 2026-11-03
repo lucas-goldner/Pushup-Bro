@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
@@ -51,7 +53,7 @@ class _TrekResultState extends State<TrekResult> {
     if (reward.levelsGained > 0) {
       Future<void>.delayed(
         const Duration(milliseconds: 1600),
-        () => audio.play(Sfx.levelUp),
+        () => unawaited(audio.jingle(MusicTrack.levelUp)),
       );
     }
     if (reward.loot != null) {
