@@ -80,11 +80,19 @@ class FreeDaysChip extends StatelessWidget {
 /// a big clock and the number of days left ("5h" on the last day), so it
 /// can't be missed. A lock once they're over.
 class FreeDaysBadge extends StatelessWidget {
-  const FreeDaysBadge({required this.left, this.onTap, super.key});
+  const FreeDaysBadge({
+    required this.left,
+    this.onTap,
+    this.compact = false,
+    super.key,
+  });
 
   /// What's left of the free days; zero once they're over.
   final Duration left;
   final VoidCallback? onTap;
+
+  /// Shorter and with smaller type.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -103,9 +111,9 @@ class FreeDaysBadge extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 48,
-          constraints: const BoxConstraints(minWidth: 48),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          height: compact ? 36 : 48,
+          constraints: BoxConstraints(minWidth: compact ? 36 : 48),
+          padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 14),
           decoration: BoxDecoration(
             color: over ? game.red : game.orange,
             borderRadius: BorderRadius.circular(PBRadius.pill),
@@ -118,17 +126,17 @@ class FreeDaysBadge extends StatelessWidget {
               children: [
                 Icon(
                   over ? CarbonIcons.locked : CarbonIcons.time,
-                  size: 24,
+                  size: compact ? 18 : 24,
                   color: game.onGame,
                 ),
                 if (count.isNotEmpty) ...[
-                  const SizedBox(width: 6),
+                  SizedBox(width: compact ? 5 : 6),
                   Text(
                     count,
                     style: context.textTheme.titleLarge?.copyWith(
                       color: game.onGame,
                       fontWeight: FontWeight.w800,
-                      fontSize: 24,
+                      fontSize: compact ? 18 : 24,
                       height: 1,
                     ),
                   ),
