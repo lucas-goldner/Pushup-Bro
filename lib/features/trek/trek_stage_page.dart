@@ -38,6 +38,7 @@ import 'package:pushup_bro/features/trek/model/battle.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/scene/trek_world.dart';
 import 'package:pushup_bro/features/trek/widgets/battle_hud.dart';
+import 'package:pushup_bro/features/trek/widgets/difficulty_picker.dart';
 import 'package:pushup_bro/features/trek/widgets/rest_panel.dart';
 import 'package:pushup_bro/features/trek/widgets/trek_result.dart';
 import 'package:pushup_bro/generated/l10n.dart';
@@ -150,8 +151,7 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
   @override
   void initState() {
     super.initState();
-    _battle =
-        Battle(_stage, context.read<GameInventoryCubit>().state.inventory.trek);
+    _battle = _newBattle();
     unawaited(
       context
           .read<SharedPreferencesCubit>()
@@ -394,11 +394,16 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
     setState(() => _phase = _Phase.knockedOut);
   }
 
+  /// A fresh battle at the difficulty picked on the map.
+  Battle _newBattle() {
+    final trek = context.read<GameInventoryCubit>().state.inventory.trek;
+
+    return Battle(_stage, trek, difficulty: difficultyOf(trek));
+  }
+
   void _retry() {
     final xp = _battle.xp;
-    _battle =
-        Battle(_stage, context.read<GameInventoryCubit>().state.inventory.trek)
-          ..xp = xp;
+    _battle = _newBattle()..xp = xp;
     _world?.spawn(_battle.foes);
     setState(() => _phase = _Phase.ready);
   }
@@ -409,13 +414,15 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
     await inventoryCubit.fetchInventory();
     final inventory = inventoryCubit.state.inventory;
     final first = !inventory.trek.cleared(_stage.id);
-    final xp = _battle.xp + _battle.clearXp;
+    final xp = _battle.earnedXp + _battle.clearXp;
     final (gained, levels) = inventory.trek.gainXp(xp);
     final progress = gained.clear(_stage.id, _battle.stars);
     final adopt = first &&
         _stage.boss &&
         !inventory.monkeys.any((m) => m.look.species == MonkeyLook.lizard);
-    final bananas = _battle.reps + (first ? 50 : 10);
+    final bananas =
+        ((_battle.reps + (first ? 50 : 10)) * _battle.difficulty.rewards)
+            .round();
     await inventoryCubit.updateInventory(
       inventory.copyWith(
         bananas: inventory.bananas + bananas,
@@ -534,6 +541,15 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
         world.strike(foe);
         _shake = 1;
         _hurt = 1;
+        // How much it took, over Carlos at the bottom of the view.
+        _popups.add(
+          Popup(
+            text: '-${foe.attack.round()}',
+            color: const Color(0xFFE5534B),
+            at: Offset(_viewSize.width * 0.42, _viewSize.height * 0.62),
+            big: true,
+          ),
+        );
       }
       for (final foe in events.colorShifts) {
         GameAudio.instance.play(Sfx.pop);

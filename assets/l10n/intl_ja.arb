@@ -1100,5 +1100,16 @@
   "resetAll": "すべての進行状況をリセット",
   "resetAllInfo": "新しくインストールしたように、すべてが最初からになります：腕立ての記録と統計、ブロレベル、島とストーリーのすべて。設定、Pro、アカウントはそのままです。元に戻すことはできません。",
   "resetAllConfirm": "すべてリセット",
-  "resetDone": "完了：新しいスタートです！"
+  "resetDone": "完了：新しいスタートです！",
+  "trekDifficulty": "難易度",
+  "trekEasy": "イージー",
+  "trekNormal": "ノーマル",
+  "trekHard": "ハード",
+  "trekBrutal": "ブルータル",
+  "trekEasyInfo": "連続10回未満の人向け。1ステージ約10〜15回。",
+  "trekNormalInfo": "連続10〜20回の人向け。1ステージ約20〜35回、ウェーブの間に休憩あり。",
+  "trekHardInfo": "連続30回以上の人向け。1ステージ約30〜45回、反撃も強烈。",
+  "trekBrutalInfo": "連続50回以上の人向け。1ステージ40〜60回、2回ごとに反撃してくる。",
+  "trekBrutalLocked": "ジャングル探検を全てクリアするとブルータルが解放されます。",
+  "trekRewards": "XPとバナナ ×{amount}"
 }
