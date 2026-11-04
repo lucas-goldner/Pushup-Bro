@@ -120,6 +120,7 @@ abstract class Reptile extends Actor {
   bool hidden = false;
   double _sink = 0;
   double _fade = 0;
+  bool _glowing = false;
 
   /// Gone after its defeat animation.
   bool get gone => _defeat >= 1;
@@ -147,9 +148,17 @@ abstract class Reptile extends Actor {
 
     // Flash white when hit, glow red while winding up.
     final glow = windUp * (0.55 + 0.45 * math.sin(_time * 22).abs());
+    if (glow > 0 || _glowing) {
+      _glowing = glow > 0;
+      const red = Color(0xFFFF2A1F);
+      _belly.baseColorFactor =
+          linearColor(Color.lerp(_lighter(_base, 0.55), red, glow * 0.6)!);
+      _accent.baseColorFactor =
+          linearColor(Color.lerp(_darker(_base, 0.35), red, glow * 0.8)!);
+    }
     _skin.baseColorFactor = linearColor(
       Color.lerp(
-        Color.lerp(_base, const Color(0xFFFF3B30), glow * 0.7),
+        Color.lerp(_base, const Color(0xFFFF2A1F), glow * 0.9),
         const Color(0xFFFFFFFF),
         _hit * 0.75,
       )!,

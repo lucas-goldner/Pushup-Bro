@@ -60,7 +60,7 @@ class TrekWorld {
   final Map<Foe, List<Node>> _plates = {};
   late final Geometry _plateShape = reshaped(
     CuboidGeometry(vm.Vector3.all(1)),
-    vm.Vector3(0.22, 0.3, 0.05),
+    vm.Vector3(0.18, 0.24, 0.04),
   );
   late final _plateMaterial = UnlitMaterial()
     ..baseColorFactor = linearColor(const Color(0xFF7FD0FF));
@@ -330,7 +330,7 @@ class TrekWorld {
         }
         final centre =
             actor.root.position + vm.Vector3(0, _heightOf(actor) * 0.45, 0);
-        final radius = _heightOf(actor) * 0.55 + 0.25;
+        final radius = _heightOf(actor) * 0.3 + 0.18;
         for (final (i, plate) in plates.indexed) {
           final a = _time * 1.6 + i * math.pi * 2 / plates.length;
           plate
