@@ -53,4 +53,12 @@ void main() {
     };
     expect(days, {MusicTrack.island, MusicTrack.islandAlt});
   });
+
+  test('music asked for before init is kept for when it is ready', () async {
+    final audio = GameAudio.instance;
+    await audio.music(MusicTrack.home);
+    expect(audio.track, MusicTrack.home);
+    await audio.music(null);
+    expect(audio.track, isNull);
+  });
 }
