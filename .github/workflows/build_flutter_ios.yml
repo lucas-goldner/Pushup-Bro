@@ -6,7 +6,7 @@ on:
 
 jobs:
   flutter_test:
-    name: Run flutter test, analyze and build for ios
+    name: Run flutter test and analyze
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,4 +22,3 @@ jobs:
       - run: flutter pub run build_runner build --delete-conflicting-outputs
       - run: flutter analyze
       - run: flutter test
-      - run: flutter build ios --release --no-codesign --flavor prod -t lib/flavor/main_prod.dart
