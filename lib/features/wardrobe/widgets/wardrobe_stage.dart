@@ -48,11 +48,16 @@ class _WardrobeStageState extends State<WardrobeStage> {
       ..settle();
     final mat = _mat = buildMat(widget.look)..position = vm.Vector3(0, 0, -0.1);
     scene
-      ..directionalLight = DirectionalLight(
-        direction: vm.Vector3(-0.4, -1, -0.6),
-        intensity: 3.2,
-        castsShadow: true,
-        shadowSoftness: 0.3,
+      // Carlos on his stand fills the view, a few metres away; no shadows
+      // are needed past that.
+      ..directionalLight = fitShadowCascades(
+        DirectionalLight(
+          direction: vm.Vector3(-0.4, -1, -0.6),
+          intensity: 3.2,
+          castsShadow: true,
+          shadowSoftness: 0.3,
+        ),
+        visibleDepth: 8,
       )
       ..environmentSettings = EnvironmentSettings(
         exposure: 1.1,

@@ -165,13 +165,13 @@ class TrekWorld {
     final shot = Node(name: 'shot')
       ..add(
         meshNode(
-          IcosphereGeometry(radius: 0.12),
+          icosphere(0.12),
           UnlitMaterial()..baseColorFactor = linearColor(color),
         ),
       )
       ..add(
         meshNode(
-          IcosphereGeometry(radius: 0.2),
+          icosphere(0.2),
           UnlitMaterial()
             ..baseColorFactor = linearColor(
               Color.lerp(color, const Color(0xFFFFFFFF), 0.6)!,
@@ -211,7 +211,7 @@ class TrekWorld {
     final material = UnlitMaterial()..baseColorFactor = linearColor(color);
     for (var i = 0; i < count; i++) {
       final node = meshNode(
-        IcosphereGeometry(radius: 0.05, subdivisions: 0),
+        icosphere(0.05, subdivisions: 0),
         material,
         position: at.clone(),
       );

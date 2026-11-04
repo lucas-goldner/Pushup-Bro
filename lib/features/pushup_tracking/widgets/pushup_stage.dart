@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
+import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
 import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_cubit.dart';
@@ -52,10 +53,15 @@ class _PushupStageState extends State<PushupStage> {
     final gym = _gym = GymWorld();
     _syncGym();
     scene
-      ..directionalLight = DirectionalLight(
-        direction: vm.Vector3(-0.35, -1, -0.5),
-        castsShadow: true,
-        shadowSoftness: 0.25,
+      // The camera sees no further than the gym's back wall, under 17 m
+      // away, so no shadows are needed past that.
+      ..directionalLight = fitShadowCascades(
+        DirectionalLight(
+          direction: vm.Vector3(-0.35, -1, -0.5),
+          castsShadow: true,
+          shadowSoftness: 0.25,
+        ),
+        visibleDepth: 20,
       )
       ..environmentSettings = EnvironmentSettings(
         exposure: 1.05,

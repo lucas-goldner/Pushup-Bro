@@ -27,24 +27,32 @@ Node _eye(double radius, vm.Vector3 at) => Node(name: 'eye')
   ..position = at
   ..add(
     meshNode(
-      SphereGeometry(radius: radius, segments: 16, rings: 10),
-      matte(const Color(0xFFFFFFFF), roughness: 0.3),
+      sphere(radius, segments: 16, rings: 10),
+      _eyeWhite,
     ),
   )
   ..add(
     meshNode(
-      SphereGeometry(radius: radius * 0.6, segments: 14, rings: 8),
-      matte(const Color(0xFF15141B), roughness: 0.1),
+      sphere(radius * 0.6, segments: 14, rings: 8),
+      _pupil,
       position: vm.Vector3(0, 0, radius * 0.55),
     ),
   )
   ..add(
     meshNode(
-      SphereGeometry(radius: radius * 0.2, segments: 8, rings: 6),
-      UnlitMaterial()..baseColorFactor = linearColor(const Color(0xFFFFFFFF)),
+      sphere(radius * 0.2, segments: 8, rings: 6),
+      _sparkle,
       position: vm.Vector3(radius * 0.25, radius * 0.3, radius * 1.05),
     ),
   );
+
+// Every eye looks the same, so they all share their materials.
+final PhysicallyBasedMaterial _eyeWhite =
+    matte(const Color(0xFFFFFFFF), roughness: 0.3);
+final PhysicallyBasedMaterial _pupil =
+    matte(const Color(0xFF15141B), roughness: 0.1);
+final _sparkle = UnlitMaterial()
+  ..baseColorFactor = linearColor(const Color(0xFFFFFFFF));
 
 /// An angry little eyebrow over an eye at [at], slanting down to the
 /// middle.
@@ -62,8 +70,8 @@ Node _brow(double side, vm.Vector3 at, Material material) => meshNode(
 List<Node> _tail(List<vm.Vector3> points, double radius, Material material) => [
       for (final (i, point) in points.indexed)
         meshNode(
-          SphereGeometry(
-            radius: radius * (1 - i / points.length * 0.8),
+          sphere(
+            radius * (1 - i / points.length * 0.8),
             segments: 16,
             rings: 10,
           ),
@@ -226,7 +234,7 @@ class Gecko extends Reptile {
       _torso
         ..add(
           meshNode(
-            CapsuleGeometry(radius: 0.035, height: 0.12),
+            capsule(0.035, 0.12, radialSegments: 16, capRings: 4),
             _skin,
             position: vm.Vector3(x * 0.13, -0.07, z * 0.15 * length),
             rotation: vm.Quaternion.fromTwoVectors(
@@ -237,7 +245,10 @@ class Gecko extends Reptile {
         )
         ..add(
           meshNode(
-            reshaped(SphereGeometry(radius: 0.04), vm.Vector3(1.3, 0.5, 1.3)),
+            reshaped(
+              sphere(0.04, segments: 16, rings: 10),
+              vm.Vector3(1.3, 0.5, 1.3),
+            ),
             _belly,
             position: vm.Vector3(x * 0.19, -0.13, z * 0.15 * length + 0.02),
           ),
@@ -448,7 +459,7 @@ class Chameleon extends Reptile {
           _eye(0.04, vm.Vector3(side * 0.11, 0.39, 0.29)),
           for (final z in [0.12, -0.1])
             meshNode(
-              CapsuleGeometry(radius: 0.03, height: 0.16),
+              capsule(0.03, 0.16, radialSegments: 16, capRings: 4),
               _skin,
               position: vm.Vector3(side * 0.08, 0.1, z),
             ),
@@ -567,7 +578,12 @@ class Snake extends Reptile {
     _tongue
       ..add(
         meshNode(
-          CylinderGeometry(bottomRadius: 0.008, topRadius: 0.008, height: 0.1),
+          CylinderGeometry(
+            bottomRadius: 0.008,
+            topRadius: 0.008,
+            height: 0.1,
+            radialSegments: 8,
+          ),
           red,
           position: vm.Vector3(0, 0, 0.05),
           rotation: vm.Quaternion.fromTwoVectors(_up, vm.Vector3(0, 0, 1)),
@@ -580,6 +596,7 @@ class Snake extends Reptile {
               bottomRadius: 0.006,
               topRadius: 0.006,
               height: 0.04,
+              radialSegments: 6,
             ),
             red,
             position: vm.Vector3(side * 0.012, 0, 0.11),

@@ -11,6 +11,9 @@ import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
+/// Where the mist hides the clearing completely.
+const _fogEnd = 30.0;
+
 /// Matches the bottom of the jungle screen's gradient, so the fog melts
 /// into the backdrop: a pale, misty leaf green.
 Color jungleMistOf(BuildContext context) =>
@@ -44,10 +47,14 @@ class _JungleSceneState extends State<JungleScene> {
     final inventory = context.read<GameInventoryCubit>().state.inventory;
     _carlos.look = inventory.monkeys.first.look;
     scene
-      ..directionalLight = DirectionalLight(
-        direction: vm.Vector3(-0.4, -1, -0.3),
-        castsShadow: true,
-        shadowSoftness: 0.3,
+      // Past the fog's end only mist shows, so no shadows are needed there.
+      ..directionalLight = fitShadowCascades(
+        DirectionalLight(
+          direction: vm.Vector3(-0.4, -1, -0.3),
+          castsShadow: true,
+          shadowSoftness: 0.3,
+        ),
+        visibleDepth: _fogEnd,
       )
       ..environmentSettings = EnvironmentSettings(
         exposure: 1.05,
@@ -59,7 +66,7 @@ class _JungleSceneState extends State<JungleScene> {
         fogMode: FogMode.linear,
         fogColor: linearColor(jungleMistOf(context)).xyz,
         fogStart: 12,
-        fogEnd: 30,
+        fogEnd: _fogEnd,
       )
       ..add(jungle.root)
       ..add(_carlos.root);

@@ -165,7 +165,7 @@ Node _partyHat() {
   return hat
     ..add(
       _part(
-        SphereGeometry(radius: 0.045),
+        SphereGeometry(radius: 0.045, segments: 16, rings: 10),
         matte(_yellow, roughness: 0.9),
         at: vm.Vector3(0, height, 0),
       ),
@@ -212,7 +212,7 @@ Node _cap() {
     )
     ..add(
       _part(
-        SphereGeometry(radius: 0.035),
+        SphereGeometry(radius: 0.035, segments: 16, rings: 10),
         matte(_white),
         at: vm.Vector3(0, 0.375, 0),
       ),
@@ -411,7 +411,7 @@ Node _cowboyHat() {
       for (final side in [-1.0, 1.0])
         _part(
           reshaped(
-            TorusGeometry(radius: 0.2, tubeRadius: 0.035),
+            TorusGeometry(radius: 0.2, tubeRadius: 0.035, tubularSegments: 12),
             vm.Vector3(0.25, 1, 1.9),
           ),
           leather,
@@ -457,7 +457,7 @@ Node _pirateHat() => Node(name: 'pirate-hat')
   ..add(
     _part(
       reshaped(
-        TorusGeometry(radius: 0.3, tubeRadius: 0.015),
+        TorusGeometry(radius: 0.3, tubeRadius: 0.015, tubularSegments: 8),
         vm.Vector3(1.5, 1, 0.55),
       ),
       _gold(),
@@ -609,7 +609,7 @@ Node _halo() => Node(name: 'spin')
   ..position = vm.Vector3(0, 0.55, 0)
   ..add(
     _part(
-      TorusGeometry(radius: 0.22, tubeRadius: 0.028),
+      TorusGeometry(radius: 0.22, tubeRadius: 0.028, tubularSegments: 10),
       UnlitMaterial()..baseColorFactor = linearColor(const Color(0xFFFFE27A)),
     ),
   );
@@ -628,7 +628,10 @@ Node _geckoBuddy() {
     )
     ..add(
       _part(
-        reshaped(SphereGeometry(radius: 0.075), vm.Vector3(1, 0.75, 1.15)),
+        reshaped(
+          SphereGeometry(radius: 0.075, segments: 24, rings: 14),
+          vm.Vector3(1, 0.75, 1.15),
+        ),
         skin,
         at: vm.Vector3(0, 0.03, 0.16),
       ),
@@ -642,7 +645,10 @@ Node _geckoBuddy() {
         ),
         for (final z in [-0.08, 0.08])
           _part(
-            reshaped(SphereGeometry(radius: 0.03), vm.Vector3(1.6, 0.5, 0.9)),
+            reshaped(
+              SphereGeometry(radius: 0.03, segments: 16, rings: 10),
+              vm.Vector3(1.6, 0.5, 0.9),
+            ),
             skin,
             at: vm.Vector3(side * 0.08, -0.03, z),
           ),
@@ -724,7 +730,7 @@ Node? buildEyewear(String id) => switch (id) {
         ),
       'eyes.nerd' => _glasses(
           lens: (side) => _part(
-            TorusGeometry(radius: 0.07, tubeRadius: 0.012),
+            TorusGeometry(radius: 0.07, tubeRadius: 0.012, tubularSegments: 8),
             matte(const Color(0xFF6B4A2F)),
             rotation: vm.Quaternion.fromTwoVectors(_yAxis, _zAxis),
           ),
@@ -840,7 +846,7 @@ Node _monocle() {
   return Node(name: 'monocle')
     ..add(
       _part(
-        TorusGeometry(radius: 0.072, tubeRadius: 0.012),
+        TorusGeometry(radius: 0.072, tubeRadius: 0.012, tubularSegments: 8),
         gold,
         at: vm.Vector3(0.092, 0.05, 0.415),
         rotation: vm.Quaternion.fromTwoVectors(_yAxis, _zAxis),
@@ -1011,7 +1017,7 @@ Node _bowTie() {
           rotation: vm.Quaternion.axisAngle(_zAxis, side * math.pi / 2),
         ),
     ])
-    ..add(_part(SphereGeometry(radius: 0.025), cloth));
+    ..add(_part(SphereGeometry(radius: 0.025, segments: 16, rings: 10), cloth));
 }
 
 List<Node> _tankTop() {
@@ -1135,7 +1141,7 @@ Node _cape() {
     )
     ..add(
       _part(
-        SphereGeometry(radius: 0.035),
+        SphereGeometry(radius: 0.035, segments: 16, rings: 10),
         _gold(),
         at: vm.Vector3(0, 0.25, 0.17),
       ),

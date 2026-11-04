@@ -478,7 +478,12 @@ class Jaguar extends Actor {
             position: vm.Vector3(side * 0.17, 0.12, -0.02),
           ),
           meshNode(
-            CapsuleGeometry(radius: 0.055, height: 0.28),
+            CapsuleGeometry(
+              radius: 0.055,
+              height: 0.28,
+              radialSegments: 16,
+              capRings: 5,
+            ),
             fur,
             position: vm.Vector3(side * 0.1, 0.2, 0.16),
           ),

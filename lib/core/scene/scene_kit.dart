@@ -28,6 +28,97 @@ PhysicallyBasedMaterial matte(Color color, {double roughness = 0.85}) =>
       ..metallicFactor = 0
       ..roughnessFactor = roughness;
 
+final Map<Object, Geometry> _shared = {};
+
+/// The geometry for [key], built by [build] the first time and handed out
+/// again after that, so a shape made over and over (in a loop, for every
+/// character, for every spark) is generated and uploaded once. Only for
+/// geometry that is never changed afterwards; the cache lives as long as
+/// the app, so keep the keys to a handful of fixed shapes.
+G sharedGeometry<G extends Geometry>(Object key, G Function() build) =>
+    _shared.putIfAbsent(key, build) as G;
+
+/// A shared [SphereGeometry] (see [sharedGeometry]).
+SphereGeometry sphere(double radius, {int segments = 32, int rings = 16}) =>
+    sharedGeometry(
+      ('sphere', radius, segments, rings),
+      () => SphereGeometry(radius: radius, segments: segments, rings: rings),
+    );
+
+/// A shared [IcosphereGeometry] (see [sharedGeometry]).
+IcosphereGeometry icosphere(double radius, {int subdivisions = 2}) =>
+    sharedGeometry(
+      ('icosphere', radius, subdivisions),
+      () => IcosphereGeometry(radius: radius, subdivisions: subdivisions),
+    );
+
+/// A shared [CapsuleGeometry] (see [sharedGeometry]).
+CapsuleGeometry capsule(
+  double radius,
+  double height, {
+  int radialSegments = 32,
+  int capRings = 8,
+}) =>
+    sharedGeometry(
+      ('capsule', radius, height, radialSegments, capRings),
+      () => CapsuleGeometry(
+        radius: radius,
+        height: height,
+        radialSegments: radialSegments,
+        capRings: capRings,
+      ),
+    );
+
+/// Keeps only the shadow cascades of [light] that something on screen can
+/// sample, for a view where nothing past [visibleDepth] from a camera with
+/// the [near] plane shows (fog swallows it, or the room ends there).
+///
+/// The light covers 150 m in four cascades by default, while these scenes
+/// end a few metres away, so the far cascades were drawn every frame for
+/// nobody. The cascades kept stay exactly where they were (the first split
+/// is pinned and the rest spread as before), and shadows only fade out past
+/// [visibleDepth], so the shadows look the same.
+DirectionalLight fitShadowCascades(
+  DirectionalLight light, {
+  required double visibleDepth,
+  double near = 0.1,
+}) {
+  final count = light.shadowCascadeCount.clamp(1, 4);
+  final far = light.shadowMaxDistance;
+  final lambda = light.shadowCascadeSplitLambda;
+  if (light.firstCascadeFarBound != null || light.cascadeOverlap > 0) {
+    return light;
+  }
+  // Where the engine splits the cascades (a blend of logarithmic and
+  // uniform spacing).
+  final splits = [
+    near,
+    for (var i = 1; i <= count; i++)
+      lambda * near * math.pow(far / near, i / count) +
+          (1 - lambda) * (near + (far - near) * i / count),
+  ];
+  for (var keep = 1; keep < count; keep++) {
+    final end = splits[keep];
+    // Shadows fade out over the last stretch before they end.
+    final fadeFrom = end - math.max(light.shadowFadeRange, end * 0.1);
+    if (fadeFrom < visibleDepth) continue;
+    light
+      ..shadowCascadeCount = keep
+      ..shadowMaxDistance = end;
+    if (keep >= 2) light.firstCascadeFarBound = splits[1];
+    if (keep == 3) {
+      // One split left between the pinned one and the end: blend it back
+      // to where it was.
+      final log = math.sqrt(splits[1] * splits[3]);
+      final uniform = (splits[1] + splits[3]) / 2;
+      light.shadowCascadeSplitLambda = (uniform - splits[2]) / (uniform - log);
+    }
+    break;
+  }
+
+  return light;
+}
+
 /// A node carrying one mesh, optionally placed at [position].
 Node meshNode(
   Geometry geometry,
