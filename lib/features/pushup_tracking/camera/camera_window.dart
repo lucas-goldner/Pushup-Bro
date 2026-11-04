@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
@@ -258,7 +259,7 @@ class _CameraWindowState extends State<CameraWindow>
                     ),
                     if (tucked == null)
                       Positioned(
-                        left: 6,
+                        right: 6,
                         top: 6,
                         child: _HideButton(
                           // Towards the edge it's nearest.
@@ -285,7 +286,8 @@ class _CameraWindowState extends State<CameraWindow>
   }
 }
 
-/// The small round button that tucks the window away at [side].
+/// The small frosted button in the window's top right corner that tucks
+/// it away at [side]. Its touch area is bigger than the glass it shows.
 class _HideButton extends StatelessWidget {
   const _HideButton({required this.side, required this.onTap});
 
@@ -299,17 +301,52 @@ class _HideButton extends StatelessWidget {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onTap,
-          child: Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.45),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              side < 0 ? CarbonIcons.chevron_left : CarbonIcons.chevron_right,
-              size: 16,
-              color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.42),
+                          Colors.white.withValues(alpha: 0.22),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    child: Icon(
+                      side < 0
+                          ? CarbonIcons.chevron_left
+                          : CarbonIcons.chevron_right,
+                      size: 18,
+                      color: Colors.white,
+                      shadows: const [
+                        Shadow(color: Color(0x40000000), blurRadius: 3),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
