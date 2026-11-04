@@ -1,4 +1,5 @@
 import 'package:pushup_bro/core/audio/game_audio.dart';
+import 'package:pushup_bro/core/model/night.dart';
 import 'package:pushup_bro/core/model/quest_log.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
 
@@ -31,7 +32,7 @@ MusicTrack trekMusic(ChallengeLocation location, {bool boss = false}) {
 /// The island's music at [now]: the night lullaby from 8 pm to 6 am, and by
 /// day one of the two island themes, swapping each day.
 MusicTrack islandMusic(DateTime now) {
-  if (now.hour >= 20 || now.hour < 6) return MusicTrack.islandNight;
+  if (isNight(now)) return MusicTrack.islandNight;
 
   return dayNumber(now).isEven ? MusicTrack.island : MusicTrack.islandAlt;
 }

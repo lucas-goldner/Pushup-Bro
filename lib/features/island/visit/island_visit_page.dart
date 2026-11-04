@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/model/night.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/features/island/model/island_snapshot.dart';
 import 'package:pushup_bro/features/island/widgets/island_scene.dart';
@@ -57,6 +58,9 @@ class _IslandVisitPageState extends State<IslandVisitPage> {
   bool _waved = false;
   bool _bananaSent = false;
 
+  /// A friend's island at the visitor's time of day, like their own.
+  final bool _night = isNight(DateTime.now());
+
   Future<_Visit?> _load() async {
     final account = context.read<AccountCubit>();
     final backend = account.backend;
@@ -96,7 +100,7 @@ class _IslandVisitPageState extends State<IslandVisitPage> {
 
   @override
   Widget build(BuildContext context) {
-    final sky = islandSky(context);
+    final sky = islandSky(context, night: _night);
     final l = context.l10n;
 
     return Scaffold(
@@ -139,6 +143,7 @@ class _IslandVisitPageState extends State<IslandVisitPage> {
               children: [
                 Positioned.fill(
                   child: IslandScene(
+                    night: _night,
                     snapshot: IslandSnapshot.fromJson(visit.profile.island),
                     greetings: [
                       l.visitGreet1,
