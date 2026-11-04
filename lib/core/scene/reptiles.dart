@@ -109,6 +109,18 @@ abstract class Reptile extends Actor {
     _accent.baseColorFactor = linearColor(_darker(value, 0.35));
   }
 
+  /// Winding up a heavy attack, 0 to 1: it rears back and glows red.
+  double windUp = 0;
+
+  /// Reeling from a blocked attack: it wobbles, dazed.
+  bool staggered = false;
+
+  /// Under the water (a diver) or out of sight (a vanisher).
+  bool sunk = false;
+  bool hidden = false;
+  double _sink = 0;
+  double _fade = 0;
+
   /// Gone after its defeat animation.
   bool get gone => _defeat >= 1;
 
@@ -130,22 +142,40 @@ abstract class Reptile extends Actor {
     _lunge = math.max(0, _lunge - deltaSeconds * 2.2);
     if (_defeat >= 0) _defeat = math.min(1, _defeat + deltaSeconds * 1.6);
 
-    // Flash white when hit.
+    _sink = springTo(_sink, sunk ? 1 : 0, deltaSeconds, 5);
+    _fade = springTo(_fade, hidden ? 1 : 0, deltaSeconds, 7);
+
+    // Flash white when hit, glow red while winding up.
+    final glow = windUp * (0.55 + 0.45 * math.sin(_time * 22).abs());
     _skin.baseColorFactor = linearColor(
-      Color.lerp(_base, const Color(0xFFFFFFFF), _hit * 0.75)!,
+      Color.lerp(
+        Color.lerp(_base, const Color(0xFFFF3B30), glow * 0.7),
+        const Color(0xFFFFFFFF),
+        _hit * 0.75,
+      )!,
     );
     final squash = math.sin(_hit * math.pi) * 0.25;
     final leap = math.sin(_lunge * math.pi);
     final gone = _defeat < 0 ? 0.0 : _defeat;
+    // Rearing back to wind up, a dazed wobble when staggered.
+    final rear = windUp * (0.25 + 0.04 * math.sin(_time * 30));
+    final daze = staggered ? math.sin(_time * 9) * 0.22 : 0.0;
+    final shrink = (1 - gone) * (1 - _fade);
     body
-      ..position = vm.Vector3(0, leap * 0.25 + gone * 0.6, leap * 0.9)
+      ..position = vm.Vector3(
+        0,
+        leap * 0.25 + gone * 0.6 - _sink * height * 1.1,
+        leap * 0.9 - rear * 0.6,
+      )
       ..scale = vm.Vector3(
-            1 + squash * 0.6,
-            1 - squash,
-            1 + squash * 0.6,
+            1 + squash * 0.6 + windUp * 0.12,
+            1 - squash + windUp * 0.12,
+            1 + squash * 0.6 + windUp * 0.12,
           ) *
-          (1 - gone)
-      ..rotation = vm.Quaternion.axisAngle(_up, gone * math.pi * 3);
+          math.max(0.001, shrink)
+      ..rotation = vm.Quaternion.axisAngle(_up, gone * math.pi * 3 + daze) *
+          vm.Quaternion.axisAngle(vm.Vector3(1, 0, 0), -rear);
+    body.visible = _fade < 0.98;
     if (gone >= 1) root.visible = false;
     animate(_time);
   }

@@ -35,11 +35,14 @@ import 'package:pushup_bro/features/pushup_tracking/widgets/tracking_mode_picker
 import 'package:pushup_bro/features/quest/scene/location_world.dart';
 import 'package:pushup_bro/features/quest/widgets/dialog_box.dart';
 import 'package:pushup_bro/features/trek/model/battle.dart';
+import 'package:pushup_bro/features/trek/model/boon.dart';
+import 'package:pushup_bro/features/trek/model/tower_week.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/scene/trek_world.dart';
 import 'package:pushup_bro/features/trek/widgets/battle_hud.dart';
 import 'package:pushup_bro/features/trek/widgets/difficulty_picker.dart';
 import 'package:pushup_bro/features/trek/widgets/rest_panel.dart';
+import 'package:pushup_bro/features/trek/widgets/tower_panel.dart';
 import 'package:pushup_bro/features/trek/widgets/trek_result.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:vector_math/vector_math.dart' as vm;
@@ -62,6 +65,9 @@ class TrekReward {
     this.damage = 0,
     this.bestCombo = 0,
     this.bestComboBefore = 0,
+    this.goals = const [],
+    this.floor = 0,
+    this.bestFloor = 0,
   });
 
   final int xp;
@@ -81,6 +87,13 @@ class TrekReward {
   final int damage;
   final int bestCombo;
   final int bestComboBefore;
+
+  /// The stage's star goals and whether each was met.
+  final List<(StageGoal, bool)> goals;
+
+  /// In the tower: the floor reached, and the best before this climb.
+  final int floor;
+  final int bestFloor;
 }
 
 /// One stage of the Jungle Trek from start to finish: a title card, the
@@ -136,11 +149,21 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
   String? _taunt;
   double _tauntTime = 0;
 
+  // Juice: a white flash, a short freeze on big hits, and slow motion for
+  // the blow that wins.
+  double _flash = 0;
+  double _freeze = 0;
+  double _slowMo = 0;
+  int _chargeTick = -1;
+
   // Rest.
   double _restLeft = 0;
+  List<Boon> _offer = const [];
+  Boon? _picked;
   TrekReward? _reward;
 
   TrekStage get _stage => widget.stage;
+  bool get _tower => _stage.endless;
 
   List<TrekLine> get _lines => switch (_phase) {
         _Phase.intro => _stage.intro,
@@ -176,7 +199,8 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
   }
 
   void _toIntro() => setState(() {
-        _phase = _Phase.intro;
+        // The tower has no story: straight to the fight.
+        _phase = _tower ? _Phase.ready : _Phase.intro;
         _line = 0;
       });
 
@@ -301,6 +325,30 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
         if (hit.combo >= 2) audio.play(Sfx.combo, gain: 0.7);
         if (hit.defeated) audio.play(Sfx.defeatEnemy);
         if (hit.phase != null) audio.play(Sfx.roar);
+        if (hit.note == HitNote.splash) audio.play(Sfx.splash);
+        if (hit.note == HitNote.shieldBroken) audio.play(Sfx.unlock);
+        if (hit.superEffective || hit.critical) {
+          _freeze = 0.07;
+          _flash = math.max(_flash, 0.35);
+        }
+        if (hit.last) {
+          _slowMo = 1.4;
+          _flash = 1;
+        }
+        final chained = hit.chained;
+        if (chained != null) {
+          _world?.actorFor(chained)?.hit();
+          final chainAt = _anchors[chained];
+          if (chainAt != null) {
+            _popups.add(
+              Popup(
+                text: '⚡${hit.chainDamage.round()}',
+                color: game.banana,
+                at: chainAt + const Offset(0, 40),
+              ),
+            );
+          }
+        }
         final at = _anchors[hit.foe] ??
             Offset(_viewSize.width / 2, _viewSize.height / 3);
         _popups.add(
@@ -328,13 +376,33 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
             ),
           );
         }
+        final noted = switch (hit.note) {
+          HitNote.splash => l.noteSplash,
+          HitNote.unseen => l.noteUnseen,
+          HitNote.shielded => l.noteShield,
+          HitNote.shieldBroken => l.noteShieldBroken,
+          HitNote.mirrored => l.noteMirrored,
+          HitNote.staggered => l.noteStaggered,
+          HitNote.none => null,
+        };
         _showBanner(
-          hit.superEffective
-              ? l.superEffective
-              : hit.weak
-                  ? l.notEffective
-                  : hit.kind.label(l),
-          hit.superEffective ? hit.kind.color : null,
+          hit.revealed
+              ? l.noteRevealed
+              : chained != null
+                  ? l.noteChain
+                  : noted ??
+                      (hit.superEffective
+                          ? l.superEffective
+                          : hit.weak
+                              ? l.notEffective
+                              : hit.kind.label(l)),
+          hit.note == HitNote.shieldBroken || hit.note == HitNote.shielded
+              ? ScaleColor.blue.color
+              : hit.note == HitNote.staggered
+                  ? game.banana
+                  : hit.superEffective
+                      ? hit.kind.color
+                      : null,
         );
         final phase = hit.phase;
         if (phase != null) {
@@ -349,10 +417,10 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
     );
   }
 
-  void _showBanner(String text, Color? color) {
+  void _showBanner(String text, Color? color, {double seconds = 1.2}) {
     _banner = text;
     _bannerColor = color;
-    _bannerTime = 1.2;
+    _bannerTime = seconds;
   }
 
   Future<void> _onWaveCleared() async {
@@ -377,12 +445,34 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
       setState(() {
         _phase = _Phase.rest;
         _restLeft = restSeconds.toDouble();
+        _offer = _battle.offerBoons();
+        _picked = null;
       });
     }
   }
 
+  /// Leaves the tower between floors, keeping what the climb earned.
+  void _stopClimb() {
+    if (_phase != _Phase.rest) return;
+    GameAudio.instance.play(Sfx.victory);
+    unawaited(
+      _claimTower().then((_) {
+        if (mounted) setState(() => _phase = _Phase.results);
+      }),
+    );
+  }
+
+  void _pick(Boon boon) {
+    if (_picked != null) return;
+    GameAudio.instance.play(Sfx.equip);
+    _battle.take(boon);
+    setState(() => _picked = boon);
+  }
+
   void _endRest() {
     if (_phase != _Phase.rest) return;
+    // Out of time (or straight on) without picking: the first one.
+    if (_picked == null && _offer.isNotEmpty) _battle.take(_offer.first);
     _battle.nextWave();
     _world?.spawn(_battle.foes);
     _fight();
@@ -391,14 +481,63 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
   void _knockOut() {
     GameAudio.instance.play(Sfx.defeat, gain: 1.4);
     _stopListening();
+    if (_tower) {
+      // The climb ends here: what it earned, and how high it got.
+      unawaited(
+        _claimTower().then((_) {
+          if (mounted) setState(() => _phase = _Phase.results);
+        }),
+      );
+      return;
+    }
     setState(() => _phase = _Phase.knockedOut);
   }
 
   /// A fresh battle at the difficulty picked on the map.
   Battle _newBattle() {
     final trek = context.read<GameInventoryCubit>().state.inventory.trek;
+    final difficulty = difficultyOf(trek);
 
-    return Battle(_stage, trek, difficulty: difficultyOf(trek));
+    return _tower
+        ? Battle.tower(trek, difficulty: difficulty)
+        : Battle(_stage, trek, difficulty: difficulty);
+  }
+
+  /// The tower's rewards: bananas and XP per floor, and the bests.
+  Future<void> _claimTower() async {
+    final inventoryCubit = context.read<GameInventoryCubit>();
+    final dbCubit = context.read<DBCubit>();
+    await inventoryCubit.fetchInventory();
+    final inventory = inventoryCubit.state.inventory;
+    final floor = _battle.wave;
+    final bestBefore = inventory.trek.towerBest;
+    final xp = _battle.earnedXp + _battle.clearXp;
+    final (gained, levels) = inventory.trek.gainXp(xp);
+    final bananas =
+        ((_battle.reps + floor * 15) * _battle.difficulty.rewards).round();
+    await inventoryCubit.updateInventory(
+      inventory.copyWith(
+        bananas: inventory.bananas + bananas,
+        trek: gained.climbed(floor, towerWeekOf(DateTime.now())),
+      ),
+    );
+    for (final set in _sets) {
+      if (set.pushups.isNotEmpty) await dbCubit.writeNewPushupsetToDB(set);
+    }
+    _sets.clear();
+    _reward = TrekReward(
+      xp: xp,
+      levelsGained: levels,
+      stars: 0,
+      bananas: bananas,
+      loot: null,
+      adopted: false,
+      pushups: _battle.reps,
+      damage: _damage.round(),
+      bestCombo: _bestCombo,
+      floor: floor,
+      bestFloor: bestBefore,
+    );
   }
 
   void _retry() {
@@ -465,6 +604,7 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
       damage: _damage.round(),
       bestCombo: _bestCombo,
       bestComboBefore: bestComboBefore,
+      goals: [for (final goal in _stage.goals) (goal, _battle.met(goal))],
     );
   }
 
@@ -530,29 +670,89 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
           speaker != Character.carlos &&
           speaker != Character.coco;
     }
-    world.update(deltaSeconds);
+    // A short freeze on big hits, slow motion for the winning blow.
+    var dt = deltaSeconds;
+    if (_freeze > 0) {
+      _freeze -= deltaSeconds;
+      dt = 0;
+    } else if (_slowMo > 0) {
+      _slowMo -= deltaSeconds;
+      dt *= 0.25;
+    }
+    _flash = math.max(0, _flash - deltaSeconds * 3);
+    world.update(dt);
 
     if (_phase == _Phase.fight) {
-      final events = _battle.tick(deltaSeconds);
-      for (final foe in events.strikes) {
-        GameAudio.instance
+      final l = context.l10n;
+      final game = context.gameColors;
+      final audio = GameAudio.instance;
+      final events = _battle.tick(dt, bracing: _downSince != null);
+      for (final strike in events.strikes) {
+        final foe = strike.foe;
+        if (strike.blocked) {
+          audio
+            ..play(Sfx.hold)
+            ..play(Sfx.superEffective, gain: 0.9);
+          world.block(foe);
+          _freeze = 0.12;
+          _flash = 0.6;
+          _showBanner(l.heavyBlocked, ScaleColor.blue.color, seconds: 1.6);
+          continue;
+        }
+        audio
           ..play(Sfx.enemyAttack)
-          ..play(Sfx.hurt, gain: 0.8);
+          ..play(Sfx.hurt, gain: strike.heavy ? 1.3 : 0.8);
+        if (strike.heavy) audio.play(Sfx.roar);
         world.strike(foe);
-        _shake = 1;
-        _hurt = 1;
+        _shake = strike.heavy ? 1.6 : 1;
+        _hurt = strike.heavy ? 1.5 : 1;
+        if (strike.heavy) _showBanner(l.heavyTaken, game.red, seconds: 1.6);
         // How much it took, over Carlos at the bottom of the view.
         _popups.add(
           Popup(
-            text: '-${foe.attack.round()}',
+            text: '-${strike.damage.round()}',
             color: const Color(0xFFE5534B),
             at: Offset(_viewSize.width * 0.42, _viewSize.height * 0.62),
             big: true,
           ),
         );
       }
+      for (final _ in events.windUps) {
+        audio.play(Sfx.roar, gain: 0.8);
+        _chargeTick = -1;
+      }
+      // A tick every second of a wind-up.
+      final charging = _battle.target?.charging;
+      if (charging != null && charging.ceil() != _chargeTick) {
+        _chargeTick = charging.ceil();
+        audio.play(Sfx.tick);
+      }
+      for (final foe in events.dives) {
+        audio.play(Sfx.splash);
+        world.puff(foe, ScaleColor.blue.color);
+        _showBanner(l.noteDived, ScaleColor.blue.color, seconds: 1.8);
+      }
+      for (final foe in events.surfaces) {
+        audio.play(Sfx.splash);
+        world.puff(foe, ScaleColor.blue.color);
+        _showBanner(l.noteSurfaced, null);
+      }
+      for (final foe in events.vanishes) {
+        audio.play(Sfx.whoosh);
+        world.puff(foe, game.purple);
+        _showBanner(l.noteVanished, game.purple, seconds: 1.8);
+      }
+      for (final foe in events.reveals) {
+        audio.play(Sfx.pop);
+        world.puff(foe, game.purple);
+      }
+      if (events.heals.isNotEmpty) {
+        audio.play(Sfx.star);
+        world.heal(_battle.foes);
+        _showBanner(l.noteHealed, game.leaf);
+      }
       for (final foe in events.colorShifts) {
-        GameAudio.instance.play(Sfx.pop);
+        audio.play(Sfx.pop);
         world.recolor(foe);
         _showBanner(context.l10n.enemyColourChanges, foe.color.color);
       }
@@ -730,6 +930,14 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
     final battling = _phase == _Phase.fight || _phase == _Phase.ready;
 
     return [
+      if (_flash > 0)
+        Positioned.fill(
+          child: IgnorePointer(
+            child: ColoredBox(
+              color: Colors.white.withValues(alpha: 0.5 * _flash),
+            ),
+          ),
+        ),
       if (_hurt > 0)
         Positioned.fill(
           child: IgnorePointer(
@@ -763,16 +971,25 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
             maxHp: _battle.maxHp,
             level: _battle.stats.level,
             wave: _battle.wave + 1,
-            waves: _stage.waves.length,
+            // The tower counts floors, not waves.
+            waves: _tower ? 0 : _stage.waves.length,
             shake: _shake,
           ),
         ),
-        if (_battle.target != null)
+        if (_battle.target case final target?)
           Positioned(
             top: safe.top + 74,
             left: 24,
             right: 24,
-            child: Center(child: WeaknessHint(foe: _battle.target!)),
+            child: Center(
+              child: target.charging == null
+                  ? WeaknessHint(foe: target)
+                  : HeavyAlert(
+                      left: target.charging!,
+                      total: target.difficulty.windUp,
+                      bracing: _downSince != null,
+                    ),
+            ),
           ),
       ],
       if (_tauntTime > 0 && _taunt != null)
@@ -898,19 +1115,25 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
               secondsLeft: _restLeft,
               hp: _battle.hp,
               maxHp: _battle.maxHp,
-              nextWave: _stage.waves[_battle.wave + 1],
+              nextWave: _battle.upcoming,
               onReady: _endRest,
+              offer: _offer,
+              picked: _picked,
+              onPick: _pick,
+              onStop: _tower ? _stopClimb : null,
             ),
           ),
         ];
       case _Phase.results:
         return [
           Positioned.fill(
-            child: TrekResult(
-              stage: _stage,
-              reward: _reward,
-              onDone: _leave,
-            ),
+            child: _tower
+                ? TowerResult(reward: _reward, onDone: _leave)
+                : TrekResult(
+                    stage: _stage,
+                    reward: _reward,
+                    onDone: _leave,
+                  ),
           ),
         ];
       case _Phase.knockedOut:
@@ -956,8 +1179,11 @@ class _TitleCard extends StatelessWidget {
                 boxShadow: context.cardShadow,
               ),
               child: Text(
-                '${context.l10n.trekTitle} · '
-                '${context.l10n.trekStageNumber(number)}',
+                // The tower has no stage number.
+                number < 1
+                    ? context.l10n.trekTitle
+                    : '${context.l10n.trekTitle} · '
+                        '${context.l10n.trekStageNumber(number)}',
                 style: context.textTheme.titleSmall?.copyWith(fontSize: 14),
               ),
             ),

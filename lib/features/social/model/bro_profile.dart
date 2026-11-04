@@ -15,6 +15,8 @@ class BroProfile extends Equatable {
     this.friendCount = 0,
     this.showOnEveryone = true,
     this.island,
+    this.towerWeek = '',
+    this.towerFloor = 0,
   });
 
   factory BroProfile.fromJson(String uid, Map<String, dynamic> json) =>
@@ -35,6 +37,12 @@ class BroProfile extends Equatable {
         island: json['island'] is Map
             ? Map<String, dynamic>.from(json['island'] as Map)
             : null,
+        towerWeek: json['tower'] is Map
+            ? (json['tower'] as Map)['week'] as String? ?? ''
+            : '',
+        towerFloor: json['tower'] is Map
+            ? ((json['tower'] as Map)['floor'] as num?)?.toInt() ?? 0
+            : 0,
       );
 
   final String uid;
@@ -56,6 +64,14 @@ class BroProfile extends Equatable {
   /// What their island looks like, for visits (see `IslandSnapshot`).
   final Map<String, dynamic>? island;
 
+  /// Their best Canopy Tower floor in [towerWeek] (like `2026-W45`), for
+  /// the weekly race between bros.
+  final String towerWeek;
+  final int towerFloor;
+
+  /// Their best floor in [week], zero when they haven't climbed it.
+  int towerIn(String week) => towerWeek == week ? towerFloor : 0;
+
   Map<String, dynamic> toJson() => {
         'broName': broName.key,
         'code': code,
@@ -66,6 +82,8 @@ class BroProfile extends Equatable {
         'friendCount': friendCount,
         'showOnEveryone': showOnEveryone,
         if (island != null) 'island': island,
+        if (towerWeek.isNotEmpty)
+          'tower': {'week': towerWeek, 'floor': towerFloor},
       };
 
   BroProfile copyWith({
@@ -76,6 +94,8 @@ class BroProfile extends Equatable {
     int? friendCount,
     bool? showOnEveryone,
     Map<String, dynamic>? island,
+    String? towerWeek,
+    int? towerFloor,
   }) =>
       BroProfile(
         uid: uid,
@@ -88,6 +108,8 @@ class BroProfile extends Equatable {
         friendCount: friendCount ?? this.friendCount,
         showOnEveryone: showOnEveryone ?? this.showOnEveryone,
         island: island ?? this.island,
+        towerWeek: towerWeek ?? this.towerWeek,
+        towerFloor: towerFloor ?? this.towerFloor,
       );
 
   @override
@@ -102,5 +124,7 @@ class BroProfile extends Equatable {
         friendCount,
         showOnEveryone,
         island,
+        towerWeek,
+        towerFloor,
       ];
 }

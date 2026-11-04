@@ -15,6 +15,9 @@ class TrekProgress extends Equatable {
     this.agility = 0,
     this.stars = const {},
     this.difficulty = 'normal',
+    this.towerBest = 0,
+    this.towerWeek = '',
+    this.towerWeekBest = 0,
   });
 
   factory TrekProgress.fromJson(Map<String, dynamic> json) {
@@ -34,6 +37,9 @@ class TrekProgress extends Equatable {
           if (value is num) key: value.toInt(),
       },
       difficulty: json['difficulty'] as String? ?? 'normal',
+      towerBest: read('towerBest'),
+      towerWeek: json['towerWeek'] as String? ?? '',
+      towerWeekBest: read('towerWeekBest'),
     );
   }
 
@@ -54,6 +60,22 @@ class TrekProgress extends Equatable {
 
   /// The name of the difficulty picked for battles (`TrekDifficulty`).
   final String difficulty;
+
+  /// The highest Canopy Tower floor ever reached, and this week's best
+  /// ([towerWeek] is the week it counts for, like `2026-W45`).
+  final int towerBest;
+  final String towerWeek;
+  final int towerWeekBest;
+
+  /// This week's best floor, zero once [week] has moved on.
+  int towerBestIn(String week) => towerWeek == week ? towerWeekBest : 0;
+
+  /// With tower [floor] reached in [week], keeping the bests.
+  TrekProgress climbed(int floor, String week) => copyWith(
+        towerBest: math.max(towerBest, floor),
+        towerWeek: week,
+        towerWeekBest: math.max(towerBestIn(week), floor),
+      );
 
   /// XP needed to go from [level] to the next.
   static int xpToNext(int level) => 40 + 30 * level;
@@ -125,6 +147,9 @@ class TrekProgress extends Equatable {
     int? agility,
     Map<String, int>? stars,
     String? difficulty,
+    int? towerBest,
+    String? towerWeek,
+    int? towerWeekBest,
   }) =>
       TrekProgress(
         level: level ?? this.level,
@@ -136,6 +161,9 @@ class TrekProgress extends Equatable {
         agility: agility ?? this.agility,
         stars: stars ?? this.stars,
         difficulty: difficulty ?? this.difficulty,
+        towerBest: towerBest ?? this.towerBest,
+        towerWeek: towerWeek ?? this.towerWeek,
+        towerWeekBest: towerWeekBest ?? this.towerWeekBest,
       );
 
   Map<String, dynamic> toJson() => {
@@ -148,9 +176,24 @@ class TrekProgress extends Equatable {
         'agility': agility,
         'stars': stars,
         'difficulty': difficulty,
+        'towerBest': towerBest,
+        'towerWeek': towerWeek,
+        'towerWeekBest': towerWeekBest,
       };
 
   @override
-  List<Object?> get props =>
-      [level, xp, points, power, vitality, grip, agility, stars, difficulty];
+  List<Object?> get props => [
+        level,
+        xp,
+        points,
+        power,
+        vitality,
+        grip,
+        agility,
+        stars,
+        difficulty,
+        towerBest,
+        towerWeek,
+        towerWeekBest,
+      ];
 }

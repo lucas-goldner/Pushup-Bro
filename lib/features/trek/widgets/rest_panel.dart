@@ -4,8 +4,10 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
+import 'package:pushup_bro/features/trek/model/boon.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/trek_stage_page.dart';
+import 'package:pushup_bro/features/trek/widgets/battle_hud.dart';
 
 /// The emoji for a [Species].
 String speciesEmoji(Species species) => switch (species) {
@@ -59,7 +61,10 @@ class EnemyChip extends StatelessWidget {
           const SizedBox(width: 6),
           Flexible(
             child: Text(
-              spec.species.name(context.l10n),
+              spec.trait == Trait.none
+                  ? spec.species.name(context.l10n)
+                  : '${spec.species.name(context.l10n)} · '
+                      '${spec.trait.emoji} ${spec.trait.label(context.l10n)}',
               overflow: TextOverflow.ellipsis,
               style: context.textTheme.labelMedium,
             ),
@@ -79,6 +84,10 @@ class RestPanel extends StatelessWidget {
     required this.maxHp,
     required this.nextWave,
     required this.onReady,
+    this.offer = const [],
+    this.picked,
+    this.onPick,
+    this.onStop,
     super.key,
   });
 
@@ -87,6 +96,14 @@ class RestPanel extends StatelessWidget {
   final double maxHp;
   final List<EnemySpec> nextWave;
   final VoidCallback onReady;
+
+  /// The power-ups to pick one from, and the one picked.
+  final List<Boon> offer;
+  final Boon? picked;
+  final ValueChanged<Boon>? onPick;
+
+  /// In the tower: stop climbing and take what's been earned.
+  final VoidCallback? onStop;
 
   @override
   Widget build(BuildContext context) {
@@ -109,103 +126,139 @@ class RestPanel extends StatelessWidget {
             borderRadius: BorderRadius.circular(32),
             boxShadow: context.cardShadow,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  SizedBox(
-                    width: 84,
-                    height: 84,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        CircularProgressIndicator(
-                          value: secondsLeft / restSeconds,
-                          strokeWidth: 8,
-                          strokeCap: StrokeCap.round,
-                          backgroundColor: scheme.surfaceContainerHigh,
-                          valueColor: AlwaysStoppedAnimation(game.jungle),
-                        ),
-                        Center(
-                          child: Text(
-                            '${secondsLeft.ceil()}',
-                            style: text.displaySmall,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 84,
+                      height: 84,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          CircularProgressIndicator(
+                            value: secondsLeft / restSeconds,
+                            strokeWidth: 8,
+                            strokeCap: StrokeCap.round,
+                            backgroundColor: scheme.surfaceContainerHigh,
+                            valueColor: AlwaysStoppedAnimation(game.jungle),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: PBSpace.lg),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l.trekRest, style: text.headlineMedium),
-                        const SizedBox(height: PBSpace.xs),
-                        Text(
-                          l.trekRestInfo,
-                          style: text.bodyMedium?.copyWith(
-                            fontSize: 14,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: PBSpace.sm),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 0, end: hp / maxHp),
-                            duration: const Duration(milliseconds: 900),
-                            curve: Curves.easeOutCubic,
-                            builder: (context, value, _) =>
-                                LinearProgressIndicator(
-                              value: value,
-                              minHeight: 10,
-                              backgroundColor: scheme.surfaceContainerHigh,
-                              valueColor: AlwaysStoppedAnimation(game.leaf),
+                          Center(
+                            child: Text(
+                              '${secondsLeft.ceil()}',
+                              style: text.displaySmall,
                             ),
                           ),
-                        ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: PBSpace.lg),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l.trekRest, style: text.headlineMedium),
+                          const SizedBox(height: PBSpace.xs),
+                          Text(
+                            l.trekRestInfo,
+                            style: text.bodyMedium?.copyWith(
+                              fontSize: 14,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: PBSpace.sm),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: hp / maxHp),
+                              duration: const Duration(milliseconds: 900),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, value, _) =>
+                                  LinearProgressIndicator(
+                                value: value,
+                                minHeight: 10,
+                                backgroundColor: scheme.surfaceContainerHigh,
+                                valueColor: AlwaysStoppedAnimation(game.leaf),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (offer.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(l.boonPick, style: text.titleSmall),
+                  ),
+                  const SizedBox(height: PBSpace.sm),
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (final (i, boon) in offer.indexed) ...[
+                          if (i > 0) const SizedBox(width: 8),
+                          Expanded(
+                            child: BoonCard(
+                              boon: boon,
+                              picked: boon == picked,
+                              dimmed: picked != null && boon != picked,
+                              onTap:
+                                  onPick == null ? null : () => onPick!(boon),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 18),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  l.trekNextWave,
-                  style: text.titleSmall,
-                ),
-              ),
-              const SizedBox(height: PBSpace.sm),
-              for (final spec in {
-                for (final e in nextWave) '${e.species}${e.color}': e,
-              }.values)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Row(
-                    children: [
-                      Flexible(child: EnemyChip(spec: spec)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          spec.color?.weakness(l) ?? l.weakShifting,
-                          style: text.bodySmall,
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 18),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    l.trekNextWave,
+                    style: text.titleSmall,
                   ),
                 ),
-              const SizedBox(height: PBSpace.md),
-              PillButton(
-                label: l.trekSkipRest,
-                icon: CarbonIcons.lightning,
-                color: game.red,
-                onPressed: onReady,
-              ),
-            ],
+                const SizedBox(height: PBSpace.sm),
+                for (final spec in {
+                  for (final e in nextWave) '${e.species}${e.color}': e,
+                }.values)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      children: [
+                        Flexible(child: EnemyChip(spec: spec)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            switch (spec.trait) {
+                              Trait.shielded => l.noteShield,
+                              Trait.diver => l.noteDived,
+                              Trait.vanisher => l.noteVanished,
+                              _ => spec.color?.weakness(l) ?? l.weakShifting,
+                            },
+                            style: text.bodySmall,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: PBSpace.md),
+                PillButton(
+                  label: onStop == null ? l.trekSkipRest : l.towerNext,
+                  icon: CarbonIcons.lightning,
+                  color: game.red,
+                  onPressed: onReady,
+                ),
+                if (onStop case final stop?)
+                  TextButton(onPressed: stop, child: Text(l.towerStop)),
+              ],
+            ),
           ),
         ),
       ),
@@ -278,6 +331,82 @@ class KnockedOutPanel extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A power-up to pick between waves: its mark, name and what it does.
+class BoonCard extends StatelessWidget {
+  const BoonCard({
+    required this.boon,
+    required this.picked,
+    required this.dimmed,
+    this.onTap,
+    super.key,
+  });
+
+  final Boon boon;
+  final bool picked;
+  final bool dimmed;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final scheme = context.colorScheme;
+    final game = context.gameColors;
+    final text = context.textTheme;
+
+    return Semantics(
+      button: true,
+      selected: picked,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 200),
+          opacity: dimmed ? 0.45 : 1,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
+            decoration: BoxDecoration(
+              color: picked
+                  ? Color.alphaBlend(context.tint(game.banana), scheme.surface)
+                  : scheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(PBRadius.md),
+              border: Border.all(
+                color: picked ? game.banana : Colors.transparent,
+                width: 2,
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(boon.emoji, style: const TextStyle(fontSize: 24)),
+                const SizedBox(height: 4),
+                Text(
+                  boon.title(l),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: text.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    height: 1.15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  boon.info(l),
+                  textAlign: TextAlign.center,
+                  style: text.bodySmall?.copyWith(
+                    fontSize: 11,
+                    height: 1.25,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

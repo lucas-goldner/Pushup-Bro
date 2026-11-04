@@ -93,6 +93,8 @@ class SocialSync {
       total: sets.fold<int>(0, (sum, set) => sum + set.pushups.length),
       islandLevel: islandLevelOf(inv),
       island: IslandSnapshot.of(inv).toJson(),
+      towerWeek: inv.trek.towerWeek.isEmpty ? null : inv.trek.towerWeek,
+      towerFloor: inv.trek.towerWeek.isEmpty ? null : inv.trek.towerWeekBest,
     );
     final day = localDayKey(now);
     final count = pushupsOn(sets, now);
