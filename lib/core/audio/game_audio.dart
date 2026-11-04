@@ -134,6 +134,12 @@ class GameAudio {
       _music = AudioPlayer(playerId: 'music');
       _jingle = AudioPlayer(playerId: 'jingle');
       await _jingle!.setReleaseMode(ReleaseMode.stop);
+      // The first screen asks for its music before the players exist.
+      final waiting = _track;
+      if (waiting != null) {
+        _track = null;
+        unawaited(music(waiting));
+      }
       await AudioCache.instance.loadAll([for (final s in Sfx.values) s.asset]);
     } on Object catch (e) {
       debugPrint('Game audio unavailable: $e');
@@ -182,6 +188,10 @@ class GameAudio {
 
   bool get musicOn => _musicOn;
 
+  /// The track the current screen asked for.
+  @visibleForTesting
+  MusicTrack? get track => _track;
+
   /// Turns all music off (stopping what plays) or back on (picking up the
   /// current screen's track).
   set musicOn(bool on) {
@@ -202,10 +212,12 @@ class GameAudio {
 
   /// Switches the music to [track] (or the nearest [MusicTrack.fallback]
   /// that has a file), fading the old one out; null stops it.
+  /// Asked before [init] is done, it plays once the players are ready.
   Future<void> music(MusicTrack? track) async {
-    final player = _music;
-    if (player == null || track == _track) return;
+    if (track == _track) return;
     _track = track;
+    final player = _music;
+    if (player == null) return;
     try {
       await _fade(player, to: 0);
       await player.stop();
