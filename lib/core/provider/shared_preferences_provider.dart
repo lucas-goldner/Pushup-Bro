@@ -16,6 +16,12 @@ class SharedPreferencesProvider implements SharedPreferencesInterface {
   }
 
   @override
+  Future<void> removeFromSharedPrefs(SharedPreferencesKey key) async {
+    await loadSharedPrefs();
+    await prefs?.remove(key.name);
+  }
+
+  @override
   Future<void> writeStringToSharedPrefs(
     SharedPreferencesKey key,
     String value,

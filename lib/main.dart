@@ -21,6 +21,7 @@ import 'package:pushup_bro/core/model/appearance.dart';
 import 'package:pushup_bro/core/model/environment.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/model/shared_preferences_key.dart';
+import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/platform/system_locale.dart';
 import 'package:pushup_bro/core/provider/audio_player_provider.dart';
 import 'package:pushup_bro/core/provider/db_provider.dart';
@@ -121,11 +122,20 @@ class Main extends StatelessWidget {
     // Sounds follow the volumes in the settings.
     final audio = GameAudio.instance
       ..sfxVolume = sharedPreferencesCubit.state.volumeLevel ?? 10
-      ..musicVolume = sharedPreferencesCubit.state.musicVolume;
+      ..musicVolume = sharedPreferencesCubit.state.musicVolume
+      ..soundsOn = sharedPreferencesCubit.state.soundsOn
+      ..musicOn = sharedPreferencesCubit.state.musicOn;
+    PushupCubit.threshold = AirPodsSensitivity.threshold(
+      sharedPreferencesCubit.state.airpodsSensitivity,
+    );
     sharedPreferencesCubit.stream.listen((state) {
       audio
         ..sfxVolume = state.volumeLevel ?? 10
-        ..musicVolume = state.musicVolume;
+        ..musicVolume = state.musicVolume
+        ..soundsOn = state.soundsOn
+        ..musicOn = state.musicOn;
+      PushupCubit.threshold =
+          AirPodsSensitivity.threshold(state.airpodsSensitivity);
     });
     await audio.init();
     await dbProvider.loadDB();

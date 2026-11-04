@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_scene/scene.dart' hide Material;
 import 'package:pushup_bro/core/audio/game_audio.dart';
+import 'package:pushup_bro/core/audio/music_places.dart';
 import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/core/cubit/db_cubit.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
@@ -628,8 +629,9 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
         _Phase.ready ||
         _Phase.fight ||
         _Phase.rest =>
-          _stage.boss ? MusicTrack.boss : MusicTrack.battle,
+          trekMusic(_stage.location, boss: _stage.boss),
         _Phase.results => MusicTrack.victory,
+        _Phase.knockedOut => MusicTrack.defeat,
         _ => MusicTrack.story,
       },
     );

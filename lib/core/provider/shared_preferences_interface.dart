@@ -15,4 +15,5 @@ abstract class SharedPreferencesInterface {
   Future<int?> getSharedPrefInt(SharedPreferencesKey key);
   Future<String?> getSharedPrefString(SharedPreferencesKey key);
   Future<bool?> getSharedPrefBool(SharedPreferencesKey key);
+  Future<void> removeFromSharedPrefs(SharedPreferencesKey key);
 }

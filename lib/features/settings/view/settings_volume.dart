@@ -11,165 +11,203 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pb_button.dart';
 import 'package:pushup_bro/features/settings/widgets/settings_group.dart';
-import 'package:pushup_bro/features/settings/widgets/volume_displayer.dart';
 
-class VolumeSetting extends StatefulWidget {
+/// Music and sound effects: a switch and a volume slider for each.
+class VolumeSetting extends StatelessWidget {
   const VolumeSetting({super.key});
   static const routeName = '/volume';
 
   @override
-  State<VolumeSetting> createState() => _VolumeSettingState();
-}
-
-class _VolumeSettingState extends State<VolumeSetting> {
-  int _selectedVolume = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_getVolume());
-  }
-
-  Future<void> _getVolume() async {
-    final volume =
-        await BlocProvider.of<SharedPreferencesCubit>(context).getVolume();
-    setState(() => _selectedVolume = volume);
-  }
-
-  Future<void> _updateVolume(int vol) async {
-    final sharedPrefCubit = BlocProvider.of<SharedPreferencesCubit>(context);
-    await sharedPrefCubit.setVolume(vol);
-    setState(() => _selectedVolume = vol);
-    GameAudio.instance.play(Sfx.tap);
-  }
-
-  @override
   Widget build(BuildContext context) =>
       BlocBuilder<SharedPreferencesCubit, SharedPreferencesState>(
-        builder: (context, state) => CupertinoPageScaffold(
-          backgroundColor: context.colorScheme.surfaceContainerLow,
-          child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    PBSpace.xl,
-                    PBSpace.lg,
-                    PBSpace.xl,
-                    PBSpace.xl,
-                  ),
-                  child: Text(
-                    context.l10n.setVolume,
-                    style: context.textTheme.headlineLarge,
-                  ),
-                ),
-                VolumeDisplayer(_selectedVolume),
-                const SizedBox(height: PBSpace.xl),
-                SettingsGroup(
-                  children: [
-                    _VolumeRow(
-                      label: context.l10n.settingsSounds,
-                      value: _selectedVolume,
-                      onChanged: _updateVolume,
-                    ),
-                    _VolumeRow(
-                      label: context.l10n.settingsMusic,
-                      value: state.musicVolume,
-                      onChanged: (volume) => unawaited(
-                        context.read<SharedPreferencesCubit>().setMusicVolume(
-                              volume,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    PBSpace.sm,
-                    PBSpace.sm,
-                    PBSpace.sm,
-                    PBSpace.lg,
-                  ),
-                  child: PBButton(
-                    context.l10n.goBack,
-                    callback: () => Navigator.of(context).pop(),
-                    expanded: true,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-}
+        builder: (context, state) {
+          final prefs = context.read<SharedPreferencesCubit>();
+          final l = context.l10n;
+          final game = context.gameColors;
 
-/// A labelled volume, 0 to 10, with round minus and plus buttons.
-class _VolumeRow extends StatelessWidget {
-  const _VolumeRow({
-    required this.label,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final String label;
-  final int value;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: PBSpace.lg,
-          vertical: PBSpace.md,
-        ),
-        child: Row(
-          children: [
-            Expanded(
+          return CupertinoPageScaffold(
+            backgroundColor: context.colorScheme.surfaceContainerLow,
+            child: SafeArea(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(label, style: context.textTheme.titleMedium),
-                  Text(
-                    context.l10n.volumeLevel(value),
-                    style: context.textTheme.bodySmall,
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            PBSpace.xl,
+                            PBSpace.lg,
+                            PBSpace.xl,
+                            PBSpace.sm,
+                          ),
+                          child: Text(
+                            l.setVolume,
+                            style: context.textTheme.headlineLarge,
+                          ),
+                        ),
+                        SettingsSectionHeader(l.settingsMusic),
+                        SettingsGroup(
+                          children: [
+                            SoundSwitchRow(
+                              label: l.settingsMusic,
+                              icon: CarbonIcons.music,
+                              color: game.purple,
+                              on: state.musicOn,
+                              onChanged: (on) =>
+                                  unawaited(prefs.setMusicOn(on: on)),
+                            ),
+                            _VolumeSlider(
+                              value: state.musicVolume,
+                              enabled: state.musicOn,
+                              color: game.purple,
+                              onChanged: (volume) =>
+                                  unawaited(prefs.setMusicVolume(volume)),
+                            ),
+                          ],
+                        ),
+                        SettingsSectionHeader(l.settingsSoundEffects),
+                        SettingsGroup(
+                          children: [
+                            SoundSwitchRow(
+                              label: l.settingsSoundEffects,
+                              icon: CarbonIcons.volume_up,
+                              color: game.orange,
+                              on: state.soundsOn,
+                              onChanged: (on) =>
+                                  unawaited(prefs.setSoundsOn(on: on)),
+                            ),
+                            _VolumeSlider(
+                              value: state.volumeLevel ?? 10,
+                              enabled: state.soundsOn,
+                              color: game.orange,
+                              onChanged: (volume) =>
+                                  unawaited(prefs.setVolume(volume)),
+                              // Let them hear the new level.
+                              onChangeEnd: (_) =>
+                                  GameAudio.instance.play(Sfx.tap),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      PBSpace.sm,
+                      PBSpace.sm,
+                      PBSpace.sm,
+                      PBSpace.lg,
+                    ),
+                    child: PBButton(
+                      l.goBack,
+                      callback: () => Navigator.of(context).pop(),
+                      expanded: true,
+                    ),
                   ),
                 ],
               ),
             ),
-            _StepButton(
-              icon: CarbonIcons.subtract,
-              onTap: () => onChanged(value == 0 ? 0 : value - 1),
-            ),
-            const SizedBox(width: PBSpace.sm),
-            _StepButton(
-              icon: CarbonIcons.add,
-              onTap: () => onChanged(value == 10 ? 10 : value + 1),
-            ),
-          ],
-        ),
+          );
+        },
       );
 }
 
-/// A round soft button with an [icon].
-class _StepButton extends StatelessWidget {
-  const _StepButton({required this.icon, required this.onTap});
+/// A settings row with an icon tile and a switch.
+class SoundSwitchRow extends StatelessWidget {
+  const SoundSwitchRow({
+    required this.label,
+    required this.icon,
+    required this.on,
+    required this.onChanged,
+    this.color,
+    super.key,
+  });
 
+  final String label;
   final IconData icon;
-  final VoidCallback onTap;
+  final Color? color;
+  final bool on;
+  final ValueChanged<bool> onChanged;
 
   @override
-  Widget build(BuildContext context) => Material(
-        color: context.colorScheme.surfaceContainer,
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: SizedBox(
-            width: 40,
-            height: 40,
-            child: Icon(icon, size: 20, color: context.colorScheme.onSurface),
-          ),
-        ),
+  Widget build(BuildContext context) => SettingsRow(
+        label: label,
+        icon: icon,
+        color: color,
+        onTap: () => onChanged(!on),
+        trailing: Switch.adaptive(value: on, onChanged: onChanged),
       );
+}
+
+/// A volume from 0 to 10, with a speaker at each end.
+class _VolumeSlider extends StatelessWidget {
+  const _VolumeSlider({
+    required this.value,
+    required this.enabled,
+    required this.color,
+    required this.onChanged,
+    this.onChangeEnd,
+  });
+
+  final int value;
+  final bool enabled;
+  final Color color;
+  final ValueChanged<int> onChanged;
+  final ValueChanged<int>? onChangeEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = context.colorScheme.onSurfaceVariant;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        PBSpace.lg,
+        PBSpace.xs,
+        PBSpace.lg,
+        PBSpace.md,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.l10n.settingsVolume,
+                  style: context.textTheme.labelLarge,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(
+                enabled ? '${value * 10} %' : context.l10n.settingsOff,
+                style: context.textTheme.labelLarge?.copyWith(
+                  color: enabled ? color : muted,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Icon(CarbonIcons.volume_mute, size: 18, color: muted),
+              Expanded(
+                child: Slider(
+                  value: value.toDouble(),
+                  max: 10,
+                  divisions: 10,
+                  activeColor: color,
+                  onChanged: enabled ? (v) => onChanged(v.round()) : null,
+                  onChangeEnd: enabled && onChangeEnd != null
+                      ? (v) => onChangeEnd!(v.round())
+                      : null,
+                ),
+              ),
+              Icon(CarbonIcons.volume_up, size: 18, color: muted),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }

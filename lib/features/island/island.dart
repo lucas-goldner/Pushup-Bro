@@ -4,6 +4,8 @@ import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/audio/music_places.dart';
+import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
@@ -169,9 +171,14 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
       !_journeying;
 
   @override
-  Widget build(BuildContext context) => BlocBuilder<ProCubit, ProState>(
-        builder: (context, pro) => _island(context, locked: _locked(pro)),
-      );
+  Widget build(BuildContext context) {
+    // The film picks its own music; then the island's, by the time of day.
+    if (!_film) MusicScope.set(context, islandMusic(DateTime.now()));
+
+    return BlocBuilder<ProCubit, ProState>(
+      builder: (context, pro) => _island(context, locked: _locked(pro)),
+    );
+  }
 
   /// Locked, the island stays to look at: the HUD shows with locks and
   /// the intro, daily login, shop and quests wait until it's unlocked.

@@ -1,11 +1,17 @@
 import 'dart:math' as math;
 
+import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_scene/scene.dart';
+import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/scene/gorilla_rig.dart';
+import 'package:pushup_bro/core/style/pb_tokens.dart';
 
 /// A floating camera window, like the self view in a video call: drag it
-/// anywhere and let go, and it glides to the nearest corner.
+/// anywhere and let go, and it glides to the nearest corner. Like
+/// picture in picture, flick it against the left or right edge (or tap its
+/// hide button) and it tucks away there, leaving a tab; tap the tab or
+/// drag it out to bring it back. It keeps counting while it's tucked away.
 ///
 /// Fills its parent [Stack] (put it in `Positioned.fill`) but only takes
 /// touches on the window itself. While it's on screen, [focus] holds the
@@ -45,6 +51,9 @@ class _CameraWindowState extends State<CameraWindow>
     with SingleTickerProviderStateMixin {
   static const _margin = 16.0;
 
+  /// How much of a tucked window still shows, as the tab to pull it back.
+  static const _tab = 28.0;
+
   late final AnimationController _glide = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 420),
@@ -58,6 +67,9 @@ class _CameraWindowState extends State<CameraWindow>
   bool _moved = false;
   Size _area = Size.zero;
   EdgeInsets _safe = EdgeInsets.zero;
+
+  /// Tucked away at the left (-1) or right (1) edge; null when showing.
+  int? _tucked;
 
   @override
   void initState() {
@@ -98,6 +110,40 @@ class _CameraWindowState extends State<CameraWindow>
     );
   }
 
+  /// Where a window tucked at [side] sits: off screen but for the tab,
+  /// at the height it was.
+  Offset _tuckedOffset(int side) {
+    final top = _safe.top + widget.topInset;
+    final bottom =
+        _area.height - widget.size.height - _safe.bottom - widget.bottomInset;
+    final y = (_position ?? _cornerOffset(_corner))
+        .dy
+        .clamp(top, math.max(top, bottom));
+
+    return Offset(
+      side < 0 ? _tab - widget.size.width : _area.width - _tab,
+      y.toDouble(),
+    );
+  }
+
+  /// Tucks the window away at [side] (-1 left, 1 right).
+  void _tuck(int side) {
+    setState(() => _tucked = side);
+    _glideTo(_tuckedOffset(side));
+  }
+
+  /// Brings a tucked window back, to the corner on its side.
+  void _untuck() {
+    final side = _tucked ?? 1;
+    final position = _position ?? Offset.zero;
+    _corner = Alignment(
+      side.toDouble(),
+      position.dy + widget.size.height / 2 < _area.height / 2 ? -1 : 1,
+    );
+    setState(() => _tucked = null);
+    _glideTo(_cornerOffset(_corner));
+  }
+
   void _glideTo(Offset target) {
     _from = _position ?? target;
     _to = target;
@@ -117,6 +163,13 @@ class _CameraWindowState extends State<CameraWindow>
   void _publish() {
     final position = _position;
     if (position == null || _area.isEmpty) return;
+    if (_tucked != null) {
+      // Tucked away: the gorillas look ahead again.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) CameraWindow.focus.value = null;
+      });
+      return;
+    }
     final centre = position + widget.size.center(Offset.zero);
     // Set after the frame: this may run during layout.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -130,9 +183,13 @@ class _CameraWindowState extends State<CameraWindow>
     _glide.stop();
     _moved = true;
     final position = (_position ?? Offset.zero) + details.delta;
+    // It may go most of the way off the side, to be tucked away there.
     _place(
       Offset(
-        position.dx.clamp(0, _area.width - widget.size.width),
+        position.dx.clamp(
+          _tab - widget.size.width,
+          _area.width - _tab,
+        ),
         position.dy.clamp(0, _area.height - widget.size.height),
       ),
     );
@@ -143,6 +200,12 @@ class _CameraWindowState extends State<CameraWindow>
     final heading = (_position ?? Offset.zero) +
         details.velocity.pixelsPerSecond * 0.12 +
         widget.size.center(Offset.zero);
+    // Past an edge (or flung at one): tucked away there. A tucked window
+    // dragged back in comes back.
+    final inset = widget.size.width * 0.15;
+    if (heading.dx < inset) return _tuck(-1);
+    if (heading.dx > _area.width - inset) return _tuck(1);
+    _tucked = null;
     _corner = Alignment(
       heading.dx < _area.width / 2 ? -1 : 1,
       heading.dy < _area.height / 2 ? -1 : 1,
@@ -160,11 +223,14 @@ class _CameraWindowState extends State<CameraWindow>
         if (area != _area) {
           _area = area;
           if (!_glide.isAnimating) {
-            _position = _cornerOffset(_corner);
+            final tucked = _tucked;
+            _position =
+                tucked == null ? _cornerOffset(_corner) : _tuckedOffset(tucked);
             _publish();
           }
         }
         final position = _position ?? _cornerOffset(_corner);
+        final tucked = _tucked;
 
         return Stack(
           children: [
@@ -177,7 +243,39 @@ class _CameraWindowState extends State<CameraWindow>
                 behavior: HitTestBehavior.opaque,
                 onPanUpdate: _onDragUpdate,
                 onPanEnd: _onDragEnd,
-                child: widget.child,
+                onTap: tucked == null ? null : _untuck,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Still counting while tucked away, just dimmed.
+                    AnimatedOpacity(
+                      opacity: tucked == null ? 1 : 0.35,
+                      duration: const Duration(milliseconds: 200),
+                      child: IgnorePointer(
+                        ignoring: tucked != null,
+                        child: widget.child,
+                      ),
+                    ),
+                    if (tucked == null)
+                      Positioned(
+                        left: 6,
+                        top: 6,
+                        child: _HideButton(
+                          // Towards the edge it's nearest.
+                          side: _corner.x < 0 ? -1 : 1,
+                          onTap: () => _tuck(_corner.x < 0 ? -1 : 1),
+                        ),
+                      )
+                    else
+                      Positioned(
+                        top: 0,
+                        bottom: 0,
+                        width: _tab,
+                        left: tucked < 0 ? widget.size.width - _tab : 0,
+                        child: _Tab(side: tucked),
+                      ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -185,6 +283,80 @@ class _CameraWindowState extends State<CameraWindow>
       },
     );
   }
+}
+
+/// The small round button that tucks the window away at [side].
+class _HideButton extends StatelessWidget {
+  const _HideButton({required this.side, required this.onTap});
+
+  final int side;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: context.l10n.cameraHide,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.45),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              side < 0 ? CarbonIcons.chevron_left : CarbonIcons.chevron_right,
+              size: 16,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+}
+
+/// What shows of a tucked window: a tab with an arrow pointing back in.
+class _Tab extends StatelessWidget {
+  const _Tab({required this.side});
+
+  final int side;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: context.l10n.cameraShow,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: context.colorScheme.surface.withValues(alpha: 0.92),
+            borderRadius: BorderRadius.horizontal(
+              left: side > 0 ? const Radius.circular(14) : Radius.zero,
+              right: side < 0 ? const Radius.circular(14) : Radius.zero,
+            ),
+            boxShadow: context.cardShadow,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  CarbonIcons.video,
+                  size: 16,
+                  color: context.colorScheme.onSurface,
+                ),
+                const SizedBox(height: 6),
+                Icon(
+                  side < 0
+                      ? CarbonIcons.chevron_right
+                      : CarbonIcons.chevron_left,
+                  size: 16,
+                  color: context.colorScheme.onSurface,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
 }
 
 /// Points every gorilla at the camera window (or lets them look away when

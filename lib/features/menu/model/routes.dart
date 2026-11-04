@@ -20,6 +20,7 @@ import 'package:pushup_bro/features/quest/quest_page.dart';
 import 'package:pushup_bro/features/settings/settings.dart';
 import 'package:pushup_bro/features/settings/view/settings_body.dart';
 import 'package:pushup_bro/features/settings/view/settings_language.dart';
+import 'package:pushup_bro/features/settings/view/settings_tracking.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
 import 'package:pushup_bro/features/social/account/account_page.dart';
 import 'package:pushup_bro/features/social/account/restore_page.dart';
@@ -123,7 +124,7 @@ Route<dynamic> generateRoutes(
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
           pageBuilder: (context, _, __) => const MusicScope(
-            track: MusicTrack.story,
+            track: MusicTrack.trekMap,
             child: TrekMapPage(),
           ),
         ),
@@ -142,6 +143,9 @@ Route<dynamic> generateRoutes(
         ),
       LanguageSetting.routeName => CupertinoPageRoute(
           builder: (context) => const PhonePage(child: LanguageSetting()),
+        ),
+      TrackingSettingsPage.routeName => CupertinoPageRoute(
+          builder: (context) => const PhonePage(child: TrackingSettingsPage()),
         ),
       VolumeSetting.routeName => CupertinoPageRoute(
           builder: (context) => const PhonePage(child: VolumeSetting()),

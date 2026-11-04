@@ -18,6 +18,12 @@ class DBCubit extends Cubit<DBState> {
     await getAllPushupSets();
   }
 
+  /// Deletes every pushup set.
+  Future<void> clearPushupSets() async {
+    await _dbProvider.clearPushupSets();
+    await getAllPushupSets();
+  }
+
   Future<List<PushupSet>> getAllPushupSets() async {
     final pushupsets = await _dbProvider.getAllPushupSets();
     emit(state.copyWith(pushupSets: pushupsets));

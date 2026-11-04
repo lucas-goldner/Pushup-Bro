@@ -12,6 +12,10 @@ class SharedPreferencesState extends Equatable {
     this.trackingMode = TrackingMode.airpods,
     this.musicVolume = 7,
     this.appearance = Appearance.system,
+    this.musicOn = true,
+    this.soundsOn = true,
+    this.cameraView = CameraView.person,
+    this.airpodsSensitivity = AirPodsSensitivity.standard,
   });
   final Locale? language;
   final int? volumeLevel;
@@ -27,6 +31,17 @@ class SharedPreferencesState extends Equatable {
   /// Light or dark mode, or following the phone.
   final Appearance appearance;
 
+  /// The switches for all music and all sound effects.
+  final bool musicOn;
+  final bool soundsOn;
+
+  /// What the camera window shows (the player, or only the skeleton).
+  final CameraView cameraView;
+
+  /// How small a head movement counts as a pushup with AirPods (see
+  /// [AirPodsSensitivity]).
+  final int airpodsSensitivity;
+
   @override
   List<Object?> get props => [
         language,
@@ -36,6 +51,10 @@ class SharedPreferencesState extends Equatable {
         trackingMode,
         musicVolume,
         appearance,
+        musicOn,
+        soundsOn,
+        cameraView,
+        airpodsSensitivity,
       ];
 }
 
@@ -58,5 +77,9 @@ class SharedPreferencesLoaded extends SharedPreferencesState {
     super.trackingMode,
     super.musicVolume,
     super.appearance,
+    super.musicOn,
+    super.soundsOn,
+    super.cameraView,
+    super.airpodsSensitivity,
   });
 }
