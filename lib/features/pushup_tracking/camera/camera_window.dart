@@ -259,8 +259,10 @@ class _CameraWindowState extends State<CameraWindow>
                     ),
                     if (tucked == null)
                       Positioned(
-                        right: 6,
-                        top: 6,
+                        // Centred on the frame's corner arc, so the glass
+                        // keeps the same gap all along the rounded corner.
+                        right: _HideButton.inset,
+                        top: _HideButton.inset,
                         child: _HideButton(
                           // Towards the edge it's nearest.
                           side: _corner.x < 0 ? -1 : 1,
@@ -294,6 +296,17 @@ class _HideButton extends StatelessWidget {
   final int side;
   final VoidCallback onTap;
 
+  static const _size = 30.0;
+  static const _touch = 4.0;
+
+  /// The camera frame's corner arc is centred this far in from the
+  /// window's outer edge: its 4 pt border plus its inner radius.
+  static const double _arcCentre = 4 + PBRadius.lg - 2;
+
+  /// How far in from the window's edges the button goes so it is
+  /// concentric with the rounded corner.
+  static const double inset = _arcCentre - _size / 2 - _touch;
+
   @override
   Widget build(BuildContext context) => Semantics(
         button: true,
@@ -302,7 +315,7 @@ class _HideButton extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(_touch),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -318,8 +331,8 @@ class _HideButton extends StatelessWidget {
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
-                    width: 30,
-                    height: 30,
+                    width: _size,
+                    height: _size,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
