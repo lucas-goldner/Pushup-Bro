@@ -20,6 +20,7 @@ import 'package:pushup_bro/features/settings/view/settings_tracking.dart';
 import 'package:pushup_bro/features/settings/view/settings_volume.dart';
 import 'package:pushup_bro/features/settings/widgets/appearance_picker.dart';
 import 'package:pushup_bro/features/settings/widgets/info_item.dart';
+import 'package:pushup_bro/features/settings/widgets/reset_progress.dart';
 import 'package:pushup_bro/features/settings/widgets/settings_group.dart';
 import 'package:pushup_bro/features/settings/widgets/settings_item.dart';
 import 'package:pushup_bro/features/settings/widgets/x_logo.dart';
@@ -154,6 +155,8 @@ class _SettingsState extends State<Settings> {
               ),
             ],
           ),
+          SettingsSectionHeader(context.l10n.progressTitle),
+          const ResetProgressGroup(),
           SettingsSectionHeader(context.l10n.info),
           SettingsGroup(
             children: [

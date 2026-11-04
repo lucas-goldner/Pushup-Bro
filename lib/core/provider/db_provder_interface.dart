@@ -8,6 +8,7 @@ abstract class DBProviderInterface {
   Future<List<PushupSet>> getAllPushupSets();
   Future<void> addNewPushupSet(PushupSet pushupSet);
   Future<void> deletePushupSet(int id);
+  Future<void> clearPushupSets();
   Future<User> createUser({int xp = 0, int level = 1});
   Future<void> updateUser(User user);
   Future<User> getUser();

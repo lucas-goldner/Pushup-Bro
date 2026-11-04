@@ -1092,5 +1092,13 @@
   "airpodsSuggestion": "Lo mejor para ti: nivel {level}",
   "airpodsApply": "Usar nivel {level}",
   "airpodsNoMotion": "Aún no hay movimiento de tus AirPods. ¿Los llevas puestos?",
-  "airpodsReset": "Restablecer"
+  "airpodsReset": "Restablecer",
+  "progressTitle": "Progreso",
+  "resetIsland": "Reiniciar la isla",
+  "resetIslandInfo": "Tu isla empieza de cero: edificios, plátanos, monos, el armario, las misiones diarias y los niveles y etapas del Jungle Trek, y la historia se vuelve a ver. Tus flexiones, estadísticas, nivel de bro y tus bros se quedan.",
+  "resetIslandConfirm": "Reiniciar la isla",
+  "resetAll": "Borrar todo el progreso",
+  "resetAllInfo": "Todo empieza de cero, como recién instalada: todas tus flexiones y estadísticas, tu nivel de bro y toda la isla con su historia. Tus ajustes, Pro y tu cuenta se quedan. No se puede deshacer.",
+  "resetAllConfirm": "Borrar todo",
+  "resetDone": "¡Listo: borrón y cuenta nueva!"
 }

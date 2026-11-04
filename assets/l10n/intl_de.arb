@@ -1092,5 +1092,13 @@
   "airpodsSuggestion": "Am besten für dich: Stufe {level}",
   "airpodsApply": "Stufe {level} nehmen",
   "airpodsNoMotion": "Noch keine Bewegung von deinen AirPods. Sind sie in deinen Ohren?",
-  "airpodsReset": "Auf Standard zurücksetzen"
+  "airpodsReset": "Auf Standard zurücksetzen",
+  "progressTitle": "Fortschritt",
+  "resetIsland": "Insel zurücksetzen",
+  "resetIslandInfo": "Deine Insel fängt von vorn an: Gebäude, Bananen, Affen, die Garderobe, Tagesquests und die Stufen und Etappen des Dschungel-Treks, und die Geschichte läuft noch einmal. Deine Liegestütze, Statistiken, dein Bro-Level und deine Bros bleiben.",
+  "resetIslandConfirm": "Insel zurücksetzen",
+  "resetAll": "Gesamten Fortschritt zurücksetzen",
+  "resetAllInfo": "Alles fängt von vorn an, wie nach einer Neuinstallation: alle Liegestütze und Statistiken, dein Bro-Level und die ganze Insel samt Geschichte. Deine Einstellungen, Pro und dein Konto bleiben. Das lässt sich nicht rückgängig machen.",
+  "resetAllConfirm": "Alles zurücksetzen",
+  "resetDone": "Erledigt: ein Neuanfang!"
 }

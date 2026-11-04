@@ -101,6 +101,13 @@ class DBProvider implements DBProviderInterface {
   }
 
   @override
+  Future<void> clearPushupSets() async {
+    for (final set in await getAllPushupSets()) {
+      await deletePushupSet(set.id);
+    }
+  }
+
+  @override
   Future<List<PushupSet>> getAllPushupSets() async {
     final raw = store?.decodeString(_pushupSetsKey);
     if (raw == null || raw.isEmpty) return [];

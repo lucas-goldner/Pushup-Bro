@@ -181,6 +181,10 @@ class SharedPreferencesCubit extends Cubit<SharedPreferencesState> {
     _update(appearance: appearance);
   }
 
+  /// Forgets [key] (e.g. a record or a day claimed), as if never set.
+  Future<void> remove(SharedPreferencesKey key) =>
+      _sharedPreferencesProvider.removeFromSharedPrefs(key);
+
   Future<void> setMusicOn({required bool on}) async {
     await _sharedPreferencesProvider.writeBoolToSharedPrefs(
       SharedPreferencesKey.musicOn,

@@ -1092,5 +1092,13 @@
   "airpodsSuggestion": "あなたにおすすめ：レベル{level}",
   "airpodsApply": "レベル{level}にする",
   "airpodsNoMotion": "まだAirPodsの動きがありません。耳に着けていますか？",
-  "airpodsReset": "標準に戻す"
+  "airpodsReset": "標準に戻す",
+  "progressTitle": "進行状況",
+  "resetIsland": "島をリセット",
+  "resetIslandInfo": "島が最初からやり直しになります：建物、バナナ、サル、着せ替え、デイリークエスト、ジャングルトレックのレベルとステージ。ストーリーももう一度流れます。腕立ての記録、統計、ブロレベル、ブロはそのままです。",
+  "resetIslandConfirm": "リセットする",
+  "resetAll": "すべての進行状況をリセット",
+  "resetAllInfo": "新しくインストールしたように、すべてが最初からになります：腕立ての記録と統計、ブロレベル、島とストーリーのすべて。設定、Pro、アカウントはそのままです。元に戻すことはできません。",
+  "resetAllConfirm": "すべてリセット",
+  "resetDone": "完了：新しいスタートです！"
 }

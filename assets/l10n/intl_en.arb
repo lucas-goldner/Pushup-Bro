@@ -1844,5 +1844,13 @@
     }
   },
   "airpodsNoMotion": "No movement from your AirPods yet. Are they in your ears?",
-  "airpodsReset": "Reset to default"
+  "airpodsReset": "Reset to default",
+  "progressTitle": "Progress",
+  "resetIsland": "Reset island",
+  "resetIslandInfo": "Your island starts over: buildings, bananas, monkeys, the wardrobe, daily quests and the Jungle Trek's levels and stages, and the story plays again. Your pushups, stats, bro level and bros stay.",
+  "resetIslandConfirm": "Reset island",
+  "resetAll": "Reset all progress",
+  "resetAllInfo": "Everything starts over, like a fresh install: all your pushups and stats, your bro level, and the whole island and story. Your settings, Pro and your account stay. This can't be undone.",
+  "resetAllConfirm": "Reset everything",
+  "resetDone": "Done: a fresh start!"
 }
