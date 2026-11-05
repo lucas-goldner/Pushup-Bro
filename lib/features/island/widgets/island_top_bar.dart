@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pushup_bro/features/island/buildings/gym/widgets/gym_challenge_chip.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
 import 'package:pushup_bro/features/island/widgets/banana_counter.dart';
 import 'package:pushup_bro/features/island/widgets/community_goal.dart';
@@ -54,6 +55,8 @@ class IslandTopBar extends StatelessWidget {
                     ),
                   ),
                 const SizedBox(width: 8),
+                // Today's gym workout, while it waits.
+                if (!locked) const GymChallengeChip(),
                 const BananaCounter(height: kIslandHudHeight),
               ],
             ),

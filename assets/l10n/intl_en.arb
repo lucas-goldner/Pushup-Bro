@@ -1980,5 +1980,289 @@
   "towerNext": "Next floor",
   "towerStop": "Take the loot",
   "heavyBracing": "Holding! Stay down…",
-  "buildingOpen": "Go inside"
+  "buildingOpen": "Go inside",
+  "gymPyramid": "Pyramid",
+  "gymPyramidInfo": "Climb up one rep at a time, then all the way back down. A short rest between steps.",
+  "gymPyramidGoal": "1 → {peak} → 1 · {total} pushups",
+  "@gymPyramidGoal": {
+    "placeholders": {
+      "peak": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymTempo": "Slow Motion",
+  "gymTempoInfo": "Three seconds on the way down, one to push up. Rushed reps don't count.",
+  "gymTempoGoal": "{reps} slow pushups",
+  "@gymTempoGoal": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "gymEmom": "EMOM",
+  "gymEmomInfo": "Every minute on the minute: do your reps as the minute starts and rest for what's left of it.",
+  "gymEmomGoal": "{reps} every minute for {minutes} minutes",
+  "@gymEmomGoal": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "gymMaxSet": "Max Set",
+  "gymMaxSetInfo": "One set, all you've got: beat your best. Stop for 8 seconds and the set is over.",
+  "gymMaxSetGoal": "{goal} pushups in one set",
+  "@gymMaxSetGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "gymBurner": "Two-Minute Burner",
+  "gymBurnerInfo": "As many pushups as you can in two minutes. Rest when you must, but the clock keeps running.",
+  "gymBurnerGoal": "{goal} pushups in {seconds} seconds",
+  "@gymBurnerGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "gymPlankPress": "Plank & Press",
+  "gymPlankPressInfo": "Hold a plank, then go straight into pushups. Three rounds, no dropping your hips.",
+  "gymPlankPressGoal": "{rounds} × ({seconds} s plank + {reps} pushups)",
+  "@gymPlankPressGoal": {
+    "placeholders": {
+      "rounds": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      },
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "gymDeck": "Deck of Cards",
+  "gymDeckInfo": "Gus flips a card, you do that many. No peeking at the next one.",
+  "gymDeckGoal": "{cards} cards · {total} pushups",
+  "@gymDeckGoal": {
+    "placeholders": {
+      "cards": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymGusDrill": "Gus's Drill",
+  "gymGusDrillInfo": "Grandpa Gus barks out sets. Finish each one before his whistle blows.",
+  "gymGusDrillGoal": "{calls} calls, pass {pass} of them",
+  "@gymGusDrillGoal": {
+    "placeholders": {
+      "calls": {
+        "type": "int"
+      },
+      "pass": {
+        "type": "int"
+      }
+    }
+  },
+  "gymTodayTag": "Today's workout",
+  "gymDoneToday": "Done today",
+  "gymOnlyHere": "Only at the gym",
+  "gymNextIn": "New workout in {time}",
+  "@gymNextIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "gymStart": "Start workout",
+  "gymTrainAgain": "Train again",
+  "gymStreak": "Gym streak",
+  "gymGiftIn": "{count, plural, =1{1 more day for new gym gear} other{{count} more days for new gym gear}}",
+  "@gymGiftIn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymGiftCrateIn": "{count, plural, =1{1 more day for a banana crate} other{{count} more days for a banana crate}}",
+  "@gymGiftCrateIn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymWorkouts": "The gym's workouts",
+  "gymToday": "Today",
+  "gymTomorrow": "Tomorrow",
+  "gymInDays": "In {count} days",
+  "@gymInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymWonTimes": "Won {count}×",
+  "@gymWonTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymGetReady": "Get ready!",
+  "gymGo": "Go!",
+  "gymRest": "Rest",
+  "gymUpNext": "Up next: {reps}",
+  "@gymUpNext": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "gymPlank": "Hold the plank",
+  "gymStep": "Step {current} of {total}",
+  "@gymStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymMinute": "Minute {current} of {total}",
+  "@gymMinute": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymCard": "Card {current} of {total}",
+  "@gymCard": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymCall": "Call {current} of {total}",
+  "@gymCall": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymRound": "Round {current} of {total}",
+  "@gymRound": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymTempoDown": "Slowly down",
+  "gymTempoUp": "Push up!",
+  "gymTooFast": "Too fast! Slower down",
+  "gymYourBest": "Your best: {best}",
+  "@gymYourBest": {
+    "placeholders": {
+      "best": {
+        "type": "int"
+      }
+    }
+  },
+  "gymNewBest": "New best!",
+  "gymSetEnds": "Keep going! Set ends in {seconds}",
+  "@gymSetEnds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "gymMinuteDone": "Done! Rest till the next minute",
+  "gymPassed": "{passed} of {needed} passed",
+  "@gymPassed": {
+    "placeholders": {
+      "passed": {
+        "type": "int"
+      },
+      "needed": {
+        "type": "int"
+      }
+    }
+  },
+  "gymCoach1": "Chest to the floor, kiddo!",
+  "gymCoach2": "Breathe! In on the way down.",
+  "gymCoach3": "Back in my day we did these on lava!",
+  "gymCoach4": "Strong like a silverback!",
+  "gymCoach5": "Don't you quit on me now!",
+  "gymCoach6": "Good form, good form!",
+  "gymWorkoutDone": "Workout done!",
+  "gymNotThisTime": "Not this time",
+  "gymTryTomorrow": "Gus has a new workout for you tomorrow.",
+  "gymStreakUp": "{count, plural, =1{1-day gym streak} other{{count}-day gym streak}}",
+  "@gymStreakUp": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymGift": "New gym gear: {name}",
+  "@gymGift": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "gymGiftCrate": "Streak crate: +{bananas} bananas",
+  "@gymGiftCrate": {
+    "placeholders": {
+      "bananas": {
+        "type": "int"
+      }
+    }
+  },
+  "gymBackToGym": "Back to the gym",
+  "gymChallengeChip": "Gym workout"
 }
