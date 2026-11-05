@@ -7,6 +7,7 @@ import 'package:pushup_bro/core/scene/nature_kit.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/static_batch.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
+import 'package:pushup_bro/features/island/scene/island_night.dart';
 import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
@@ -33,6 +34,18 @@ const _slots = [0.75, -0.75, 1.55, -1.55, 2.25];
 
 /// How fast (m/s) Carlos runs to the jungle.
 const _runSpeed = 2.1;
+
+/// Night torches on the beach, as angles from the island's front: between
+/// the palms on the side the camera sees.
+const _beachTorches = [-0.05, 0.78, -0.78, 1.6, -1.6];
+
+/// How far (m) past the grass edge the beach torches stand.
+const _beachTorchOffset = 0.62;
+
+/// How far (m) the torches by the jungle gate stand to either side of it,
+/// and out in front of it, clear of the jungle's mound.
+const _gateTorchSpread = 0.62;
+const _gateTorchFront = 0.35;
 
 /// Something on the island placed in polar coordinates, so it moves out
 /// with the coast as the island grows. `offset` is relative to the grass
@@ -94,6 +107,10 @@ class IslandWorld {
   late final Node _foamRing;
   late final Node _shallowsRing;
 
+  /// Only built the first time night falls, so the day draws nothing extra.
+  IslandNight? _nightDressing;
+  bool _night = false;
+
   /// Buildings on the island in purchase order, the food truck first.
   List<ShopBuyables> _order = [ShopBuyables.none];
   double _radius = _baseRadius;
@@ -149,6 +166,21 @@ class IslandWorld {
   /// Above the jungle's trees, where its lock pin floats.
   vm.Vector3 get jungleSpot => jungleCenter + vm.Vector3(0, 2.6, 0);
 
+  /// Whether the island is lit for the night, with its torches burning.
+  bool get night => _night;
+  set night(bool value) {
+    if (value == _night) return;
+    _night = value;
+    if (value && _nightDressing == null) {
+      final dressing = _nightDressing = IslandNight(
+        2 + _beachTorches.length + _slots.length,
+      );
+      root.add(dressing.root);
+    }
+    _nightDressing?.root.visible = value;
+    _layout();
+  }
+
   /// Stops Carlos's laps for [seconds] to turn towards [toward] (a world
   /// direction, usually the camera) and wave.
   void greet(vm.Vector3 toward, {double seconds = 3.4}) {
@@ -197,7 +229,9 @@ class IslandWorld {
       ..root.visible = true;
   }
 
-  void update(double deltaSeconds) {
+  /// Moves everything on for [deltaSeconds]; [eye] is where the camera is,
+  /// for the night's glow to face it.
+  void update(double deltaSeconds, {vm.Vector3? eye}) {
     _time += deltaSeconds;
 
     final target = targetRadius;
@@ -220,6 +254,7 @@ class IslandWorld {
     }
     gorilla.update(deltaSeconds);
     jungle.update(deltaSeconds);
+    if (_night) _nightDressing?.update(deltaSeconds, reach: extent, eye: eye);
 
     _foamRing.scale = vm.Vector3.all(
       extent / 5.5 * (1 + 0.012 * math.sin(_time * 1.3)),
@@ -317,6 +352,40 @@ class IslandWorld {
           prop.top,
           math.cos(prop.angle) * r,
         );
+    }
+    _placeTorches();
+  }
+
+  /// Two torches flank the jungle gate, a few line the beach, and every
+  /// building gets one on its side facing the camera.
+  void _placeTorches() {
+    final torches = _nightDressing;
+    if (torches == null || !_night) return;
+    var index = 0;
+    void stand(vm.Vector3 position, {bool visible = true}) =>
+        torches.place(index++, position, visible: visible);
+    vm.Vector3 polar(double angle, double r, double top) =>
+        vm.Vector3(math.sin(angle) * r, top, math.cos(angle) * r);
+
+    final gate = jungleGate;
+    for (final side in [-1, 1]) {
+      stand(
+        vm.Vector3(
+          gate.x + side * _gateTorchSpread,
+          grassTop,
+          gate.z + _gateTorchFront,
+        ),
+      );
+    }
+    for (final angle in _beachTorches) {
+      stand(polar(angle, _radius + _beachTorchOffset, sandTop));
+    }
+    for (var i = 0; i < _slots.length; i++) {
+      final slot = _slots[i];
+      stand(
+        polar(slot - 0.38 * slot.sign, _radius * 0.64, grassTop),
+        visible: i < _order.length,
+      );
     }
   }
 

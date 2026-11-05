@@ -21,12 +21,14 @@ import 'package:pushup_bro/features/pro/widgets/lock_pin.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
-/// The island's day sky behind the 3D scene: the theme's ice blue washed
-/// with white, so it stays bright in dark mode like the world itself. The
-/// fog uses its `horizon` too, so the far sea melts into the backdrop.
+/// The island's sky behind the 3D scene. By day the theme's ice blue washed
+/// with white, so it stays bright in dark mode like the world itself; at
+/// night (see `isNight`) a deep night blue in either theme. The fog uses
+/// its `horizon` too, so the far sea melts into the backdrop.
 typedef IslandSky = ({Color top, Color horizon});
 
-IslandSky islandSky(BuildContext context) {
+IslandSky islandSky(BuildContext context, {bool night = false}) {
+  if (night) return (top: _nightTop, horizon: _nightHorizon);
   final game = context.gameColors;
 
   return (
@@ -34,6 +36,9 @@ IslandSky islandSky(BuildContext context) {
     horizon: Color.lerp(game.ice, game.onGame, 0.85)!,
   );
 }
+
+const _nightTop = Color(0xFF0A1230);
+const _nightHorizon = Color(0xFF1B2D5C);
 
 /// Things Carlos says when he's tapped.
 List<String> _greetings(S l) =>
@@ -52,8 +57,13 @@ class IslandScene extends StatefulWidget {
     this.greetings,
     this.rise,
     this.intro,
+    this.night = false,
     super.key,
   });
+
+  /// Whether to show the island at night: moonlit, with torches burning.
+  /// Callers decide with `isNight`, so the sky behind matches.
+  final bool night;
 
   /// 1 for a close-up of Carlos, 0 for the normal view: the first visit
   /// zooms out from him to the whole island after the intro film.
@@ -113,6 +123,14 @@ class IslandSceneState extends State<IslandScene> {
 
   /// Where the lock pins sit on screen while the island is locked.
   final ValueNotifier<Map<ProLockPlace, Offset>> _pins = ValueNotifier({});
+
+  @override
+  void didUpdateWidget(IslandScene oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Night can fall (or end) while the island is open.
+    final scene = _scene;
+    if (widget.night != oldWidget.night && scene != null) _light(scene);
+  }
 
   @override
   void dispose() {
@@ -197,18 +215,37 @@ class IslandSceneState extends State<IslandScene> {
         ..showOwned(snapshot.bought)
         ..gorilla.look = snapshot.look;
     }
-    final horizon = linearColor(islandSky(context).horizon);
+    _light(scene);
+    scene.add(world.root);
+  }
+
+  /// Sunlight by day; by night a dim, cool moon and a darker world, so the
+  /// torches' flames (which ignore the light) glow against it.
+  void _light(Scene scene) {
+    final night = widget.night;
+    _world?.night = night;
+    final horizon = linearColor(islandSky(context, night: night).horizon);
     scene
-      ..directionalLight = DirectionalLight(
-        direction: vm.Vector3(-0.5, -1, -0.45),
-        intensity: 3.4,
-        castsShadow: true,
-        shadowSoftness: 0.2,
-      )
+      ..directionalLight = night
+          ? DirectionalLight(
+              direction: vm.Vector3(0.45, -1, -0.5),
+              intensity: 0.55,
+              color: vm.Vector3(0.6, 0.72, 1),
+              castsShadow: true,
+              shadowSoftness: 0.35,
+            )
+          : DirectionalLight(
+              direction: vm.Vector3(-0.5, -1, -0.45),
+              intensity: 3.4,
+              castsShadow: true,
+              shadowSoftness: 0.2,
+            )
       ..environmentSettings = EnvironmentSettings(
         exposure: 1.05,
+        environmentIntensity: night ? 0.1 : 1,
         colorGradingEnabled: true,
-        saturation: 1.1,
+        saturation: night ? 0.85 : 1.1,
+        temperature: night ? -0.25 : 0,
         ambientOcclusionEnabled: true,
         ambientOcclusionIntensity: 0.8,
         fogEnabled: true,
@@ -217,8 +254,7 @@ class IslandSceneState extends State<IslandScene> {
         fogColor: horizon.xyz,
         fogStart: 50,
         fogEnd: 120,
-      )
-      ..add(world.root);
+      );
   }
 
   void _syncInventory(GameInventory inventory) {
@@ -262,7 +298,7 @@ class IslandSceneState extends State<IslandScene> {
       _yawVelocity = springTo(_yawVelocity, 0, deltaSeconds, 3);
     }
     _focus = springTo(_focus, running ? 1 : 0, deltaSeconds, 2);
-    world?.update(deltaSeconds);
+    world?.update(deltaSeconds, eye: camera?.position);
   }
 
   void _placePins(IslandWorld? world, Camera? camera) {
@@ -317,10 +353,13 @@ class IslandSceneState extends State<IslandScene> {
       distance += (4.2 - distance) * intro;
       height += (1.5 - height) * intro;
     }
-    // Keep the fog beyond the island however far back the camera goes.
+    // Keep the fog beyond the island however far back the camera goes. At
+    // night it closes in a little, so the dark sea melts into the sky.
+    final fogFrom = widget.night ? 1.5 : 1.9;
+    final fogTo = widget.night ? 3.6 : 4.5;
     _scene?.fog
-      ?..start = distance * 1.9
-      ..end = distance * 4.5;
+      ?..start = distance * fogFrom
+      ..end = distance * fogTo;
     // Rising to look straight down: the same distance, all of it overhead
     // (a sliver stays sideways so the camera still knows which way is
     // up), turning a little and closing in by about 12%.

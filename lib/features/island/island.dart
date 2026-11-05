@@ -9,6 +9,7 @@ import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/model/night.dart';
 import 'package:pushup_bro/core/widgets/fold_safe.dart';
 import 'package:pushup_bro/features/island/intro/island_intro.dart';
 import 'package:pushup_bro/features/island/model/daily_bananas.dart';
@@ -173,10 +174,15 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     // The film picks its own music; then the island's, by the time of day.
-    if (!_film) MusicScope.set(context, islandMusic(DateTime.now()));
+    final now = DateTime.now();
+    if (!_film) MusicScope.set(context, islandMusic(now));
 
     return BlocBuilder<ProCubit, ProState>(
-      builder: (context, pro) => _island(context, locked: _locked(pro)),
+      builder: (context, pro) => _island(
+        context,
+        locked: _locked(pro),
+        night: isNight(now),
+      ),
     );
   }
 
@@ -186,7 +192,11 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
   /// Always the whole screen: everything on it is positioned, and a Stack
   /// otherwise shrinks to its unpositioned children (the hidden shop menu,
   /// during the intro film), leaving the page blank.
-  Widget _island(BuildContext context, {required bool locked}) =>
+  Widget _island(
+    BuildContext context, {
+    required bool locked,
+    required bool night,
+  }) =>
       SizedBox.expand(
         child: Stack(
           children: [
@@ -197,8 +207,8 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      islandSky(context).top,
-                      islandSky(context).horizon,
+                      islandSky(context, night: night).top,
+                      islandSky(context, night: night).horizon,
                     ],
                     stops: const [0, 0.55],
                   ),
@@ -212,6 +222,7 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
                   key: _sceneKey,
                   intro: locked ? null : _introZoom,
                   locked: locked,
+                  night: night,
                   onLockedTap: (place) => _guarded(place, () {}),
                   onJourneyChanged: (journeying) =>
                       setState(() => _journeying = journeying),
