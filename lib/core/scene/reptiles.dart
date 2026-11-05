@@ -117,6 +117,19 @@ abstract class Reptile extends Actor {
     _accent.baseColorFactor = linearColor(_darker(value, 0.35));
   }
 
+  /// Winding up a heavy attack, 0 to 1: it rears back and glows red.
+  double windUp = 0;
+
+  /// Reeling from a blocked attack: it wobbles, dazed.
+  bool staggered = false;
+
+  /// Under the water (a diver) or out of sight (a vanisher).
+  bool sunk = false;
+  bool hidden = false;
+  double _sink = 0;
+  double _fade = 0;
+  bool _glowing = false;
+
   /// Gone after its defeat animation.
   bool get gone => _defeat >= 1;
 
@@ -138,22 +151,48 @@ abstract class Reptile extends Actor {
     _lunge = math.max(0, _lunge - deltaSeconds * 2.2);
     if (_defeat >= 0) _defeat = math.min(1, _defeat + deltaSeconds * 1.6);
 
-    // Flash white when hit.
+    _sink = springTo(_sink, sunk ? 1 : 0, deltaSeconds, 5);
+    _fade = springTo(_fade, hidden ? 1 : 0, deltaSeconds, 7);
+
+    // Flash white when hit, glow red while winding up.
+    final glow = windUp * (0.55 + 0.45 * math.sin(_time * 22).abs());
+    if (glow > 0 || _glowing) {
+      _glowing = glow > 0;
+      const red = Color(0xFFFF2A1F);
+      _belly.baseColorFactor =
+          linearColor(Color.lerp(_lighter(_base, 0.55), red, glow * 0.6)!);
+      _accent.baseColorFactor =
+          linearColor(Color.lerp(_darker(_base, 0.35), red, glow * 0.8)!);
+    }
     _skin.baseColorFactor = linearColor(
-      Color.lerp(_base, const Color(0xFFFFFFFF), _hit * 0.75)!,
+      Color.lerp(
+        Color.lerp(_base, const Color(0xFFFF2A1F), glow * 0.9),
+        const Color(0xFFFFFFFF),
+        _hit * 0.75,
+      )!,
     );
     final squash = math.sin(_hit * math.pi) * 0.25;
     final leap = math.sin(_lunge * math.pi);
     final gone = _defeat < 0 ? 0.0 : _defeat;
+    // Rearing back to wind up, a dazed wobble when staggered.
+    final rear = windUp * (0.25 + 0.04 * math.sin(_time * 30));
+    final daze = staggered ? math.sin(_time * 9) * 0.22 : 0.0;
+    final shrink = (1 - gone) * (1 - _fade);
     body
-      ..position = vm.Vector3(0, leap * 0.25 + gone * 0.6, leap * 0.9)
+      ..position = vm.Vector3(
+        0,
+        leap * 0.25 + gone * 0.6 - _sink * height * 1.1,
+        leap * 0.9 - rear * 0.6,
+      )
       ..scale = vm.Vector3(
-            1 + squash * 0.6,
-            1 - squash,
-            1 + squash * 0.6,
+            1 + squash * 0.6 + windUp * 0.12,
+            1 - squash + windUp * 0.12,
+            1 + squash * 0.6 + windUp * 0.12,
           ) *
-          (1 - gone)
-      ..rotation = vm.Quaternion.axisAngle(_up, gone * math.pi * 3);
+          math.max(0.001, shrink)
+      ..rotation = vm.Quaternion.axisAngle(_up, gone * math.pi * 3 + daze) *
+          vm.Quaternion.axisAngle(vm.Vector3(1, 0, 0), -rear);
+    body.visible = _fade < 0.98;
     if (gone >= 1) root.visible = false;
     animate(_time);
   }
@@ -650,8 +689,18 @@ class KingKomo extends Reptile {
   final GorillaRig rig = GorillaRig();
   final UnlitMaterial _aura = UnlitMaterial();
 
+  final Node _tears = Node(name: 'tears');
+  final List<(Node, vm.Vector3)> _drops = [];
+  final List<double> _dropLife = [];
+  late final _tearShape = IcosphereGeometry(radius: 0.05, subdivisions: 1);
+  late final UnlitMaterial _tear = UnlitMaterial()
+    ..baseColorFactor = linearColor(const Color(0xFF8FD3FF));
+  double _down = -1;
+  double _nextTear = 0;
+  final _random = math.Random(7);
+
   @override
-  double get height => 1.15;
+  double get height => _down < 0 ? 1.15 : 0.6;
 
   @override
   set color(Color value) {
@@ -659,12 +708,93 @@ class KingKomo extends Reptile {
     _aura.baseColorFactor = linearColor(value);
   }
 
+  /// Beaten, the King doesn't vanish: he flops onto his side on his mat
+  /// and bawls, tears spraying from both eyes.
+  @override
+  void defeat() {
+    if (_down >= 0) return;
+    _down = 0;
+    rig
+      ..activity = GorillaActivity.idle
+      ..inPushup = false;
+    root.add(_tears);
+  }
+
   @override
   void animate(double time) {}
 
   @override
   void update(double deltaSeconds) {
-    super.update(deltaSeconds);
+    if (_down < 0) {
+      super.update(deltaSeconds);
+      rig.update(deltaSeconds);
+      return;
+    }
+    _time += deltaSeconds;
+    _down = math.min(1, _down + deltaSeconds * 1.4);
+    // A flop with a little bounce at the end.
+    final t = _down;
+    final fall = t < 1 ? 1 - math.pow(1 - t, 3) * math.cos(t * 6) : 1.0;
+    final sob = math.sin(_time * 16);
+    body
+      ..scale = vm.Vector3.all(1)
+      // Lying with his head to -x; shifted back so he stays in the middle.
+      ..position = vm.Vector3(
+        0.55 * fall,
+        0.3 * fall + sob.abs() * 0.025 * t,
+        0,
+      )
+      ..rotation = vm.Quaternion.axisAngle(
+            vm.Vector3(0, 0, 1),
+            math.pi / 2 * fall,
+          ) *
+          vm.Quaternion.axisAngle(vm.Vector3(0, 1, 0), sob * 0.05 * t);
+    // The ring of his power goes out.
+    _aura.baseColorFactor = linearColor(
+      Color.lerp(_base, const Color(0xFF39404A), t)!,
+    );
     rig.update(deltaSeconds);
+
+    // Two fountains of tears, once he's down.
+    if (t > 0.6) {
+      _nextTear -= deltaSeconds;
+      while (_nextTear <= 0) {
+        _nextTear += 0.035;
+        final eye = _random.nextBool() ? 1.0 : -1.0;
+        // Out of one of his eyes, worked out from where the head really is.
+        final toRoot = vm.Matrix4.copy(root.globalTransform)..invert();
+        final head = rig.head.globalTransform;
+        final at = toRoot.transformed3(
+          head.transformed3(vm.Vector3(0.15 * eye, 0.14, 0.36)),
+        );
+        final out = toRoot.transformed3(
+              head.transformed3(vm.Vector3(0.15 * eye, 0.14, 1.36)),
+            ) -
+            at;
+        final drop = meshNode(_tearShape, _tear, position: at);
+        _tears.add(drop);
+        final velocity = out * (0.6 + _random.nextDouble() * 0.6) +
+            vm.Vector3(
+              (_random.nextDouble() - 0.5) * 1.2,
+              1.6 + _random.nextDouble() * 0.9,
+              (_random.nextDouble() - 0.5) * 0.6,
+            );
+        _drops.add((drop, velocity));
+        _dropLife.add(1);
+      }
+    }
+    for (var i = _drops.length - 1; i >= 0; i--) {
+      final (drop, velocity) = _drops[i];
+      velocity.y -= 7 * deltaSeconds;
+      final at = drop.position + velocity * deltaSeconds;
+      _dropLife[i] -= deltaSeconds * 1.3;
+      if (at.y < 0.02 || _dropLife[i] <= 0) {
+        _tears.remove(drop);
+        _drops.removeAt(i);
+        _dropLife.removeAt(i);
+      } else {
+        drop.position = at;
+      }
+    }
   }
 }

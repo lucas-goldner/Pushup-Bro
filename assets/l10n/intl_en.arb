@@ -1852,5 +1852,132 @@
   "resetAll": "Reset all progress",
   "resetAllInfo": "Everything starts over, like a fresh install: all your pushups and stats, your bro level, and the whole island and story. Your settings, Pro and your account stay. This can't be undone.",
   "resetAllConfirm": "Reset everything",
-  "resetDone": "Done: a fresh start!"
+  "resetDone": "Done: a fresh start!",
+  "trekDifficulty": "Difficulty",
+  "trekEasy": "Easy",
+  "trekNormal": "Normal",
+  "trekHard": "Hard",
+  "trekBrutal": "Brutal",
+  "trekEasyInfo": "Fewer than 10 pushups in a row. About 10 to 15 per stage.",
+  "trekNormalInfo": "10 to 20 in a row. About 20 to 35 per stage, with breaks between waves.",
+  "trekHardInfo": "30 or more in a row. About 30 to 45 per stage, and they hit back hard.",
+  "trekBrutalInfo": "50 or more in a row. 40 to 60 per stage, and they hit back every second pushup.",
+  "trekBrutalLocked": "Clear the whole Trek to unlock Brutal.",
+  "trekRewards": "×{amount} XP and bananas",
+  "@trekRewards": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "boonChain": "Chain Lightning",
+  "boonChainInfo": "Quick pushups also zap the next enemy for 40%.",
+  "boonBerserk": "Berserk",
+  "boonBerserkInfo": "25% more damage below half health.",
+  "boonIronPlank": "Iron Plank",
+  "boonIronPlankInfo": "Blocking a heavy attack heals 8%.",
+  "boonThickSkin": "Thick Skin",
+  "boonThickSkinInfo": "Take 15% less damage.",
+  "boonSecondWind": "Second Wind",
+  "boonSecondWindInfo": "Heal 30% right now.",
+  "boonSharpEye": "Sharp Eye",
+  "boonSharpEyeInfo": "Critical hits come 2.5× as often.",
+  "boonComboKing": "Combo King",
+  "boonComboKingInfo": "Each quick pushup in a row hits 6% harder, up to 60%.",
+  "boonVampire": "Vampire Bat",
+  "boonVampireInfo": "Heal 5% of the damage you deal.",
+  "boonPick": "Pick a power-up",
+  "boonPickInfo": "It lasts until the end of the stage.",
+  "goalTitle": "Star goals",
+  "goalWin": "Win the stage",
+  "goalHealth": "Never drop below {value}% health",
+  "@goalHealth": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "goalCombo": "Reach a {value}× quick combo",
+  "@goalCombo": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "goalBlocks": "Block {value} heavy attacks",
+  "@goalBlocks": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "goalFast": "Win within {minutes} minutes of fighting",
+  "@goalFast": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "goalNoHeavy": "Take no heavy attack unblocked",
+  "heavyIncoming": "HEAVY ATTACK! Get down and hold the plank!",
+  "heavyBlocked": "BLOCKED!",
+  "heavyTaken": "Ouch! Heavy hit",
+  "noteSplash": "Under water! Quick pushups only",
+  "noteUnseen": "Can't see it! Quick combo to find it",
+  "noteShield": "Shielded! Held pushups break it",
+  "noteShieldBroken": "Shield broken!",
+  "noteMirrored": "He copied you! Switch it up",
+  "noteStaggered": "Staggered! Extra damage",
+  "noteDived": "It dived! Quick pushups only",
+  "noteSurfaced": "It surfaced!",
+  "noteVanished": "It vanished! Quick combo to find it",
+  "noteRevealed": "Found you!",
+  "noteHealed": "The medic patched them up!",
+  "noteChain": "Chain!",
+  "traitShielded": "Shield",
+  "traitHealer": "Medic",
+  "traitDiver": "Diver",
+  "traitVanisher": "Vanishes",
+  "traitMirror": "Copycat",
+  "towerTitle": "Canopy Tower",
+  "towerBlurb": "Floor after floor of reptiles, tougher every time. How high can Carlos climb?",
+  "towerLocked": "Beat King Komo to open the tower.",
+  "towerClimb": "Climb",
+  "towerFloor": "Floor {floor}",
+  "@towerFloor": {
+    "placeholders": {
+      "floor": {
+        "type": "int"
+      }
+    }
+  },
+  "towerBest": "Best: floor {floor}",
+  "@towerBest": {
+    "placeholders": {
+      "floor": {
+        "type": "int"
+      }
+    }
+  },
+  "towerWeek": "This week",
+  "towerBros": "Bros this week",
+  "towerNoBros": "Add bros to race them up the tower.",
+  "towerReached": "You reached floor {floor}!",
+  "@towerReached": {
+    "placeholders": {
+      "floor": {
+        "type": "int"
+      }
+    }
+  },
+  "towerNewBest": "New best!",
+  "towerCleared": "Floor cleared!",
+  "towerNext": "Next floor",
+  "towerStop": "Take the loot",
+  "heavyBracing": "Holding! Stay down…"
 }

@@ -276,6 +276,10 @@ class GorillaRig {
 
   late final Node _torso;
   late final Node _head;
+
+  /// The head, for placing things at the face (tears, say). A lizard's
+  /// eyes sit at `(±0.15, 0.14, 0.3)` in it.
+  Node get head => _head;
   final Node _gorillaHead = Node(name: 'gorilla-head');
   final Node _lizardHead = Node(name: 'lizard-head');
   late final Node _tail;

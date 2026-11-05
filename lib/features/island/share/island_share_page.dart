@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/model/night.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/friends/widgets/code_card.dart';
@@ -72,6 +73,9 @@ class _ShareState extends State<_Share> with SingleTickerProviderStateMixin {
     duration: const Duration(milliseconds: _kEnd * 1000 ~/ 1),
   );
   final ValueNotifier<double> _rise = ValueNotifier(0);
+
+  /// The island as it looks right now; fixed for the whole film.
+  final bool _night = isNight(DateTime.now());
   final GlobalKey _scene = GlobalKey();
   final GlobalKey _card = GlobalKey();
   late final QrGrid _grid = QrGrid(FriendCode.link(widget.me.code), hole: 9);
@@ -232,7 +236,7 @@ class _ShareState extends State<_Share> with SingleTickerProviderStateMixin {
     final sheet = Curves.easeOutBack.transform(
       ((s - _kSheet) / 0.6).clamp(0.0, 1.0),
     );
-    final sky = islandSky(context);
+    final sky = islandSky(context, night: _night);
     final qrRect = _qrRect(size);
 
     return Stack(
@@ -251,7 +255,9 @@ class _ShareState extends State<_Share> with SingleTickerProviderStateMixin {
                     stops: const [0, 0.55],
                   ),
                 ),
-                child: IgnorePointer(child: IslandScene(rise: _rise)),
+                child: IgnorePointer(
+                  child: IslandScene(rise: _rise, night: _night),
+                ),
               ),
             ),
           ),

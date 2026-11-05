@@ -113,8 +113,10 @@ class _PushupTrackingState extends State<PushupTracking> {
                   children: [
                     // Where the old top row was, so the counter stays put.
                     const SizedBox(height: 60),
-                    SizedBox(
-                      height: 140,
+                    ConstrainedBox(
+                      // At least as tall as the counter, so it stays put;
+                      // taller when the free days and a long caption need it.
+                      constraints: const BoxConstraints(minHeight: 140),
                       // Counting happens in the listener, which sees every
                       // motion sample; a builder only sees the one that is
                       // current when a frame is drawn, and would miss reps
@@ -147,36 +149,17 @@ class _PushupTrackingState extends State<PushupTracking> {
 
                           return Align(
                             alignment: Alignment.topCenter,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: PBSpace.xxl,
-                              ),
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: context.colorScheme.surface,
-                                  borderRadius:
-                                      BorderRadius.circular(PBRadius.lg),
-                                  boxShadow: context.cardShadow,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // The free days left, centred under the
+                                // title, where nothing can crowd it.
+                                FreeDaysHomeChip(
+                                  visible: !started,
+                                  compact: true,
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: PBSpace.xl,
-                                    vertical: PBSpace.lg,
-                                  ),
-                                  child: Text(
-                                    started
-                                        ? context.l10n.lookingForAirpods
-                                        : context.l10n.readyCaption,
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        context.textTheme.bodyMedium?.copyWith(
-                                      color:
-                                          context.colorScheme.onSurfaceVariant,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                                _caption(context, started: started),
+                              ],
                             ),
                           );
                         },
@@ -235,17 +218,8 @@ class _PushupTrackingState extends State<PushupTracking> {
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: FreeDaysHomeChip(visible: !started),
-                      ),
-                      // Music on or off for the whole app.
-                      if (!started) const MusicToggleButton(),
-                    ],
-                  ),
+                  // Music on or off for the whole app.
+                  child: started ? null : const MusicToggleButton(),
                 ),
               ),
             ),
@@ -253,3 +227,31 @@ class _PushupTrackingState extends State<PushupTracking> {
         ),
       );
 }
+
+/// The bubble under the title: Carlos is ready, or looking for AirPods.
+Widget _caption(BuildContext context, {required bool started}) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: PBSpace.xxl),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: context.colorScheme.surface,
+          borderRadius: BorderRadius.circular(PBRadius.lg),
+          boxShadow: context.cardShadow,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: PBSpace.xl,
+            vertical: PBSpace.lg,
+          ),
+          child: Text(
+            started
+                ? context.l10n.lookingForAirpods
+                : context.l10n.readyCaption,
+            textAlign: TextAlign.center,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
+              height: 1.4,
+            ),
+          ),
+        ),
+      ),
+    );

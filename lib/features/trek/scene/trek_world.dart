@@ -55,6 +55,17 @@ class TrekWorld {
   final Map<Reptile, double> _entering = {};
   final List<_Shot> _shots = [];
   final List<_Spark> _sparks = [];
+
+  /// The plates orbiting each shielded enemy, one per plate left.
+  final Map<Foe, List<Node>> _plates = {};
+  late final Geometry _plateShape = reshaped(
+    CuboidGeometry(vm.Vector3.all(1)),
+    vm.Vector3(0.18, 0.24, 0.04),
+  );
+  late final _plateMaterial = UnlitMaterial()
+    ..baseColorFactor = linearColor(const Color(0xFF7FD0FF));
+  late final _sparkShape = IcosphereGeometry(radius: 0.05, subdivisions: 0);
+  final Map<Color, UnlitMaterial> _sparkMaterials = {};
   final _random = math.Random(1);
   double _time = 0;
   bool _tracking = false;
@@ -77,7 +88,19 @@ class TrekWorld {
       location.root.remove(actor.root);
     }
     _actors.clear();
+    for (final plates in _plates.values) {
+      plates.forEach(_fx.remove);
+    }
+    _plates.clear();
     for (final foe in foes) {
+      if (foe.shield > 0) {
+        final plates = [
+          for (var i = 0; i < foe.shield; i++)
+            meshNode(_plateShape, _plateMaterial),
+        ];
+        _fx.addAll(plates);
+        _plates[foe] = plates;
+      }
       final actor = switch (foe.spec.species) {
         Species.gecko => Gecko(foe.color.color),
         Species.skink => Gecko(foe.color.color, skinny: true),
@@ -207,11 +230,44 @@ class TrekWorld {
     );
   }
 
+  /// A burst of green sparkles over the enemies a medic patched up.
+  void heal(List<Foe> foes) {
+    for (final foe in foes) {
+      final actor = _actors[foe];
+      if (actor == null || !foe.alive) continue;
+      _burst(
+        actor.root.position + vm.Vector3(0, _heightOf(actor) * 0.8, 0),
+        const Color(0xFF6BE37F),
+        6,
+      );
+    }
+  }
+
+  /// A heavy attack blocked: a blue flash at Carlos.
+  void block(Foe foe) {
+    _actors[foe]?.lunge();
+    _burst(
+      location.carlos.root.position + vm.Vector3(0, 0.5, -0.4),
+      const Color(0xFF7FD0FF),
+      16,
+    );
+  }
+
+  /// A puff where an enemy dived, vanished or showed up again.
+  void puff(Foe foe, Color color) {
+    final actor = _actors[foe];
+    if (actor == null) return;
+    _burst(actor.root.position + vm.Vector3(0, 0.2, 0), color, 10);
+  }
+
   void _burst(vm.Vector3 at, Color color, int count) {
-    final material = UnlitMaterial()..baseColorFactor = linearColor(color);
+    final material = _sparkMaterials.putIfAbsent(
+      color,
+      () => UnlitMaterial()..baseColorFactor = linearColor(color),
+    );
     for (var i = 0; i < count; i++) {
       final node = meshNode(
-        icosphere(0.05, subdivisions: 0),
+        _sparkShape,
         material,
         position: at.clone(),
       );
@@ -254,7 +310,35 @@ class TrekWorld {
           toCarlos..normalize(),
         );
       }
-      actor.update(deltaSeconds);
+      final charging = foe.charging;
+      actor
+        ..windUp = charging == null
+            ? 0
+            : (1 - charging / foe.difficulty.windUp).clamp(0.0, 1.0)
+        ..staggered = foe.stagger > 0
+        ..sunk = foe.submerged
+        ..hidden = foe.hidden
+        ..update(deltaSeconds);
+      // Shield plates circle it; one goes with every held pushup.
+      final plates = _plates[foe];
+      if (plates != null) {
+        while (
+            plates.length > foe.shield || (!foe.alive && plates.isNotEmpty)) {
+          final plate = plates.removeLast();
+          _fx.remove(plate);
+          _burst(plate.position, const Color(0xFF7FD0FF), 8);
+        }
+        final centre =
+            actor.root.position + vm.Vector3(0, _heightOf(actor) * 0.45, 0);
+        final radius = _heightOf(actor) * 0.3 + 0.18;
+        for (final (i, plate) in plates.indexed) {
+          final a = _time * 1.6 + i * math.pi * 2 / plates.length;
+          plate
+            ..position = centre +
+                vm.Vector3(math.cos(a) * radius, 0, math.sin(a) * radius)
+            ..rotation = vm.Quaternion.axisAngle(vm.Vector3(0, 1, 0), -a);
+        }
+      }
     }
     for (final shot in [..._shots]) {
       shot.t = math.min(1, shot.t + deltaSeconds / 0.32);

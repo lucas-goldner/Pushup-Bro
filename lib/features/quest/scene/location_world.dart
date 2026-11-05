@@ -836,12 +836,15 @@ class LocationWorld {
 
   /// A sunny jungle clearing with a dirt trail running into the trees.
   Node _fernTrail() {
+    // The ground sits well under the clearing's rim (at -0.02 once the
+    // patch is lowered) and the trail well under its floor (at 0.02), so
+    // no two surfaces share a height and flicker in the distance.
     final scene = Node(name: 'fern-trail')
       ..add(
         meshNode(
           plateau(
             radius: (a) => 16,
-            top: -0.02,
+            top: -0.08,
             bottom: -0.6,
             bottomScale: 1,
             segments: 48,
@@ -853,10 +856,10 @@ class LocationWorld {
         meshNode(
           RibbonGeometry(
             CatmullRomPath([
-              vm.Vector3(0, 0.005, 6),
-              vm.Vector3(0.4, 0.005, 1),
-              vm.Vector3(-0.3, 0.005, -4),
-              vm.Vector3(0.6, 0.005, -12),
+              vm.Vector3(0, -0.04, 6),
+              vm.Vector3(0.4, -0.04, 1),
+              vm.Vector3(-0.3, -0.04, -4),
+              vm.Vector3(0.6, -0.04, -12),
             ]),
             width: 1.8,
             stations: 40,
@@ -1256,8 +1259,9 @@ class LocationWorld {
               rotation: yaw(random.nextDouble()),
             ),
             rockMaterial,
-            position:
-                vm.Vector3(side * (4.6 + random.nextDouble()), h * 0.4, z),
+            // Far enough out that the cameras (up to 4.6 to the side
+            // while resting) never end up inside the rock.
+            position: vm.Vector3(side * (9 + random.nextDouble()), h * 0.4, z),
           ),
         );
       }

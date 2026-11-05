@@ -20,8 +20,10 @@ import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/pro/pro_access.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/trek_stage_page.dart';
+import 'package:pushup_bro/features/trek/widgets/difficulty_picker.dart';
 import 'package:pushup_bro/features/trek/widgets/rest_panel.dart';
 import 'package:pushup_bro/features/trek/widgets/stats_sheet.dart';
+import 'package:pushup_bro/features/trek/widgets/tower_panel.dart';
 import 'package:pushup_bro/features/wardrobe/widgets/cosmetic_tile.dart';
 
 const _stageGap = 170.0;
@@ -105,6 +107,9 @@ class TrekMapPage extends StatefulWidget {
 class _TrekMapPageState extends State<TrekMapPage> with OneMove {
   TrekStage? _selected;
   bool _soon = false;
+
+  /// The Canopy Tower panel is open instead of a stage's.
+  bool _towerOpen = false;
   bool _white = true;
   bool _stats = false;
 
@@ -160,9 +165,13 @@ class _TrekMapPageState extends State<TrekMapPage> with OneMove {
                     onSelect: (stage) => setState(() {
                       _selected = stage;
                       _soon = false;
+                      _towerOpen = false;
                     }),
-                    onSoon: () => setState(() => _soon = true),
-                    bottomPadding: 330 + safe.bottom,
+                    onSoon: () => setState(() {
+                      _soon = true;
+                      _towerOpen = false;
+                    }),
+                    bottomPadding: 480 + safe.bottom,
                   ),
                 ),
                 Positioned(
@@ -173,20 +182,30 @@ class _TrekMapPageState extends State<TrekMapPage> with OneMove {
                     trek: trek,
                     onBack: _leave,
                     onStats: () => setState(() => _stats = true),
+                    onTower: () => setState(() {
+                      _towerOpen = !_towerOpen;
+                      _soon = false;
+                    }),
                   ),
                 ),
                 Positioned(
                   left: 16,
                   right: 16,
                   bottom: safe.bottom + 16,
-                  child: _soon
-                      ? const _ComingSoonPanel(key: ValueKey('soon'))
-                      : _StagePanel(
-                          key: ValueKey(selected.id),
-                          stage: selected,
+                  child: _towerOpen
+                      ? TowerPanel(
+                          key: const ValueKey('tower'),
                           trek: trek,
-                          onPlay: () => _play(selected),
-                        ),
+                          onClimb: () => _play(TrekStage.tower),
+                        )
+                      : _soon
+                          ? const _ComingSoonPanel(key: ValueKey('soon'))
+                          : _StagePanel(
+                              key: ValueKey(selected.id),
+                              stage: selected,
+                              trek: trek,
+                              onPlay: () => _play(selected),
+                            ),
                 ),
                 if (_stats)
                   StatsSheet(onClose: () => setState(() => _stats = false)),
@@ -212,11 +231,13 @@ class _TopBar extends StatelessWidget {
     required this.trek,
     required this.onBack,
     required this.onStats,
+    required this.onTower,
   });
 
   final TrekProgress trek;
   final VoidCallback onBack;
   final VoidCallback onStats;
+  final VoidCallback onTower;
 
   @override
   Widget build(BuildContext context) {
@@ -309,6 +330,32 @@ class _TopBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: PBSpace.md),
+              Semantics(
+                button: true,
+                label: l.towerTitle,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: context.cardShadow,
+                  ),
+                  child: Material(
+                    color: scheme.surface,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: onTower,
+                      child: const SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Center(
+                          child: Text('🗼', style: TextStyle(fontSize: 22)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: PBSpace.sm),
               Badge(
                 isLabelVisible: trek.points > 0,
                 label: Text('${trek.points}'),
@@ -901,6 +948,41 @@ class _StagePanel extends StatelessWidget {
               runSpacing: 6,
               children: [for (final e in enemies) EnemyChip(spec: e)],
             ),
+            if (stage.goals.isNotEmpty) ...[
+              const SizedBox(height: PBSpace.md),
+              Text(
+                l.goalTitle,
+                style: text.labelMedium?.copyWith(
+                  fontSize: 12,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 4),
+              for (final (i, goal) in stage.goals.indexed)
+                Row(
+                  children: [
+                    Icon(
+                      // Lit for the stars already earned.
+                      (trek.stars[stage.id] ?? 0) >= i + 2
+                          ? CarbonIcons.star_filled
+                          : CarbonIcons.star,
+                      size: 15,
+                      color: game.banana,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        goal.label(l),
+                        style: text.bodySmall?.copyWith(fontSize: 12.5),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+            if (open) ...[
+              const SizedBox(height: PBSpace.md),
+              DifficultyPicker(trek: trek),
+            ],
             const SizedBox(height: PBSpace.md),
             Row(
               children: [
