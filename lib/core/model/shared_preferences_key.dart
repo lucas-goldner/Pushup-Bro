@@ -23,5 +23,6 @@ enum SharedPreferencesKey {
   musicOn,
   soundsOn,
   cameraView,
-  airpodsSensitivity;
+  airpodsSensitivity,
+  airportDropsSent;
 }

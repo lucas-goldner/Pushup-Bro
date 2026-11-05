@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:pushup_bro/features/social/data/social_backend.dart';
+import 'package:pushup_bro/features/social/domain/gift_drops.dart';
 import 'package:pushup_bro/features/social/domain/ranking.dart';
 import 'package:pushup_bro/features/social/model/bro_profile.dart';
 import 'package:pushup_bro/features/social/model/cloud_backup.dart';
 import 'package:pushup_bro/features/social/model/day_score.dart';
+import 'package:pushup_bro/features/social/model/gift_drop.dart';
 import 'package:pushup_bro/features/social/model/inbox_item.dart';
 
 /// A [SocialBackend] in memory: for tests, and for previews on platforms
@@ -32,6 +34,10 @@ class FakeSocialBackend implements SocialBackend {
   final Map<String, Map<String, DayScore>> scores = {};
   final Map<String, Map<String, InboxItem>> inboxes = {};
   final Map<String, CloudBackup> backups = {};
+  final Map<String, Map<String, GiftDrop>> giftDrops = {};
+
+  /// Now, for the rules' check of a drop's time.
+  DateTime Function() clock = DateTime.now;
 
   /// Push tokens by uid, with their language.
   final Map<String, Map<String, String>> devices = {};
@@ -119,6 +125,7 @@ class FakeSocialBackend implements SocialBackend {
       day.remove(me);
     }
     inboxes.remove(me);
+    giftDrops.remove(me);
     backups.remove(me);
     accountsByProvider.removeWhere((_, owner) => owner == me);
     _providers.remove(me);
@@ -268,5 +275,41 @@ class FakeSocialBackend implements SocialBackend {
   Future<void> writeBackup(String uid, CloudBackup backup) async {
     if (linkedProviders.isEmpty) throw StateError('permission-denied');
     backups[uid] = backup;
+  }
+
+  @override
+  Future<bool> dropGift(String to, GiftDrop drop) async {
+    // The rules: from a friend who isn't blocked, under their id for the
+    // day, never overwritten.
+    final sender = _uid;
+    final box = giftDrops[to] ??= {};
+    if (sender == null ||
+        !(friendEdges[to]?.contains(sender) ?? false) ||
+        (blocks[to]?.contains(sender) ?? false) ||
+        !isValidDrop(drop, sender: sender, now: clock()) ||
+        box.containsKey(drop.id)) {
+      return false;
+    }
+    box[drop.id] = drop;
+    _changed();
+    return true;
+  }
+
+  @override
+  Stream<List<GiftDrop>> drops(String uid) =>
+      _watch(() => [...?giftDrops[uid]?.values]);
+
+  @override
+  Future<void> openDrop(String uid, String id) async {
+    final drop = giftDrops[uid]?[id];
+    if (drop == null) return;
+    giftDrops[uid]![id] = drop.open();
+    _changed();
+  }
+
+  @override
+  Future<void> removeDrop(String uid, String id) async {
+    giftDrops[uid]?.remove(id);
+    _changed();
   }
 }

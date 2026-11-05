@@ -12,12 +12,24 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
+import 'package:pushup_bro/features/island/buildings/adoption/adoption.dart';
+import 'package:pushup_bro/features/island/buildings/adoption/island_friends.dart';
+import 'package:pushup_bro/features/island/buildings/airport/airport_plane.dart';
+import 'package:pushup_bro/features/island/buildings/airport/gift_drop_actions.dart';
+import 'package:pushup_bro/features/island/buildings/airport/gift_tag.dart';
+import 'package:pushup_bro/features/island/buildings/airport/island_drops.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_editor.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_piece.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_placement.dart';
 import 'package:pushup_bro/features/island/model/island_snapshot.dart';
+import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/scene/island_world.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
 import 'package:pushup_bro/features/pro/model/pro_feature.dart';
 import 'package:pushup_bro/features/pro/widgets/lock_pin.dart';
+import 'package:pushup_bro/features/social/cubit/account_cubit.dart';
+import 'package:pushup_bro/features/social/model/gift_drop.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
@@ -58,8 +70,29 @@ class IslandScene extends StatefulWidget {
     this.rise,
     this.intro,
     this.night = false,
+    this.onBuildingTap,
+    this.decorEditor,
+    this.onDecorLongPress,
+    this.drops,
     super.key,
   });
+
+  /// While it's [DecorEditor.active], the island shows its pieces instead:
+  /// taps pick a decoration, dragging one moves it over the ground, and
+  /// dragging anywhere else still turns the island.
+  final DecorEditor? decorEditor;
+
+  /// Called with the decoration held down on the player's own island, to
+  /// start moving it.
+  final ValueChanged<int>? onDecorLongPress;
+
+  /// Gifts to show falling onto a friend's island (the visitor's own
+  /// drop). The player's own island shows the gifts waiting for them.
+  final List<GiftDrop>? drops;
+
+  /// Called with the building tapped on the player's own island (the food
+  /// truck is [ShopBuyables.none]).
+  final ValueChanged<ShopBuyables>? onBuildingTap;
 
   /// Whether to show the island at night: moonlit, with torches burning.
   /// Callers decide with `isNight`, so the sky behind matches.
@@ -96,6 +129,7 @@ class IslandScene extends StatefulWidget {
 class IslandSceneState extends State<IslandScene> {
   /// Built in [_populate]: geometry needs the engine's static resources.
   IslandWorld? _world;
+  IslandFriends? _friends;
   double _yaw = 0;
   double _yawVelocity = 0;
 
@@ -124,19 +158,95 @@ class IslandSceneState extends State<IslandScene> {
   /// Where the lock pins sit on screen while the island is locked.
   final ValueNotifier<Map<ProLockPlace, Offset>> _pins = ValueNotifier({});
 
+  /// The player's decorations as saved, shown while not editing.
+  List<DecorPiece> _decor = const [];
+
+  /// The decoration being dragged, and where on it the finger took hold.
+  int? _dragging;
+  vm.Vector2 _grab = vm.Vector2.zero();
+
+  /// 1 while editing: the camera stops drifting, so pieces stay under the
+  /// finger.
+  double _still = 0;
+
+  bool get _editing => widget.decorEditor?.active ?? false;
+  bool _wasEditing = false;
+
+  /// Gifts from friends as crates, and the airport's plane.
+  IslandDrops? _crates;
+  AirportPlane? _plane;
+  OwnGiftDrops? _ownDrops;
+  List<GiftDrop> _waiting = const [];
+  bool _dropsSeen = false;
+
+  /// Where the senders' name tags sit over the crates.
+  final ValueNotifier<List<(GiftDrop, Offset)>> _dropTags = ValueNotifier([]);
+
+  @override
+  void initState() {
+    super.initState();
+    widget.decorEditor?.addListener(_showDecor);
+    if (widget.snapshot != null) {
+      _waiting = widget.drops ?? const [];
+      return;
+    }
+    // Nullable: an island without an account (a preview) has no gifts.
+    final account = context.read<AccountCubit?>();
+    if (account == null) return;
+    _ownDrops = OwnGiftDrops(account, (drops) {
+      _waiting = drops;
+      // Gifts already there on opening don't fall; new ones do.
+      _crates?.sync(drops, fall: _dropsSeen);
+      _dropsSeen = true;
+    })
+      ..start();
+  }
+
+  /// Opens a gift on the player's own island.
+  void _openDrop(GiftDrop drop) {
+    if (widget.snapshot != null) return;
+    _waiting = [..._waiting.where((other) => other.id != drop.id)];
+    _crates?.sync(_waiting);
+    unawaited(openGiftDrop(context, drop));
+  }
+
+  /// The crates land on the open lawn in front, a little towards the
+  /// airport when there is one, where neither palms nor buildings hide
+  /// them.
+  vm.Vector3 _dropAnchor(IslandWorld world) {
+    final airport = world.spotOf(ShopBuyables.airport);
+
+    return vm.Vector3(
+      (airport?.x ?? 0) * 0.15,
+      grassTop,
+      world.radius * 0.68,
+    );
+  }
+
   @override
   void didUpdateWidget(IslandScene oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.decorEditor != widget.decorEditor) {
+      oldWidget.decorEditor?.removeListener(_showDecor);
+      widget.decorEditor?.addListener(_showDecor);
+    }
     // Night can fall (or end) while the island is open.
     final scene = _scene;
     if (widget.night != oldWidget.night && scene != null) _light(scene);
+    if (widget.snapshot != null && widget.drops != oldWidget.drops) {
+      _waiting = widget.drops ?? const [];
+      _crates?.sync(_waiting, fall: true);
+    }
   }
 
   @override
   void dispose() {
+    widget.decorEditor?.removeListener(_showDecor);
     _whiteout.dispose();
     _bubbleAnchor.dispose();
     _pins.dispose();
+    _ownDrops?.dispose();
+    _dropTags.dispose();
     super.dispose();
   }
 
@@ -171,6 +281,10 @@ class IslandSceneState extends State<IslandScene> {
     final camera = _lastCamera;
     if (world == null || camera == null || _viewSize.isEmpty) return;
     if (world.running) return;
+    if (_editing) {
+      widget.decorEditor?.select(_decorAt(details.localPosition));
+      return;
+    }
     final ray = camera.screenPointToRay(details.localPosition, _viewSize);
     final hit = _scene?.raycast(ray);
     // Carlos is small from up here, so anywhere near him counts too.
@@ -180,6 +294,11 @@ class IslandSceneState extends State<IslandScene> {
     );
     final nearCarlos =
         carlos != null && (carlos - details.localPosition).distance < 56;
+    final drop = hit == null ? null : _crates?.dropOf(hit.node);
+    if (drop != null) {
+      _openDrop(drop);
+      return;
+    }
     if (widget.locked) {
       final place = nearCarlos || (hit != null && world.isCarlos(hit.node))
           ? ProLockPlace.carlos
@@ -201,22 +320,39 @@ class IslandSceneState extends State<IslandScene> {
         hit != null &&
         world.isJungle(hit.node)) {
       goToJungle();
+    } else if (widget.snapshot == null && hit != null) {
+      final building = world.buildingOf(hit.node);
+      if (building != null) widget.onBuildingTap?.call(building);
     }
   }
 
   void _populate(Scene scene) {
     _scene = scene;
     final world = _world = IslandWorld();
+    final friends = _friends = IslandFriends();
+    world.root.add(friends.root);
     final snapshot = widget.snapshot;
     if (snapshot == null) {
-      _syncInventory(context.read<GameInventoryCubit>().state.inventory);
+      final inventory = context.read<GameInventoryCubit>().state.inventory;
+      _syncInventory(inventory);
+      friends.looks = inventory.islandFriends;
     } else {
       world
         ..showOwned(snapshot.bought)
         ..gorilla.look = snapshot.look;
+      friends.looks = snapshot.friends;
+      _decor = snapshot.decor;
+      _showDecor();
     }
     _light(scene);
     scene.add(world.root);
+    final crates = _crates = IslandDrops()
+      ..onLanded = ((_) => GameAudio.instance.play(Sfx.pop))
+      ..sync(_waiting, fall: widget.snapshot != null);
+    final plane = _plane = AirportPlane();
+    scene
+      ..add(crates.root)
+      ..add(plane.root);
   }
 
   /// Sunlight by day; by night a dim, cool moon and a darker world, so the
@@ -261,6 +397,8 @@ class IslandSceneState extends State<IslandScene> {
     _world
       ?..showOwned(inventory.boughtItems)
       ..gorilla.look = inventory.monkeys.first.look;
+    _decor = inventory.decor;
+    _showDecor();
   }
 
   void _tick(double deltaSeconds) {
@@ -287,6 +425,14 @@ class IslandSceneState extends State<IslandScene> {
         ? camera.worldToScreen(world.carlosHead, _viewSize)
         : null;
     _placePins(world, camera);
+    if (world != null) {
+      _crates?.update(deltaSeconds, anchor: _dropAnchor(world));
+      _plane?.update(
+        deltaSeconds,
+        airport: world.spotOf(ShopBuyables.airport),
+      );
+    }
+    _placeDropTags(camera);
     if (running) {
       // Swing round so the jungle is straight ahead.
       final nearest = (_yaw / (math.pi * 2)).roundToDouble() * math.pi * 2;
@@ -298,7 +444,9 @@ class IslandSceneState extends State<IslandScene> {
       _yawVelocity = springTo(_yawVelocity, 0, deltaSeconds, 3);
     }
     _focus = springTo(_focus, running ? 1 : 0, deltaSeconds, 2);
+    _still = springTo(_still, _editing ? 1 : 0, deltaSeconds, 3);
     world?.update(deltaSeconds, eye: camera?.position);
+    if (world != null) _friends?.update(deltaSeconds, radius: world.radius);
   }
 
   void _placePins(IslandWorld? world, Camera? camera) {
@@ -317,9 +465,22 @@ class IslandSceneState extends State<IslandScene> {
     };
   }
 
+  void _placeDropTags(Camera? camera) {
+    final crates = _crates;
+    if (crates == null || camera == null || _waiting.isEmpty) {
+      if (_dropTags.value.isNotEmpty) _dropTags.value = [];
+      return;
+    }
+    _dropTags.value = [
+      for (final (drop, spot) in crates.tagSpots)
+        if (camera.worldToScreen(spot, _viewSize) case final point?)
+          (drop, point),
+    ];
+  }
+
   Camera _camera(Duration elapsed) {
     final t = elapsed.inMicroseconds / 1e6;
-    final angle = _yaw + math.sin(t * 0.12) * 0.1 * (1 - _focus);
+    final angle = _yaw + math.sin(t * 0.12) * 0.1 * (1 - _focus) * (1 - _still);
     // Far back: a portrait phone sees little horizontally. The camera backs
     // off slower than the island grows, so a bigger island fills more of the
     // screen. Following Carlos, it closes in on the jungle gate.
@@ -382,26 +543,148 @@ class IslandSceneState extends State<IslandScene> {
     );
   }
 
+  /// Shows the pieces being edited, or else the saved ones as they fit on
+  /// the island now.
+  void _showDecor() {
+    final world = _world;
+    if (world == null) return;
+    final editor = widget.decorEditor;
+    if (editor != null && editor.active) {
+      world.decor.show(
+        editor.pieces,
+        selected: editor.selected,
+        blocked: editor.blocked,
+      );
+    } else {
+      world.decor.show(DecorPlacement(world.plan).settle(_decor));
+    }
+    // Rebuilt when edit mode starts or ends, so the gestures follow it.
+    final editing = editor?.active ?? false;
+    if (editing != _wasEditing && mounted) {
+      setState(() => _wasEditing = editing);
+    }
+  }
+
+  /// Where the finger at [point] meets the island's ground, or null above
+  /// the horizon.
+  vm.Vector2? _groundAt(Offset point) {
+    final camera = _lastCamera;
+    if (camera == null || _viewSize.isEmpty) return null;
+    final ray = camera.screenPointToRay(point, _viewSize);
+    if (ray.direction.y > -1e-4) return null;
+    final t = (grassTop - ray.origin.y) / ray.direction.y;
+    final hit = ray.origin + ray.direction * t;
+
+    return vm.Vector2(hit.x, hit.z);
+  }
+
+  /// The decoration under [point]: the one the finger touches, or else one
+  /// standing close to where it meets the ground (small ones are hard to
+  /// hit from up here).
+  int? _decorAt(Offset point) {
+    final world = _world;
+    final camera = _lastCamera;
+    if (world == null || camera == null || _viewSize.isEmpty) return null;
+    final hit = _scene?.raycast(camera.screenPointToRay(point, _viewSize));
+    final touched = hit == null ? null : world.decor.pieceOf(hit.node);
+    if (touched != null) return touched;
+    final ground = _groundAt(point);
+    if (ground == null) return null;
+    final editor = widget.decorEditor;
+    final pieces = editor != null && editor.active
+        ? editor.pieces
+        : DecorPlacement(world.plan).settle(_decor);
+    int? nearest;
+    var best = double.infinity;
+    for (final (i, piece) in pieces.indexed) {
+      if (!piece.placed) continue;
+      final distance = ground.distanceTo(vm.Vector2(piece.x, piece.z));
+      if (distance < piece.item.radius + 0.25 && distance < best) {
+        best = distance;
+        nearest = i;
+      }
+    }
+
+    return nearest;
+  }
+
+  void _editDragStart(DragStartDetails details) {
+    final editor = widget.decorEditor;
+    if (editor == null) return;
+    final index = _decorAt(details.localPosition);
+    final ground = _groundAt(details.localPosition);
+    if (index == null || ground == null) {
+      _dragging = null;
+      return;
+    }
+    editor.select(index);
+    _dragging = index;
+    final piece = editor.pieces[index];
+    _grab = ground - vm.Vector2(piece.x, piece.z);
+  }
+
+  void _editDragUpdate(DragUpdateDetails details) {
+    if (_dragging == null) {
+      _yaw -= details.delta.dx * 0.008;
+      _yawVelocity = 0;
+      return;
+    }
+    final ground = _groundAt(details.localPosition);
+    if (ground == null) return;
+    final at = ground - _grab;
+    widget.decorEditor?.dragTo(at.x, at.y);
+  }
+
+  void _editDragEnd(DragEndDetails details) {
+    if (_dragging == null) {
+      _yawVelocity = -details.velocity.pixelsPerSecond.dx * 0.004;
+      return;
+    }
+    _dragging = null;
+    widget.decorEditor?.endDrag();
+  }
+
   @override
   Widget build(BuildContext context) =>
       BlocListener<GameInventoryCubit, GameInventoryState>(
         listenWhen: (_, __) => widget.snapshot == null,
-        listener: (context, state) => _syncInventory(state.inventory),
+        listener: (context, state) {
+          _syncInventory(state.inventory);
+          // Saving passes through an empty inventory for a moment.
+          if (state is! GameInventoryFetching) {
+            _friends?.looks = state.inventory.islandFriends;
+          }
+        },
         child: LayoutBuilder(
           builder: (context, constraints) {
             _viewSize = constraints.biggest;
 
+            final editing = _editing;
+
             return GestureDetector(
               onTapUp: _onTapUp,
-              onHorizontalDragUpdate: (details) {
-                if (_world?.running ?? false) return;
-                _yaw -= details.delta.dx * 0.008;
-                _yawVelocity = 0;
-              },
-              onHorizontalDragEnd: (details) {
-                if (_world?.running ?? false) return;
-                _yawVelocity = -(details.primaryVelocity ?? 0) * 0.004;
-              },
+              onLongPressStart: widget.onDecorLongPress == null || editing
+                  ? null
+                  : (details) {
+                      final index = _decorAt(details.localPosition);
+                      if (index != null) widget.onDecorLongPress?.call(index);
+                    },
+              onPanStart: editing ? _editDragStart : null,
+              onPanUpdate: editing ? _editDragUpdate : null,
+              onPanEnd: editing ? _editDragEnd : null,
+              onHorizontalDragUpdate: editing
+                  ? null
+                  : (details) {
+                      if (_world?.running ?? false) return;
+                      _yaw -= details.delta.dx * 0.008;
+                      _yawVelocity = 0;
+                    },
+              onHorizontalDragEnd: editing
+                  ? null
+                  : (details) {
+                      if (_world?.running ?? false) return;
+                      _yawVelocity = -(details.primaryVelocity ?? 0) * 0.004;
+                    },
               child: Stack(
                 children: [
                   Positioned.fill(
@@ -432,6 +715,29 @@ class IslandSceneState extends State<IslandScene> {
                                   ),
                                 ],
                               ),
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: ValueListenableBuilder<List<(GiftDrop, Offset)>>(
+                      valueListenable: _dropTags,
+                      builder: (context, tags, _) => Stack(
+                        children: [
+                          for (final (drop, point) in tags)
+                            Positioned(
+                              left: point.dx - 60,
+                              top: point.dy - 30,
+                              width: 120,
+                              child: Center(
+                                child: GiftTag(
+                                  drop: drop,
+                                  onTap: widget.snapshot == null
+                                      ? () => _openDrop(drop)
+                                      : null,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),

@@ -22,6 +22,7 @@ import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/one_move.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
+import 'package:pushup_bro/features/island/buildings/adoption/adoption.dart';
 import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/model/jungle_quest.dart';
@@ -556,9 +557,11 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
     final xp = _battle.earnedXp + _battle.clearXp;
     final (gained, levels) = inventory.trek.gainXp(xp);
     final progress = gained.clear(_stage.id, _battle.stars);
-    final adopt = first &&
-        _stage.boss &&
-        !inventory.monkeys.any((m) => m.look.species == MonkeyLook.lizard);
+    // He needs a free spot on the island; if it was full he joins at the
+    // next boss win once there's room.
+    final adopt = _stage.boss &&
+        inventory.komoToCome &&
+        inventory.hasRoomForMonkey;
     final bananas =
         ((_battle.reps + (first ? 50 : 10)) * _battle.difficulty.rewards)
             .round();

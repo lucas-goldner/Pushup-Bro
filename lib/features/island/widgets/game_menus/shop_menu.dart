@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +10,7 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
+import 'package:pushup_bro/features/island/buildings/open_building.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 
 /// The island's building shop: a grid of buildings; pick one, then build
@@ -85,10 +88,12 @@ class _ShopMenuState extends State<ShopMenu> {
 
   Widget _action(ShopBuyables building, GameInventory inventory) {
     if (inventory.boughtItems.contains(building)) {
-      return SheetTag(
-        context.l10n.shopAlreadyBuilt(building.getLocalizedName(context)),
-        icon: CarbonIcons.checkmark_filled,
+      // Built: in you go.
+      return PillButton(
+        label: context.l10n.buildingOpen,
+        icon: CarbonIcons.arrow_right,
         color: context.gameColors.jungle,
+        onPressed: () => unawaited(openBuilding(context, building)),
       );
     }
     final missing = building.price - inventory.bananas;

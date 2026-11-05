@@ -31,3 +31,9 @@ test('opens the bros and collapses nudges per bro', () => {
   const plain = messageFor(wave, { token: 'tok', language: 'en' });
   assert.equal(plain.apns.headers['apns-collapse-id'], undefined);
 });
+
+test('a gift drop opens the island', () => {
+  const drop = messageFor({ ...wave, kind: 'drop' }, { token: 'tok', language: 'pt' });
+  assert.equal(drop.notification.body, 'Bob deixou um presente na sua ilha 🎁');
+  assert.equal(drop.data.route, '/island');
+});

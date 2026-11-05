@@ -8,6 +8,7 @@ import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/nature_kit.dart' show yaw;
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/static_batch.dart';
+import 'package:pushup_bro/features/island/buildings/adoption/adoption.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 const _wall = Color(0xFFEEF1F7);
@@ -121,8 +122,10 @@ const _exitZ = -2.6;
 /// [update] every frame.
 class GymWorld {
   /// With [buddies] of the gym's buddies, nearest first; by default the
-  /// number drawn for this run of the app ([gymBuddyCount]).
-  GymWorld({int? buddies}) {
+  /// number drawn for this run of the app ([gymBuddyCount]). The player's
+  /// own [mates] (adopted monkeys) take the nearest stations in their looks
+  /// and mats; strangers fill the rest.
+  GymWorld({int? buddies, List<MonkeyLook> mates = const []}) {
     // A frame whose -Z points away from the camera, so the room and the
     // stations are laid out in screen terms whichever way the camera looks.
     _view = Node(name: 'gym-view')
@@ -138,13 +141,20 @@ class GymWorld {
       ..add(_carlosMat)
       ..add(carlos.root);
 
-    final count = (buddies ?? gymBuddyCount).clamp(0, _buddies.length);
-    for (final (i, look) in _buddies.take(count).indexed) {
+    final lineup = gymLineup(
+      mates,
+      buddies: buddies ?? gymBuddyCount,
+      stations: _buddies.length,
+    );
+    for (final (i, look) in _buddies.take(lineup.length).indexed) {
+      final mate = lineup[i];
       final rig = GorillaRig(
         furColor: look.fur,
         faceColor: look.face,
         timeOffset: i * 1.7 + 0.6,
+        look: mate,
       );
+      final matColor = mate?.matBaseColor ?? look.mat;
       final station = vm.Vector3(look.station.$1, 0, -look.station.$2);
       final (equipment, weights) = _stationKit(look.exercise);
       _view.add(
@@ -153,12 +163,14 @@ class GymWorld {
           ..rotation = yaw(look.turn)
           ..addAll(equipment),
       );
-      final roll = _rolledMat(look.mat)..visible = false;
-      final mat = _mat(
-        look.mat,
-        vm.Vector3(look.pushupSpot.$1, 0, -look.pushupSpot.$2),
-        size: 0.8,
-      )..visible = false;
+      final roll = _rolledMat(matColor)..visible = false;
+      final spot = vm.Vector3(look.pushupSpot.$1, 0, -look.pushupSpot.$2);
+      final mat = (mate == null
+          ? _mat(look.mat, spot, size: 0.8)
+          // Their own mat, pattern and all.
+          : (buildMat(mate, size: 0.8)
+            ..position = spot + vm.Vector3(0, 0, -0.1)))
+        ..visible = false;
       _view
         ..addAll([for (final weight in weights) weight.node])
         ..add(roll)

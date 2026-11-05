@@ -4,7 +4,7 @@ import {
   assertSucceeds,
   initializeTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { deleteDoc, doc, getDoc, getDocs, collection, setDoc, writeBatch } from 'firebase/firestore';
+import { deleteDoc, doc, getDoc, getDocs, collection, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
 
 const day = '2026-10-29';
 let env;
@@ -197,6 +197,64 @@ describe('inbox', () => {
   it('is read only by its owner', async () => {
     await assertFails(getDocs(collection(anon('bob'), 'users/alice/inbox')));
     await assertSucceeds(getDocs(collection(anon('alice'), 'users/alice/inbox')));
+  });
+});
+
+describe('gift drops', () => {
+  const gift = () => ({
+    gift: 'big', bananas: 25, fromUid: 'bob', fromName: 'Bob', sentAt: Date.now(), opened: false,
+  });
+  const id = `drop_bob_${day}`;
+  const path = `users/alice/drops/${id}`;
+
+  beforeEach(async () => {
+    await seed(async (db) => {
+      await setDoc(doc(db, 'users/alice/friends/bob'), { code: 'BBBBBB' });
+      await setDoc(doc(db, 'users/bob/friends/alice'), { code: 'BBBBBB' });
+    });
+  });
+
+  it('takes one drop a day from a friend', async () => {
+    await assertSucceeds(setDoc(doc(anon('bob'), path), gift()));
+    await assertFails(setDoc(doc(anon('bob'), path), gift()));
+  });
+
+  it('needs the drop id for the sender and day', async () => {
+    await assertFails(setDoc(doc(anon('bob'), `users/alice/drops/drop_carol_${day}`), gift()));
+    await assertFails(setDoc(doc(anon('bob'), 'users/alice/drops/drop_bob_tomorrow'), gift()));
+  });
+
+  it('only takes the four gifts with their bananas', async () => {
+    await assertFails(setDoc(doc(anon('bob'), path), { ...gift(), bananas: 500 }));
+    await assertFails(setDoc(doc(anon('bob'), path), { ...gift(), gift: 'golden', bananas: 25 }));
+    await assertFails(setDoc(doc(anon('bob'), path), { ...gift(), gift: 'car', bananas: 25 }));
+    await assertFails(setDoc(doc(anon('bob'), path), { ...gift(), extra: 1 }));
+    await assertSucceeds(setDoc(doc(anon('bob'), path), { ...gift(), gift: 'flowers', bananas: 5 }));
+  });
+
+  it('comes from the signed in sender, unopened, timed around now', async () => {
+    await assertFails(setDoc(doc(anon('bob'), path), { ...gift(), fromUid: 'carol' }));
+    await assertFails(setDoc(doc(anon('bob'), path), { ...gift(), opened: true }));
+    await assertFails(setDoc(doc(anon('bob'), path), { ...gift(), sentAt: Date.now() + 5 * 86400000 }));
+  });
+
+  it('refuses strangers and blocked friends', async () => {
+    await assertFails(
+      setDoc(doc(anon('carol'), `users/alice/drops/drop_carol_${day}`), { ...gift(), fromUid: 'carol' }),
+    );
+    await seed((db) => setDoc(doc(db, 'users/alice/blocked/bob'), { since: 1 }));
+    await assertFails(setDoc(doc(anon('bob'), path), gift()));
+  });
+
+  it('are read, opened and cleared only by the owner', async () => {
+    await seed((db) => setDoc(doc(db, path), gift()));
+    await assertFails(getDoc(doc(anon('bob'), path)));
+    await assertFails(updateDoc(doc(anon('bob'), path), { opened: true }));
+    await assertFails(deleteDoc(doc(anon('bob'), path)));
+    await assertSucceeds(getDocs(collection(anon('alice'), 'users/alice/drops')));
+    await assertFails(updateDoc(doc(anon('alice'), path), { bananas: 50 }));
+    await assertSucceeds(updateDoc(doc(anon('alice'), path), { opened: true }));
+    await assertSucceeds(deleteDoc(doc(anon('alice'), path)));
   });
 });
 

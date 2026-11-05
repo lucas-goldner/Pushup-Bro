@@ -7,6 +7,7 @@ import 'package:pushup_bro/features/social/domain/friend_code.dart';
 import 'package:pushup_bro/features/social/domain/local_day.dart';
 import 'package:pushup_bro/features/social/model/bro_profile.dart';
 import 'package:pushup_bro/features/social/model/day_score.dart';
+import 'package:pushup_bro/features/social/model/gift_drop.dart';
 import 'package:pushup_bro/features/social/model/inbox_item.dart';
 
 const _codes = {
@@ -158,6 +159,19 @@ FakeSocialBackend demoSocialBackend({DateTime? now}) {
       fromName: 'Mia',
       sentAt: at,
     ),
+  };
+  // Gifts bros dropped from the airport, waiting on the island.
+  backend.giftDrops['me'] = {
+    for (final (uid, name, gift) in [
+      ('mia', 'Mia', GiftKind.big),
+      ('jonas', 'Jonas', GiftKind.flowers),
+    ])
+      GiftDrop.idFor(uid, at): GiftDrop.create(
+        gift: gift,
+        fromUid: uid,
+        fromName: name,
+        now: at,
+      ),
   };
   return backend;
 }

@@ -1979,5 +1979,507 @@
   "towerCleared": "Floor cleared!",
   "towerNext": "Next floor",
   "towerStop": "Take the loot",
-  "heavyBracing": "Holding! Stay down…"
+  "heavyBracing": "Holding! Stay down…",
+  "buildingOpen": "Go inside",
+  "gymPyramid": "Pyramid",
+  "gymPyramidInfo": "Climb up one rep at a time, then all the way back down. A short rest between steps.",
+  "gymPyramidGoal": "1 → {peak} → 1 · {total} pushups",
+  "@gymPyramidGoal": {
+    "placeholders": {
+      "peak": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymTempo": "Slow Motion",
+  "gymTempoInfo": "Three seconds on the way down, one to push up. Rushed reps don't count.",
+  "gymTempoGoal": "{reps} slow pushups",
+  "@gymTempoGoal": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "gymEmom": "EMOM",
+  "gymEmomInfo": "Every minute on the minute: do your reps as the minute starts and rest for what's left of it.",
+  "gymEmomGoal": "{reps} every minute for {minutes} minutes",
+  "@gymEmomGoal": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "gymMaxSet": "Max Set",
+  "gymMaxSetInfo": "One set, all you've got: beat your best. Stop for 8 seconds and the set is over.",
+  "gymMaxSetGoal": "{goal} pushups in one set",
+  "@gymMaxSetGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "gymBurner": "Two-Minute Burner",
+  "gymBurnerInfo": "As many pushups as you can in two minutes. Rest when you must, but the clock keeps running.",
+  "gymBurnerGoal": "{goal} pushups in {seconds} seconds",
+  "@gymBurnerGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "gymPlankPress": "Plank & Press",
+  "gymPlankPressInfo": "Hold a plank, then go straight into pushups. Three rounds, no dropping your hips.",
+  "gymPlankPressGoal": "{rounds} × ({seconds} s plank + {reps} pushups)",
+  "@gymPlankPressGoal": {
+    "placeholders": {
+      "rounds": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      },
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "gymDeck": "Deck of Cards",
+  "gymDeckInfo": "Gus flips a card, you do that many. No peeking at the next one.",
+  "gymDeckGoal": "{cards} cards · {total} pushups",
+  "@gymDeckGoal": {
+    "placeholders": {
+      "cards": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymGusDrill": "Gus's Drill",
+  "gymGusDrillInfo": "Grandpa Gus barks out sets. Finish each one before his whistle blows.",
+  "gymGusDrillGoal": "{calls} calls, pass {pass} of them",
+  "@gymGusDrillGoal": {
+    "placeholders": {
+      "calls": {
+        "type": "int"
+      },
+      "pass": {
+        "type": "int"
+      }
+    }
+  },
+  "gymTodayTag": "Today's workout",
+  "gymDoneToday": "Done today",
+  "gymOnlyHere": "Only at the gym",
+  "gymNextIn": "New workout in {time}",
+  "@gymNextIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "gymStart": "Start workout",
+  "gymTrainAgain": "Train again",
+  "gymStreak": "Gym streak",
+  "gymGiftIn": "{count, plural, =1{1 more day for new gym gear} other{{count} more days for new gym gear}}",
+  "@gymGiftIn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymGiftCrateIn": "{count, plural, =1{1 more day for a banana crate} other{{count} more days for a banana crate}}",
+  "@gymGiftCrateIn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymWorkouts": "The gym's workouts",
+  "gymToday": "Today",
+  "gymTomorrow": "Tomorrow",
+  "gymInDays": "In {count} days",
+  "@gymInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymWonTimes": "Won {count}×",
+  "@gymWonTimes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymGetReady": "Get ready!",
+  "gymGo": "Go!",
+  "gymRest": "Rest",
+  "gymUpNext": "Up next: {reps}",
+  "@gymUpNext": {
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "gymPlank": "Hold the plank",
+  "gymStep": "Step {current} of {total}",
+  "@gymStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymMinute": "Minute {current} of {total}",
+  "@gymMinute": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymCard": "Card {current} of {total}",
+  "@gymCard": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymCall": "Call {current} of {total}",
+  "@gymCall": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymRound": "Round {current} of {total}",
+  "@gymRound": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "gymTempoDown": "Slowly down",
+  "gymTempoUp": "Push up!",
+  "gymTooFast": "Too fast! Slower down",
+  "gymYourBest": "Your best: {best}",
+  "@gymYourBest": {
+    "placeholders": {
+      "best": {
+        "type": "int"
+      }
+    }
+  },
+  "gymNewBest": "New best!",
+  "gymSetEnds": "Keep going! Set ends in {seconds}",
+  "@gymSetEnds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "gymMinuteDone": "Done! Rest till the next minute",
+  "gymPassed": "{passed} of {needed} passed",
+  "@gymPassed": {
+    "placeholders": {
+      "passed": {
+        "type": "int"
+      },
+      "needed": {
+        "type": "int"
+      }
+    }
+  },
+  "gymCoach1": "Chest to the floor, kiddo!",
+  "gymCoach2": "Breathe! In on the way down.",
+  "gymCoach3": "Back in my day we did these on lava!",
+  "gymCoach4": "Strong like a silverback!",
+  "gymCoach5": "Don't you quit on me now!",
+  "gymCoach6": "Good form, good form!",
+  "gymWorkoutDone": "Workout done!",
+  "gymNotThisTime": "Not this time",
+  "gymTryTomorrow": "Gus has a new workout for you tomorrow.",
+  "gymStreakUp": "{count, plural, =1{1-day gym streak} other{{count}-day gym streak}}",
+  "@gymStreakUp": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gymGift": "New gym gear: {name}",
+  "@gymGift": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "gymGiftCrate": "Streak crate: +{bananas} bananas",
+  "@gymGiftCrate": {
+    "placeholders": {
+      "bananas": {
+        "type": "int"
+      }
+    }
+  },
+  "gymBackToGym": "Back to the gym",
+  "gymChallengeChip": "Gym workout",
+  "adoptionSubtitle": "Little monkeys looking for an island home",
+  "adoptionMeetOthers": "Meet others",
+  "adoptionAdopt": "Adopt {name} · {price}",
+  "@adoptionAdopt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "adoptionNeedMore": "{count} more bananas to adopt {name}",
+  "@adoptionNeedMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adoptionFull": "Your island is full",
+  "adoptionYourMonkeys": "Your monkeys",
+  "adoptionSpots": "{count} of {max} spots",
+  "@adoptionSpots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "adoptionFreeSpot": "Free spot",
+  "adoptionTrainWith": "Trains with {name}",
+  "@adoptionTrainWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adoptionDressUp": "Dress up",
+  "adoptionRename": "Rename",
+  "adoptionNameHint": "Name",
+  "adoptionSave": "Save",
+  "adoptionWelcome": "Welcome home, {name}!",
+  "@adoptionWelcome": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adoptionWelcomeBody": "{name} lives on your island now and works out with {carlos} at home.",
+  "@adoptionWelcomeBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "carlos": {
+        "type": "String"
+      }
+    }
+  },
+  "adoptionYay": "Yay!",
+  "adoptionKomoSpot": "Keep a spot free for King Komo: he joins once you beat him in the Trek.",
+  "adoptionKomoLine": "Once the Trek's boss, now your training buddy.",
+  "adoptionCarlosLine": "The original pushup bro.",
+  "adoptionPersona0": "Naps in the sun, then does a hundred pushups.",
+  "adoptionPersona1": "Loves bananas more than anything.",
+  "adoptionPersona2": "Shy at first, then the loudest in the gym.",
+  "adoptionPersona3": "Always the first one up in the morning.",
+  "adoptionPersona4": "Dreams of climbing the tallest palm.",
+  "adoptionPersona5": "Counts every rep out loud.",
+  "adoptionPersona6": "Dances whenever music plays.",
+  "adoptionPersona7": "Never skips leg day.",
+  "decorShopSubtitle": "Make the island yours",
+  "decorOwned": "{count} owned",
+  "@decorOwned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "decorBuy": "Buy for {price}",
+  "@decorBuy": {
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "decorPlace": "Place it",
+  "decorEditIsland": "Edit island",
+  "decorEditHint": "Tap a decoration, then drag it around",
+  "decorDone": "Done",
+  "decorTurnLeft": "Turn left",
+  "decorTurnRight": "Turn right",
+  "decorPutAway": "Put away",
+  "decorBag": "In your bag",
+  "decorIslandFull": "No room left on the island",
+  "decorBought": "It's on your island!",
+  "decorRubberDucky": "Rubber Ducky",
+  "decorFlowerBed": "Flower Bed",
+  "decorSandcastle": "Sandcastle",
+  "decorWoodenSign": "Wooden Sign",
+  "decorFlamingo": "Flamingo",
+  "decorLanternPost": "Lantern Post",
+  "decorBeachUmbrella": "Beach Umbrella",
+  "decorSurfboardRack": "Surfboard Rack",
+  "decorBonfire": "Bonfire",
+  "decorPicnicTable": "Picnic Table",
+  "decorTikiTotem": "Tiki Totem",
+  "decorLilyPond": "Lily Pond",
+  "decorHammock": "Hammock",
+  "decorBananaStatue": "Banana Statue",
+  "decorTikiBar": "Tiki Bar",
+  "decorGoldGorilla": "Golden Gorilla",
+  "airportDepartures": "Departures",
+  "airportSubtitle": "Fly to a bro's island and drop them a gift.",
+  "airportFlight": "Flight",
+  "airportDestination": "Destination",
+  "airportGate": "Gate",
+  "airportLevel": "Island lvl {level}",
+  "@airportLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "airportBoarding": "Boarding",
+  "airportGiftSent": "Gift dropped",
+  "airportHint": "Tap a flight to visit. One gift per bro a day.",
+  "airportFlyingTo": "Flying to {name}'s island…",
+  "@airportFlyingTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "airportEmptyTitle": "No flights yet",
+  "airportEmptyText": "Add bros with their friend code and their islands show up here as flights.",
+  "airportAddBro": "Add a bro",
+  "visitDropGift": "Drop a gift",
+  "visitGiftDropped": "Gift dropped 🎁",
+  "dropSheetSubtitle": "Lands on {name}'s island · one per bro a day",
+  "@dropSheetSubtitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dropGiftSmall": "Banana crate",
+  "dropGiftBig": "Big parcel",
+  "dropGiftGolden": "Golden chest",
+  "dropGiftFlowers": "Flowers",
+  "dropGiftGives": "{count} bananas for them",
+  "@dropGiftGives": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dropYouHave": "You have {count}",
+  "@dropYouHave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dropConfirm": "Drop it",
+  "dropNotEnough": "Not enough bananas",
+  "dropAlready": "You already dropped a gift for {name} today.",
+  "@dropAlready": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dropDone": "Dropped! {name} will find it on their island.",
+  "@dropDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dropOpenTitle": "A gift from {name}!",
+  "@dropOpenTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dropOpenBananas": "+{count} bananas",
+  "@dropOpenBananas": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dropOpenFlowers": "Flowers, just because 💐",
+  "dropOpenCollect": "Collect"
 }
