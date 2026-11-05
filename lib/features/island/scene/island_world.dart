@@ -159,6 +159,16 @@ class IslandWorld {
   bool isBuilding(Node node) =>
       _buildings.values.any((building) => _within(node, building));
 
+  /// The building [node] is part of ([ShopBuyables.none] for the food
+  /// truck), or null when it's part of none.
+  ShopBuyables? buildingOf(Node node) {
+    for (final MapEntry(:key, :value) in _buildings.entries) {
+      if (value.visible && _within(node, value)) return key;
+    }
+
+    return null;
+  }
+
   /// Above the food truck, where the shop's lock pin floats.
   vm.Vector3 get shopSpot =>
       _buildings[ShopBuyables.none]!.position + vm.Vector3(0, 1.6, 0);

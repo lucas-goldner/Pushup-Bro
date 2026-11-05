@@ -1171,5 +1171,6 @@
   "towerCleared": "¡Piso superado!",
   "towerNext": "Siguiente piso",
   "towerStop": "Llévate el botín",
-  "heavyBracing": "¡Aguanta! Quédate abajo…"
+  "heavyBracing": "¡Aguanta! Quédate abajo…",
+  "buildingOpen": "Entrar"
 }

@@ -11,9 +11,11 @@ import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/night.dart';
 import 'package:pushup_bro/core/widgets/fold_safe.dart';
+import 'package:pushup_bro/features/island/buildings/open_building.dart';
 import 'package:pushup_bro/features/island/intro/island_intro.dart';
 import 'package:pushup_bro/features/island/model/daily_bananas.dart';
 import 'package:pushup_bro/features/island/model/quest_type.dart';
+import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/share/island_share_page.dart';
 import 'package:pushup_bro/features/island/widgets/bros_bubble.dart';
 import 'package:pushup_bro/features/island/widgets/game_menu.dart';
@@ -224,6 +226,12 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
                   locked: locked,
                   night: night,
                   onLockedTap: (place) => _guarded(place, () {}),
+                  onBuildingTap: (building) => _guarded(
+                    ProLockPlace.shop,
+                    () => building == ShopBuyables.none
+                        ? openMenu()
+                        : unawaited(openBuilding(context, building)),
+                  ),
                   onJourneyChanged: (journeying) =>
                       setState(() => _journeying = journeying),
                 ),

@@ -13,6 +13,7 @@ import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/features/island/model/island_snapshot.dart';
+import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/scene/island_world.dart';
 import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
@@ -58,8 +59,13 @@ class IslandScene extends StatefulWidget {
     this.rise,
     this.intro,
     this.night = false,
+    this.onBuildingTap,
     super.key,
   });
+
+  /// Called with the building tapped on the player's own island (the food
+  /// truck is [ShopBuyables.none]).
+  final ValueChanged<ShopBuyables>? onBuildingTap;
 
   /// Whether to show the island at night: moonlit, with torches burning.
   /// Callers decide with `isNight`, so the sky behind matches.
@@ -201,6 +207,9 @@ class IslandSceneState extends State<IslandScene> {
         hit != null &&
         world.isJungle(hit.node)) {
       goToJungle();
+    } else if (widget.snapshot == null && hit != null) {
+      final building = world.buildingOf(hit.node);
+      if (building != null) widget.onBuildingTap?.call(building);
     }
   }
 

@@ -1979,5 +1979,6 @@
   "towerCleared": "Floor cleared!",
   "towerNext": "Next floor",
   "towerStop": "Take the loot",
-  "heavyBracing": "Holding! Stay down…"
+  "heavyBracing": "Holding! Stay down…",
+  "buildingOpen": "Go inside"
 }

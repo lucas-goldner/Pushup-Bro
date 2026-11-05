@@ -1171,5 +1171,6 @@
   "towerCleared": "フロアクリア!",
   "towerNext": "次の階へ",
   "towerStop": "戦利品を受け取る",
-  "heavyBracing": "耐えてる!そのままキープ…"
+  "heavyBracing": "耐えてる!そのままキープ…",
+  "buildingOpen": "中に入る"
 }

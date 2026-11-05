@@ -1171,5 +1171,6 @@
   "towerCleared": "Andar superado!",
   "towerNext": "Próximo andar",
   "towerStop": "Levar o saque",
-  "heavyBracing": "A aguentar! Fica em baixo…"
+  "heavyBracing": "A aguentar! Fica em baixo…",
+  "buildingOpen": "Entrar"
 }
