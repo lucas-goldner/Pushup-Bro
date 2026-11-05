@@ -12,10 +12,18 @@ import 'package:pushup_bro/features/pro/widgets/free_days_chip.dart';
 /// right (tap for the paywall), and once the store has loaded, the welcome
 /// or last-day sheet when one is due.
 class FreeDaysHomeChip extends StatefulWidget {
-  const FreeDaysHomeChip({this.visible = true, super.key});
+  const FreeDaysHomeChip({
+    this.visible = true,
+    this.compact = false,
+    super.key,
+  });
 
   /// Hidden while a set is running; the sheets wait for it too.
   final bool visible;
+
+  /// The smaller badge, with a little room under it, for sitting above
+  /// the home caption.
+  final bool compact;
 
   @override
   State<FreeDaysHomeChip> createState() => _FreeDaysHomeChipState();
@@ -65,9 +73,13 @@ class _FreeDaysHomeChipState extends State<FreeDaysHomeChip> {
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: shown
-                ? FreeDaysBadge(
-                    left: state.freeLeft(now),
-                    onTap: () => showPaywall(context),
+                ? Padding(
+                    padding: EdgeInsets.only(bottom: widget.compact ? 10 : 0),
+                    child: FreeDaysBadge(
+                      left: state.freeLeft(now),
+                      onTap: () => showPaywall(context),
+                      compact: widget.compact,
+                    ),
                   )
                 : const SizedBox.shrink(),
           );
