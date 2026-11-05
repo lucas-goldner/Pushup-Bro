@@ -218,3 +218,12 @@ class _Torch {
   final Node pool;
   final double phase;
 }
+
+/// A flat glow disc of [radius] facing +Y that fades out to its edge, as
+/// the torches' halos and pools use, for other things that light up at
+/// night.
+MeshGeometry nightGlowDisc(double radius) => IslandNight._softDisc(radius);
+
+/// The see-through, unlit material of the torches' glow.
+UnlitMaterial nightGlow(Color color, double alpha) =>
+    IslandNight._glow(color, alpha);

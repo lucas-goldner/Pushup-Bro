@@ -1980,5 +1980,48 @@
   "towerNext": "Next floor",
   "towerStop": "Take the loot",
   "heavyBracing": "Holding! Stay down…",
-  "buildingOpen": "Go inside"
+  "buildingOpen": "Go inside",
+  "decorShopSubtitle": "Make the island yours",
+  "decorOwned": "{count} owned",
+  "@decorOwned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "decorBuy": "Buy for {price}",
+  "@decorBuy": {
+    "placeholders": {
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "decorPlace": "Place it",
+  "decorEditIsland": "Edit island",
+  "decorEditHint": "Tap a decoration, then drag it around",
+  "decorDone": "Done",
+  "decorTurnLeft": "Turn left",
+  "decorTurnRight": "Turn right",
+  "decorPutAway": "Put away",
+  "decorBag": "In your bag",
+  "decorIslandFull": "No room left on the island",
+  "decorBought": "It's on your island!",
+  "decorRubberDucky": "Rubber Ducky",
+  "decorFlowerBed": "Flower Bed",
+  "decorSandcastle": "Sandcastle",
+  "decorWoodenSign": "Wooden Sign",
+  "decorFlamingo": "Flamingo",
+  "decorLanternPost": "Lantern Post",
+  "decorBeachUmbrella": "Beach Umbrella",
+  "decorSurfboardRack": "Surfboard Rack",
+  "decorBonfire": "Bonfire",
+  "decorPicnicTable": "Picnic Table",
+  "decorTikiTotem": "Tiki Totem",
+  "decorLilyPond": "Lily Pond",
+  "decorHammock": "Hammock",
+  "decorBananaStatue": "Banana Statue",
+  "decorTikiBar": "Tiki Bar",
+  "decorGoldGorilla": "Golden Gorilla"
 }

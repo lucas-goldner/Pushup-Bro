@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/model/monkey_look.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_piece.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 
 /// What another player needs to draw someone's island: the buildings they
@@ -10,6 +11,7 @@ class IslandSnapshot extends Equatable {
   const IslandSnapshot({
     this.bought = const [],
     this.look = const MonkeyLook(),
+    this.decor = const [],
   });
 
   factory IslandSnapshot.of(GameInventory inventory) => IslandSnapshot(
@@ -17,6 +19,10 @@ class IslandSnapshot extends Equatable {
         look: inventory.monkeys.isEmpty
             ? const MonkeyLook()
             : inventory.monkeys.first.look,
+        decor: [
+          for (final piece in inventory.decor)
+            if (piece.placed) piece,
+        ],
       );
 
   factory IslandSnapshot.fromJson(Map<String, dynamic>? json) {
@@ -30,17 +36,23 @@ class IslandSnapshot extends Equatable {
       look: json['look'] is Map
           ? MonkeyLook.fromJson(Map<String, dynamic>.from(json['look'] as Map))
           : const MonkeyLook(),
+      decor: DecorPiece.listFromJson(json['decor']),
     );
   }
 
   final List<ShopBuyables> bought;
   final MonkeyLook look;
 
+  /// The decorations standing on their island.
+  final List<DecorPiece> decor;
+
   Map<String, dynamic> toJson() => {
         'bought': [for (final item in bought) item.name],
         'look': look.toJson(),
+        if (decor.isNotEmpty)
+          'decor': [for (final piece in decor) piece.toJson()],
       };
 
   @override
-  List<Object?> get props => [bought, look];
+  List<Object?> get props => [bought, look, decor];
 }
