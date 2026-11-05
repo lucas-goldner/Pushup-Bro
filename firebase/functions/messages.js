@@ -6,31 +6,39 @@ const texts = {
     wave: (name) => `${name} waved at you 👋`,
     banana: (name) => `${name} sent you a banana 🍌`,
     nudge: (name) => `${name} nudged you: time for pushups! 💪`,
+    drop: (name) => `${name} dropped a gift on your island 🎁`,
   },
   de: {
     wave: (name) => `${name} hat dir gewunken 👋`,
     banana: (name) => `${name} hat dir eine Banane geschickt 🍌`,
     nudge: (name) => `${name} stupst dich an: Zeit für Liegestütze! 💪`,
+    drop: (name) => `${name} hat ein Geschenk auf deiner Insel abgeworfen 🎁`,
   },
   es: {
     wave: (name) => `${name} te saludó 👋`,
     banana: (name) => `${name} te envió un plátano 🍌`,
     nudge: (name) => `${name} te avisa: ¡hora de flexiones! 💪`,
+    drop: (name) => `${name} dejó caer un regalo en tu isla 🎁`,
   },
   ja: {
     wave: (name) => `${name}が手を振った 👋`,
     banana: (name) => `${name}がバナナをくれた 🍌`,
     nudge: (name) => `${name}がつついた：腕立て伏せの時間だ！💪`,
+    drop: (name) => `${name}があなたの島にプレゼントを落とした 🎁`,
   },
   pt: {
     wave: (name) => `${name} acenou para você 👋`,
     banana: (name) => `${name} te mandou uma banana 🍌`,
     nudge: (name) => `${name} te cutucou: hora das flexões! 💪`,
+    drop: (name) => `${name} deixou um presente na sua ilha 🎁`,
   },
 };
 
 /** Where a tap on the notification takes the player. */
 export const route = '/island/bros';
+
+/** A gift dropped from the airport waits on the island itself. */
+export const dropRoute = '/island';
 
 /** The text for an inbox [item] in [language], or null for an unknown kind. */
 export function textFor(item, language) {
@@ -51,7 +59,7 @@ export function messageFor(item, device) {
   return {
     token: device.token,
     notification: { body },
-    data: { route, kind: item.kind, fromUid: String(item.fromUid ?? '') },
+    data: { route: item.kind === 'drop' ? dropRoute : route, kind: item.kind, fromUid: String(item.fromUid ?? '') },
     apns: {
       headers: {
         'apns-push-type': 'alert',

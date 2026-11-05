@@ -1,6 +1,7 @@
 import 'package:pushup_bro/features/social/model/bro_profile.dart';
 import 'package:pushup_bro/features/social/model/cloud_backup.dart';
 import 'package:pushup_bro/features/social/model/day_score.dart';
+import 'package:pushup_bro/features/social/model/gift_drop.dart';
 import 'package:pushup_bro/features/social/model/inbox_item.dart';
 
 /// The sign-in providers a Pro member can connect.
@@ -128,4 +129,16 @@ abstract class SocialBackend {
 
   Future<CloudBackup?> readBackup(String uid);
   Future<void> writeBackup(String uid, CloudBackup backup);
+
+  // Gift drops from the airport.
+
+  /// Drops [drop] on [to]'s island; false when the rules refused it (a
+  /// second drop from the same friend that day).
+  Future<bool> dropGift(String to, GiftDrop drop);
+  Stream<List<GiftDrop>> drops(String uid);
+
+  /// Marks a drop opened: it stays until its day is over, so the same
+  /// friend can't drop again that day.
+  Future<void> openDrop(String uid, String id);
+  Future<void> removeDrop(String uid, String id);
 }
