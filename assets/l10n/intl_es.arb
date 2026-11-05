@@ -1100,5 +1100,16 @@
   "resetAll": "Borrar todo el progreso",
   "resetAllInfo": "Todo empieza de cero, como recién instalada: todas tus flexiones y estadísticas, tu nivel de bro y toda la isla con su historia. Tus ajustes, Pro y tu cuenta se quedan. No se puede deshacer.",
   "resetAllConfirm": "Borrar todo",
-  "resetDone": "¡Listo: borrón y cuenta nueva!"
+  "resetDone": "¡Listo: borrón y cuenta nueva!",
+  "trekDifficulty": "Dificultad",
+  "trekEasy": "Fácil",
+  "trekNormal": "Normal",
+  "trekHard": "Difícil",
+  "trekBrutal": "Brutal",
+  "trekEasyInfo": "Menos de 10 flexiones seguidas. Unas 10 a 15 por etapa.",
+  "trekNormalInfo": "De 10 a 20 seguidas. Unas 20 a 35 por etapa, con descansos entre oleadas.",
+  "trekHardInfo": "30 o más seguidas. Unas 30 a 45 por etapa, y devuelven los golpes fuerte.",
+  "trekBrutalInfo": "50 o más seguidas. De 40 a 60 por etapa, y contraatacan cada dos flexiones.",
+  "trekBrutalLocked": "Completa toda la Ruta Selvática para desbloquear Brutal.",
+  "trekRewards": "×{amount} XP y plátanos"
 }

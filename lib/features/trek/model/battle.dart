@@ -9,27 +9,42 @@ const holdSeconds = 2.0;
 /// How often a chameleon changes colour, in seconds.
 const _shiftEvery = 8.0;
 
-/// Each pushup pushes every enemy's next attack back by this much.
-const _repPushback = 0.8;
+/// After it hits back, an enemy waits at least this long before it
+/// attacks again on its timer.
+const _afterCounter = 1.5;
 
-/// An enemy in battle.
+/// An enemy in battle, made tougher or softer by the [difficulty].
 class Foe {
-  Foe(this.spec, this.slot)
-      : hp = spec.hp,
+  Foe(this.spec, this.slot, {this.difficulty = TrekDifficulty.normal})
+      : maxHp = spec.hp * difficulty.health,
+        hp = spec.hp * difficulty.health,
+        attack = spec.attack * difficulty.damage,
+        attackEvery = spec.attackEvery * difficulty.pace,
         color = spec.color ?? ScaleColor.values[slot % 3],
-        attackTimer = spec.attackEvery * (0.7 + slot * 0.25),
+        attackTimer = spec.attackEvery * difficulty.pace * (0.7 + slot * 0.25),
         _shiftTimer = _shiftEvery - slot * 2.5;
 
   final EnemySpec spec;
+  final TrekDifficulty difficulty;
 
   /// Its place in the wave, left to right.
   final int slot;
+  final double maxHp;
   double hp;
+
+  /// Damage of each of its attacks.
+  final double attack;
+
+  /// Seconds between its attacks on its own timer.
+  final double attackEvery;
   ScaleColor color;
 
   /// Seconds until it attacks.
   double attackTimer;
   double _shiftTimer;
+
+  /// Pushups it has taken since it last hit back.
+  int _hitsTaken = 0;
 
   bool get alive => hp > 0;
   bool get shifts => spec.color == null;
@@ -76,10 +91,15 @@ class TickEvents {
 ///
 /// Each pushup becomes a [Hit] on the first enemy still standing, its
 /// damage scaled by how well the kind of pushup suits the enemy's colour.
-/// Enemies attack on their own timers, which every pushup pushes back.
+/// Enemies attack on their own timers, and the one being hit strikes back
+/// every few pushups ([TrekDifficulty.counterEvery]), so no fight is free.
 class Battle {
-  Battle(this.stage, this.stats, {math.Random? random})
-      : _random = random ?? math.Random(),
+  Battle(
+    this.stage,
+    this.stats, {
+    this.difficulty = TrekDifficulty.normal,
+    math.Random? random,
+  })  : _random = random ?? math.Random(),
         maxHp = stats.maxHp,
         hp = stats.maxHp {
     _startWave();
@@ -87,6 +107,7 @@ class Battle {
 
   final TrekStage stage;
   final TrekProgress stats;
+  final TrekDifficulty difficulty;
   final math.Random _random;
   final double maxHp;
 
@@ -115,7 +136,10 @@ class Battle {
   }
 
   void _startWave() {
-    foes = [for (final (i, spec) in _wave.indexed) Foe(spec, i)];
+    foes = [
+      for (final (i, spec) in _wave.indexed)
+        Foe(spec, i, difficulty: difficulty),
+    ];
     combo = 0;
   }
 
@@ -158,18 +182,19 @@ class Battle {
     final damage = stats.attack * multiplier * (critical ? 1.5 : 1);
     if (multiplier > 1) superEffective++;
     foe.hp = math.max(0, foe.hp - damage);
-    for (final other in foes) {
-      other.attackTimer = math.min(
-        other.spec.attackEvery,
-        other.attackTimer + _repPushback,
-      );
+    // Every few pushups it takes, it hits back (on the next tick, so the
+    // scene and the HUD show it like any other attack).
+    if (foe.alive && ++foe._hitsTaken >= difficulty.counterEvery) {
+      foe
+        .._hitsTaken = 0
+        ..attackTimer = math.min(foe.attackTimer, 0.45);
     }
 
     int? phase;
     if (foe.spec.species == Species.king && foe.alive) {
-      final next = foe.hp > foe.spec.hp * 2 / 3
+      final next = foe.hp > foe.maxHp * 2 / 3
           ? 0
-          : foe.hp > foe.spec.hp / 3
+          : foe.hp > foe.maxHp / 3
               ? 1
               : 2;
       if (next != bossPhase) {
@@ -200,8 +225,13 @@ class Battle {
       if (!foe.alive) continue;
       foe.attackTimer -= deltaSeconds;
       if (foe.attackTimer <= 0) {
-        foe.attackTimer += foe.spec.attackEvery;
-        hp = math.max(0, hp - foe.spec.attack);
+        foe
+          ..attackTimer = math.max(
+            _afterCounter,
+            foe.attackTimer + foe.attackEvery,
+          )
+          .._hitsTaken = 0;
+        hp = math.max(0, hp - foe.attack);
         events.strikes.add(foe);
       }
       if (foe.shifts) {
@@ -225,6 +255,9 @@ class Battle {
       (hp >= maxHp / 2 ? 1 : 0) +
       (reps > 0 && superEffective / reps >= 0.6 ? 1 : 0);
 
+  /// XP from the enemies beaten, scaled by the difficulty.
+  int get earnedXp => (xp * difficulty.rewards).round();
+
   /// Bonus XP for clearing the stage.
-  int get clearXp => 30 + 10 * stage.number;
+  int get clearXp => ((30 + 10 * stage.number) * difficulty.rewards).round();
 }

@@ -57,6 +57,77 @@ double effectiveness(ScaleColor color, RepKind kind) => switch ((color, kind)) {
       (ScaleColor.yellow, RepKind.held) => 0.25,
     };
 
+/// How tough the Trek is, picked by how many pushups in a row the player
+/// can do. Tougher reptiles take more pushups to beat and hit back harder
+/// and sooner, and pay out more XP and bananas. [brutal] opens once the
+/// whole Trek is cleared.
+enum TrekDifficulty {
+  /// Fewer than 10 pushups in a row: about 10 to 15 a stage.
+  easy(health: 0.42, damage: 0.6, pace: 1.25, counterEvery: 4, rewards: 0.75),
+
+  /// About 10 to 20 in a row: about 20 to 35 a stage, with rests.
+  normal(health: 1, damage: 1, pace: 1, counterEvery: 3, rewards: 1),
+
+  /// 30 or more: about 30 to 45 a stage.
+  hard(health: 1.7, damage: 1.15, pace: 0.9, counterEvery: 3, rewards: 1.5),
+
+  /// 50 or more: 40 to 60 a stage, and every second pushup gets hit back.
+  brutal(health: 2.6, damage: 1.25, pace: 0.8, counterEvery: 2, rewards: 2.2);
+
+  const TrekDifficulty({
+    required this.health,
+    required this.damage,
+    required this.pace,
+    required this.counterEvery,
+    required this.rewards,
+  });
+
+  /// Enemy health, times the normal.
+  final double health;
+
+  /// Enemy damage, times the normal.
+  final double damage;
+
+  /// Seconds between enemy attacks, times the normal.
+  final double pace;
+
+  /// The enemy being hit strikes back after this many pushups.
+  final int counterEvery;
+
+  /// XP and bananas, times the normal.
+  final double rewards;
+
+  static TrekDifficulty byName(String? name) {
+    for (final difficulty in values) {
+      if (difficulty.name == name) return difficulty;
+    }
+
+    return normal;
+  }
+
+  String label(S l) => switch (this) {
+        easy => l.trekEasy,
+        normal => l.trekNormal,
+        hard => l.trekHard,
+        brutal => l.trekBrutal,
+      };
+
+  /// Who it's for, by pushups in a row.
+  String forWho(S l) => switch (this) {
+        easy => l.trekEasyInfo,
+        normal => l.trekNormalInfo,
+        hard => l.trekHardInfo,
+        brutal => l.trekBrutalInfo,
+      };
+
+  String get emoji => switch (this) {
+        easy => '🌱',
+        normal => '💪',
+        hard => '🔥',
+        brutal => '💀',
+      };
+}
+
 /// The kinds of reptile in the jungle.
 enum Species {
   gecko,
@@ -90,29 +161,43 @@ class EnemySpec {
   });
 
   const EnemySpec.gecko([ScaleColor color = ScaleColor.green])
-      : this(Species.gecko, color, hp: 30, attack: 6, attackEvery: 9, xp: 12);
+      : this(Species.gecko, color, hp: 100, attack: 8, attackEvery: 10, xp: 15);
   const EnemySpec.skink([ScaleColor color = ScaleColor.yellow])
-      : this(Species.skink, color, hp: 36, attack: 5, attackEvery: 6, xp: 15);
+      : this(Species.skink, color, hp: 110, attack: 7, attackEvery: 8, xp: 18);
   const EnemySpec.iguana([ScaleColor color = ScaleColor.blue])
-      : this(Species.iguana, color, hp: 60, attack: 9, attackEvery: 11, xp: 22);
+      : this(
+          Species.iguana,
+          color,
+          hp: 150,
+          attack: 11,
+          attackEvery: 12,
+          xp: 26,
+        );
   const EnemySpec.croc(ScaleColor color)
-      : this(Species.croc, color, hp: 75, attack: 11, attackEvery: 11, xp: 28);
+      : this(Species.croc, color, hp: 170, attack: 12, attackEvery: 12, xp: 32);
   const EnemySpec.chameleon()
       : this(
           Species.chameleon,
           null,
-          hp: 70,
-          attack: 8,
-          attackEvery: 9,
-          xp: 30,
+          hp: 160,
+          attack: 10,
+          attackEvery: 10,
+          xp: 34,
         );
   const EnemySpec.snake(ScaleColor color)
-      : this(Species.snake, color, hp: 65, attack: 10, attackEvery: 8, xp: 26);
+      : this(
+          Species.snake,
+          color,
+          hp: 150,
+          attack: 11,
+          attackEvery: 10,
+          xp: 30,
+        );
   const EnemySpec.king()
       : this(
           Species.king,
           ScaleColor.green,
-          hp: 840,
+          hp: 1600,
           attack: 12,
           attackEvery: 8,
           xp: 300,
@@ -190,6 +275,7 @@ class TrekStage {
       blurb: (l) => l.stage1Blurb,
       loot: 'pattern.scales',
       waves: const [
+        [EnemySpec.gecko()],
         [EnemySpec.gecko()],
         [EnemySpec.gecko(), EnemySpec.gecko()],
       ],

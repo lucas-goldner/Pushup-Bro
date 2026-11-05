@@ -14,6 +14,7 @@ class TrekProgress extends Equatable {
     this.grip = 0,
     this.agility = 0,
     this.stars = const {},
+    this.difficulty = 'normal',
   });
 
   factory TrekProgress.fromJson(Map<String, dynamic> json) {
@@ -32,6 +33,7 @@ class TrekProgress extends Equatable {
             in (json['stars'] as Map<String, dynamic>? ?? {}).entries)
           if (value is num) key: value.toInt(),
       },
+      difficulty: json['difficulty'] as String? ?? 'normal',
     );
   }
 
@@ -49,6 +51,9 @@ class TrekProgress extends Equatable {
 
   /// Best stars (1 to 3) per cleared stage id.
   final Map<String, int> stars;
+
+  /// The name of the difficulty picked for battles (`TrekDifficulty`).
+  final String difficulty;
 
   /// XP needed to go from [level] to the next.
   static int xpToNext(int level) => 40 + 30 * level;
@@ -119,6 +124,7 @@ class TrekProgress extends Equatable {
     int? grip,
     int? agility,
     Map<String, int>? stars,
+    String? difficulty,
   }) =>
       TrekProgress(
         level: level ?? this.level,
@@ -129,6 +135,7 @@ class TrekProgress extends Equatable {
         grip: grip ?? this.grip,
         agility: agility ?? this.agility,
         stars: stars ?? this.stars,
+        difficulty: difficulty ?? this.difficulty,
       );
 
   Map<String, dynamic> toJson() => {
@@ -140,9 +147,10 @@ class TrekProgress extends Equatable {
         'grip': grip,
         'agility': agility,
         'stars': stars,
+        'difficulty': difficulty,
       };
 
   @override
   List<Object?> get props =>
-      [level, xp, points, power, vitality, grip, agility, stars];
+      [level, xp, points, power, vitality, grip, agility, stars, difficulty];
 }

@@ -1100,5 +1100,16 @@
   "resetAll": "Apagar todo o progresso",
   "resetAllInfo": "Tudo recomeça, como numa instalação nova: todas as suas flexões e estatísticas, seu nível de bro e toda a ilha com a história. Seus ajustes, o Pro e sua conta continuam. Não dá para desfazer.",
   "resetAllConfirm": "Apagar tudo",
-  "resetDone": "Pronto: um novo começo!"
+  "resetDone": "Pronto: um novo começo!",
+  "trekDifficulty": "Dificuldade",
+  "trekEasy": "Fácil",
+  "trekNormal": "Normal",
+  "trekHard": "Difícil",
+  "trekBrutal": "Brutal",
+  "trekEasyInfo": "Menos de 10 flexões seguidas. Cerca de 10 a 15 por fase.",
+  "trekNormalInfo": "De 10 a 20 seguidas. Cerca de 20 a 35 por fase, com pausas entre as ondas.",
+  "trekHardInfo": "30 ou mais seguidas. Cerca de 30 a 45 por fase, e eles revidam forte.",
+  "trekBrutalInfo": "50 ou mais seguidas. De 40 a 60 por fase, e eles revidam a cada duas flexões.",
+  "trekBrutalLocked": "Complete toda a Trilha na Selva para desbloquear o Brutal.",
+  "trekRewards": "×{amount} XP e bananas"
 }

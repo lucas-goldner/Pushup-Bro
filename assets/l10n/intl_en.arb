@@ -1852,5 +1852,23 @@
   "resetAll": "Reset all progress",
   "resetAllInfo": "Everything starts over, like a fresh install: all your pushups and stats, your bro level, and the whole island and story. Your settings, Pro and your account stay. This can't be undone.",
   "resetAllConfirm": "Reset everything",
-  "resetDone": "Done: a fresh start!"
+  "resetDone": "Done: a fresh start!",
+  "trekDifficulty": "Difficulty",
+  "trekEasy": "Easy",
+  "trekNormal": "Normal",
+  "trekHard": "Hard",
+  "trekBrutal": "Brutal",
+  "trekEasyInfo": "Fewer than 10 pushups in a row. About 10 to 15 per stage.",
+  "trekNormalInfo": "10 to 20 in a row. About 20 to 35 per stage, with breaks between waves.",
+  "trekHardInfo": "30 or more in a row. About 30 to 45 per stage, and they hit back hard.",
+  "trekBrutalInfo": "50 or more in a row. 40 to 60 per stage, and they hit back every second pushup.",
+  "trekBrutalLocked": "Clear the whole Trek to unlock Brutal.",
+  "trekRewards": "×{amount} XP and bananas",
+  "@trekRewards": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

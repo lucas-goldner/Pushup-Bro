@@ -180,7 +180,7 @@ class FoeBar extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: TweenAnimationBuilder<double>(
-                    tween: Tween(end: (foe.hp / foe.spec.hp).clamp(0.0, 1.0)),
+                    tween: Tween(end: (foe.hp / foe.maxHp).clamp(0.0, 1.0)),
                     duration: const Duration(milliseconds: 250),
                     builder: (context, value, _) => LinearProgressIndicator(
                       value: value,

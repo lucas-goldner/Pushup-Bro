@@ -1100,5 +1100,16 @@
   "resetAll": "Gesamten Fortschritt zurücksetzen",
   "resetAllInfo": "Alles fängt von vorn an, wie nach einer Neuinstallation: alle Liegestütze und Statistiken, dein Bro-Level und die ganze Insel samt Geschichte. Deine Einstellungen, Pro und dein Konto bleiben. Das lässt sich nicht rückgängig machen.",
   "resetAllConfirm": "Alles zurücksetzen",
-  "resetDone": "Erledigt: ein Neuanfang!"
+  "resetDone": "Erledigt: ein Neuanfang!",
+  "trekDifficulty": "Schwierigkeit",
+  "trekEasy": "Leicht",
+  "trekNormal": "Normal",
+  "trekHard": "Schwer",
+  "trekBrutal": "Brutal",
+  "trekEasyInfo": "Weniger als 10 Liegestütze am Stück. Etwa 10 bis 15 pro Etappe.",
+  "trekNormalInfo": "10 bis 20 am Stück. Etwa 20 bis 35 pro Etappe, mit Pausen zwischen den Wellen.",
+  "trekHardInfo": "30 oder mehr am Stück. Etwa 30 bis 45 pro Etappe, und sie schlagen hart zurück.",
+  "trekBrutalInfo": "50 oder mehr am Stück. 40 bis 60 pro Etappe, und jeder zweite Liegestütz wird gekontert.",
+  "trekBrutalLocked": "Schaff den ganzen Dschungel-Trek, um Brutal freizuschalten.",
+  "trekRewards": "×{amount} XP und Bananen"
 }

@@ -633,8 +633,18 @@ class KingKomo extends Reptile {
   final GorillaRig rig = GorillaRig();
   final UnlitMaterial _aura = UnlitMaterial();
 
+  final Node _tears = Node(name: 'tears');
+  final List<(Node, vm.Vector3)> _drops = [];
+  final List<double> _dropLife = [];
+  late final _tearShape = IcosphereGeometry(radius: 0.05, subdivisions: 1);
+  late final UnlitMaterial _tear = UnlitMaterial()
+    ..baseColorFactor = linearColor(const Color(0xFF8FD3FF));
+  double _down = -1;
+  double _nextTear = 0;
+  final _random = math.Random(7);
+
   @override
-  double get height => 1.15;
+  double get height => _down < 0 ? 1.15 : 0.6;
 
   @override
   set color(Color value) {
@@ -642,12 +652,93 @@ class KingKomo extends Reptile {
     _aura.baseColorFactor = linearColor(value);
   }
 
+  /// Beaten, the King doesn't vanish: he flops onto his side on his mat
+  /// and bawls, tears spraying from both eyes.
+  @override
+  void defeat() {
+    if (_down >= 0) return;
+    _down = 0;
+    rig
+      ..activity = GorillaActivity.idle
+      ..inPushup = false;
+    root.add(_tears);
+  }
+
   @override
   void animate(double time) {}
 
   @override
   void update(double deltaSeconds) {
-    super.update(deltaSeconds);
+    if (_down < 0) {
+      super.update(deltaSeconds);
+      rig.update(deltaSeconds);
+      return;
+    }
+    _time += deltaSeconds;
+    _down = math.min(1, _down + deltaSeconds * 1.4);
+    // A flop with a little bounce at the end.
+    final t = _down;
+    final fall = t < 1 ? 1 - math.pow(1 - t, 3) * math.cos(t * 6) : 1.0;
+    final sob = math.sin(_time * 16);
+    body
+      ..scale = vm.Vector3.all(1)
+      // Lying with his head to -x; shifted back so he stays in the middle.
+      ..position = vm.Vector3(
+        0.55 * fall,
+        0.3 * fall + sob.abs() * 0.025 * t,
+        0,
+      )
+      ..rotation = vm.Quaternion.axisAngle(
+            vm.Vector3(0, 0, 1),
+            math.pi / 2 * fall,
+          ) *
+          vm.Quaternion.axisAngle(vm.Vector3(0, 1, 0), sob * 0.05 * t);
+    // The ring of his power goes out.
+    _aura.baseColorFactor = linearColor(
+      Color.lerp(_base, const Color(0xFF39404A), t)!,
+    );
     rig.update(deltaSeconds);
+
+    // Two fountains of tears, once he's down.
+    if (t > 0.6) {
+      _nextTear -= deltaSeconds;
+      while (_nextTear <= 0) {
+        _nextTear += 0.035;
+        final eye = _random.nextBool() ? 1.0 : -1.0;
+        // Out of one of his eyes, worked out from where the head really is.
+        final toRoot = vm.Matrix4.copy(root.globalTransform)..invert();
+        final head = rig.head.globalTransform;
+        final at = toRoot.transformed3(
+          head.transformed3(vm.Vector3(0.15 * eye, 0.14, 0.36)),
+        );
+        final out = toRoot.transformed3(
+              head.transformed3(vm.Vector3(0.15 * eye, 0.14, 1.36)),
+            ) -
+            at;
+        final drop = meshNode(_tearShape, _tear, position: at);
+        _tears.add(drop);
+        final velocity = out * (0.6 + _random.nextDouble() * 0.6) +
+            vm.Vector3(
+              (_random.nextDouble() - 0.5) * 1.2,
+              1.6 + _random.nextDouble() * 0.9,
+              (_random.nextDouble() - 0.5) * 0.6,
+            );
+        _drops.add((drop, velocity));
+        _dropLife.add(1);
+      }
+    }
+    for (var i = _drops.length - 1; i >= 0; i--) {
+      final (drop, velocity) = _drops[i];
+      velocity.y -= 7 * deltaSeconds;
+      final at = drop.position + velocity * deltaSeconds;
+      _dropLife[i] -= deltaSeconds * 1.3;
+      if (at.y < 0.02 || _dropLife[i] <= 0) {
+        _tears.remove(drop);
+        _drops.removeAt(i);
+        _dropLife.removeAt(i);
+      } else {
+        drop.position = at;
+      }
+    }
   }
 }

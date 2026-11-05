@@ -20,6 +20,7 @@ import 'package:pushup_bro/core/widgets/pill_button.dart';
 import 'package:pushup_bro/features/pro/pro_access.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
 import 'package:pushup_bro/features/trek/trek_stage_page.dart';
+import 'package:pushup_bro/features/trek/widgets/difficulty_picker.dart';
 import 'package:pushup_bro/features/trek/widgets/rest_panel.dart';
 import 'package:pushup_bro/features/trek/widgets/stats_sheet.dart';
 import 'package:pushup_bro/features/wardrobe/widgets/cosmetic_tile.dart';
@@ -162,7 +163,7 @@ class _TrekMapPageState extends State<TrekMapPage> with OneMove {
                       _soon = false;
                     }),
                     onSoon: () => setState(() => _soon = true),
-                    bottomPadding: 330 + safe.bottom,
+                    bottomPadding: 430 + safe.bottom,
                   ),
                 ),
                 Positioned(
@@ -901,6 +902,10 @@ class _StagePanel extends StatelessWidget {
               runSpacing: 6,
               children: [for (final e in enemies) EnemyChip(spec: e)],
             ),
+            if (open) ...[
+              const SizedBox(height: PBSpace.md),
+              DifficultyPicker(trek: trek),
+            ],
             const SizedBox(height: PBSpace.md),
             Row(
               children: [

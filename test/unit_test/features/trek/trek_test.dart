@@ -5,6 +5,7 @@ import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/model/trek_progress.dart';
 import 'package:pushup_bro/features/trek/model/battle.dart';
 import 'package:pushup_bro/features/trek/model/trek.dart';
+import 'package:pushup_bro/features/trek/widgets/difficulty_picker.dart';
 
 /// Never rolls a critical hit.
 class _NoCrit implements math.Random {
@@ -48,7 +49,7 @@ void main() {
       final hit = b.rep(held: 0.5)!;
       expect(hit.superEffective, isTrue);
       expect(hit.damage, const TrekProgress().attack * 2);
-      expect(foe.hp, foe.spec.hp - hit.damage);
+      expect(foe.hp, foe.maxHp - hit.damage);
     });
 
     test('defeating every wave wins, with XP for each enemy', () {
@@ -67,16 +68,34 @@ void main() {
       expect(b.rep(held: 0.5), isNull);
     });
 
-    test('enemies attack on their timers and pushups push them back', () {
+    test('enemies attack on their timers', () {
       final b = battle();
       final foe = b.target!;
       final events = b.tick(foe.attackTimer + 0.01);
       expect(events.strikes, [foe]);
-      expect(b.hp, b.maxHp - foe.spec.attack);
+      expect(b.hp, b.maxHp - foe.attack);
+    });
 
-      final before = foe.attackTimer;
-      b.rep(held: 0.5);
-      expect(foe.attackTimer, greaterThan(before));
+    test('the enemy being hit strikes back every few pushups', () {
+      final b = battle();
+      final foe = b.target!;
+      for (var i = 0; i < TrekDifficulty.normal.counterEvery; i++) {
+        b.rep(held: 0.5);
+      }
+      expect(foe.alive, isTrue);
+      expect(b.tick(0.5).strikes, [foe]);
+      expect(b.hp, b.maxHp - foe.attack);
+    });
+
+    test('a normal enemy takes about five good pushups', () {
+      final b = battle();
+      final foe = b.target!;
+      var reps = 0;
+      while (foe.alive) {
+        b.rep(held: 0.5);
+        reps++;
+      }
+      expect(reps, 5);
     });
 
     test('resting heals but not past full health', () {
@@ -111,6 +130,65 @@ void main() {
         if (hit?.phase != null) phases.add(hit!.phase!);
       }
       expect(phases, [1, 2]);
+    });
+  });
+
+  group('TrekDifficulty', () {
+    test('tougher difficulties take more pushups and hit harder', () {
+      int repsFor(TrekDifficulty difficulty) {
+        final b = Battle(
+          TrekStage.all.first,
+          const TrekProgress(),
+          difficulty: difficulty,
+          random: _NoCrit(),
+        );
+        while (!b.won) {
+          if (b.waveCleared) b.nextWave();
+          b.rep(held: 0.5);
+        }
+
+        return b.reps;
+      }
+
+      final reps = [for (final d in TrekDifficulty.values) repsFor(d)];
+      expect(reps, orderedEquals([...reps]..sort()));
+      expect(reps.first, lessThanOrEqualTo(12));
+      expect(reps[1], inInclusiveRange(18, 25));
+      expect(reps.last, greaterThanOrEqualTo(45));
+      final attacks = [
+        for (final d in TrekDifficulty.values)
+          Foe(const EnemySpec.gecko(), 0, difficulty: d).attack,
+      ];
+      expect(attacks, orderedEquals([...attacks]..sort()));
+    });
+
+    test('harder difficulties pay more', () {
+      final easy = Battle(
+        TrekStage.all.first,
+        const TrekProgress(),
+        difficulty: TrekDifficulty.easy,
+      );
+      final brutal = Battle(
+        TrekStage.all.first,
+        const TrekProgress(),
+        difficulty: TrekDifficulty.brutal,
+      );
+      expect(brutal.clearXp, greaterThan(easy.clearXp));
+    });
+
+    test('Brutal stays locked until the King is beaten', () {
+      const fresh = TrekProgress(difficulty: 'brutal');
+      expect(brutalUnlocked(fresh), isFalse);
+      expect(difficultyOf(fresh), TrekDifficulty.normal);
+      final done = fresh.clear(TrekStage.all.last.id, 1);
+      expect(brutalUnlocked(done), isTrue);
+      expect(difficultyOf(done), TrekDifficulty.brutal);
+    });
+
+    test('is saved with the progress', () {
+      const progress = TrekProgress(difficulty: 'hard');
+      expect(TrekProgress.fromJson(progress.toJson()).difficulty, 'hard');
+      expect(TrekProgress.fromJson(const {}).difficulty, 'normal');
     });
   });
 
