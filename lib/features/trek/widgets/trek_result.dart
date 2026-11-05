@@ -114,6 +114,12 @@ class _TrekResultState extends State<TrekResult> {
                       ),
                       const SizedBox(height: PBSpace.md),
                       _Stars(stars: reward?.stars ?? 1),
+                      if (reward != null && reward.goals.isNotEmpty) ...[
+                        const SizedBox(height: PBSpace.sm),
+                        _Goal(label: l.goalWin, met: true),
+                        for (final (goal, met) in reward.goals)
+                          _Goal(label: goal.label(l), met: met),
+                      ],
                       const SizedBox(height: PBSpace.lg),
                       if (reward != null)
                         Row(
@@ -336,4 +342,42 @@ class _Stat extends StatelessWidget {
           ],
         ),
       );
+}
+
+/// A star goal and whether it was met.
+class _Goal extends StatelessWidget {
+  const _Goal({required this.label, required this.met});
+
+  final String label;
+  final bool met;
+
+  @override
+  Widget build(BuildContext context) {
+    final game = context.gameColors;
+    final scheme = context.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Icon(
+            met ? CarbonIcons.star_filled : CarbonIcons.star,
+            size: 18,
+            color: met ? game.banana : scheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: context.textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                color: met ? scheme.onSurface : scheme.onSurfaceVariant,
+                decoration: met ? null : TextDecoration.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

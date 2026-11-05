@@ -102,6 +102,8 @@ class AccountCubit extends Cubit<AccountState> {
     int? islandLevel,
     int? friendCount,
     Map<String, dynamic>? island,
+    String? towerWeek,
+    int? towerFloor,
   }) async {
     final profile = state.profile;
     if (profile == null) return;
@@ -112,6 +114,8 @@ class AccountCubit extends Cubit<AccountState> {
       islandLevel: islandLevel,
       friendCount: friendCount,
       island: island,
+      towerWeek: towerWeek,
+      towerFloor: towerFloor,
     );
     if (updated == profile) return;
     emit(state.copyWith(profile: updated));

@@ -5,6 +5,17 @@ rules_version = '2';
 // Tests: firebase/test (npm test, against the emulator).
 service cloud.firestore {
   match /databases/{database}/documents {
+    // The weekly tower best: a week key and a floor, nothing else.
+    function validTower(data) {
+      return !('tower' in data)
+        || (data.tower.keys().hasOnly(['week', 'floor'])
+          && data.tower.week is string
+          && data.tower.week.size() <= 10
+          && data.tower.floor is int
+          && data.tower.floor >= 0
+          && data.tower.floor <= 1000);
+    }
+
     function signedIn() {
       return request.auth != null;
     }
@@ -38,16 +49,18 @@ service cloud.firestore {
       allow create: if isMe(uid)
         && request.resource.data.keys().hasOnly([
           'broName', 'code', 'look', 'streak', 'total', 'islandLevel',
-          'friendCount', 'showOnEveryone', 'island', 'updatedAt'
+          'friendCount', 'showOnEveryone', 'island', 'tower', 'updatedAt'
         ])
+        && validTower(request.resource.data)
         && request.resource.data.broName is string
         && request.resource.data.broName.size() <= 16
         && codeOwner(request.resource.data.code) == uid;
       allow update: if isMe(uid)
         && request.resource.data.keys().hasOnly([
           'broName', 'code', 'look', 'streak', 'total', 'islandLevel',
-          'friendCount', 'showOnEveryone', 'island', 'updatedAt'
+          'friendCount', 'showOnEveryone', 'island', 'tower', 'updatedAt'
         ])
+        && validTower(request.resource.data)
         // The code and the generated name never change.
         && request.resource.data.code == resource.data.code
         && request.resource.data.broName == resource.data.broName;

@@ -63,16 +63,52 @@ double effectiveness(ScaleColor color, RepKind kind) => switch ((color, kind)) {
 /// whole Trek is cleared.
 enum TrekDifficulty {
   /// Fewer than 10 pushups in a row: about 10 to 15 a stage.
-  easy(health: 0.42, damage: 0.6, pace: 1.25, counterEvery: 4, rewards: 0.75),
+  easy(
+    health: 0.42,
+    damage: 0.6,
+    pace: 1.25,
+    counterEvery: 4,
+    rewards: 0.75,
+    heavyEvery: 22,
+    windUp: 4,
+    heavy: 2,
+  ),
 
   /// About 10 to 20 in a row: about 20 to 35 a stage, with rests.
-  normal(health: 1, damage: 1, pace: 1, counterEvery: 3, rewards: 1),
+  normal(
+    health: 1,
+    damage: 1,
+    pace: 1,
+    counterEvery: 3,
+    rewards: 1,
+    heavyEvery: 16,
+    windUp: 3.2,
+    heavy: 2.5,
+  ),
 
   /// 30 or more: about 30 to 45 a stage.
-  hard(health: 1.7, damage: 1.15, pace: 0.9, counterEvery: 3, rewards: 1.5),
+  hard(
+    health: 1.7,
+    damage: 1.15,
+    pace: 0.9,
+    counterEvery: 3,
+    rewards: 1.5,
+    heavyEvery: 13,
+    windUp: 2.8,
+    heavy: 2.8,
+  ),
 
   /// 50 or more: 40 to 60 a stage, and every second pushup gets hit back.
-  brutal(health: 2.6, damage: 1.25, pace: 0.8, counterEvery: 2, rewards: 2.2);
+  brutal(
+    health: 2.6,
+    damage: 1.25,
+    pace: 0.8,
+    counterEvery: 2,
+    rewards: 2.2,
+    heavyEvery: 10,
+    windUp: 2.4,
+    heavy: 3,
+  );
 
   const TrekDifficulty({
     required this.health,
@@ -80,7 +116,19 @@ enum TrekDifficulty {
     required this.pace,
     required this.counterEvery,
     required this.rewards,
+    required this.heavyEvery,
+    required this.windUp,
+    required this.heavy,
   });
+
+  /// Seconds between heavy attacks.
+  final double heavyEvery;
+
+  /// Seconds a heavy attack winds up: the time to get down into a plank.
+  final double windUp;
+
+  /// A heavy attack's damage, times a normal one.
+  final double heavy;
 
   /// Enemy health, times the normal.
   final double health;
@@ -149,6 +197,27 @@ enum Species {
       };
 }
 
+/// A special rule an enemy fights by.
+enum Trait {
+  none,
+
+  /// Dives under the water now and then: only quick pushups reach it.
+  diver,
+
+  /// Turns invisible now and then: hits barely land until a quick combo
+  /// shows it again.
+  vanisher,
+
+  /// Starts behind a shield that only held pushups break.
+  shielded,
+
+  /// Heals the others in its wave while it stands.
+  healer,
+
+  /// Copies Carlos: the same kind of pushup twice in a row barely hurts.
+  mirror,
+}
+
 /// One enemy in a wave. A null [color] shifts between all three.
 class EnemySpec {
   const EnemySpec(
@@ -158,7 +227,34 @@ class EnemySpec {
     required this.attack,
     required this.attackEvery,
     required this.xp,
+    this.trait = Trait.none,
+    this.shield = 0,
   });
+
+  /// An iguana behind a shield of three plates.
+  const EnemySpec.shieldIguana([ScaleColor color = ScaleColor.green])
+      : this(
+          Species.iguana,
+          color,
+          hp: 150,
+          attack: 11,
+          attackEvery: 12,
+          xp: 34,
+          trait: Trait.shielded,
+          shield: 3,
+        );
+
+  /// A skink medic that patches up the rest of its wave.
+  const EnemySpec.medic([ScaleColor color = ScaleColor.green])
+      : this(
+          Species.skink,
+          color,
+          hp: 90,
+          attack: 5,
+          attackEvery: 9,
+          xp: 24,
+          trait: Trait.healer,
+        );
 
   const EnemySpec.gecko([ScaleColor color = ScaleColor.green])
       : this(Species.gecko, color, hp: 100, attack: 8, attackEvery: 10, xp: 15);
@@ -173,9 +269,17 @@ class EnemySpec {
           attackEvery: 12,
           xp: 26,
         );
-  const EnemySpec.croc(ScaleColor color)
-      : this(Species.croc, color, hp: 170, attack: 12, attackEvery: 12, xp: 32);
-  const EnemySpec.chameleon()
+  const EnemySpec.croc(ScaleColor color, {bool diver = false})
+      : this(
+          Species.croc,
+          color,
+          hp: 170,
+          attack: 12,
+          attackEvery: 12,
+          xp: 32,
+          trait: diver ? Trait.diver : Trait.none,
+        );
+  const EnemySpec.chameleon({bool vanisher = false})
       : this(
           Species.chameleon,
           null,
@@ -183,6 +287,7 @@ class EnemySpec {
           attack: 10,
           attackEvery: 10,
           xp: 34,
+          trait: vanisher ? Trait.vanisher : Trait.none,
         );
   const EnemySpec.snake(ScaleColor color)
       : this(
@@ -197,9 +302,10 @@ class EnemySpec {
       : this(
           Species.king,
           ScaleColor.green,
-          hp: 1600,
-          attack: 12,
+          hp: 1300,
+          attack: 10,
           attackEvery: 8,
+          trait: Trait.mirror,
           xp: 300,
         );
 
@@ -211,6 +317,44 @@ class EnemySpec {
   /// Seconds between its attacks.
   final double attackEvery;
   final int xp;
+  final Trait trait;
+
+  /// Shield plates; each held pushup breaks one.
+  final int shield;
+}
+
+/// What a stage's stars ask for, beyond winning.
+enum GoalKind {
+  /// Never drop below [StageGoal.value] percent health.
+  health,
+
+  /// Reach a quick combo of [StageGoal.value].
+  combo,
+
+  /// Block [StageGoal.value] heavy attacks.
+  blocks,
+
+  /// Win within [StageGoal.value] seconds of fighting.
+  fast,
+
+  /// Take no heavy attack unblocked.
+  noHeavy,
+}
+
+/// One of a stage's two star goals.
+class StageGoal {
+  const StageGoal(this.kind, [this.value = 0]);
+
+  final GoalKind kind;
+  final int value;
+
+  String label(S l) => switch (kind) {
+        GoalKind.health => l.goalHealth(value),
+        GoalKind.combo => l.goalCombo(value),
+        GoalKind.blocks => l.goalBlocks(value),
+        GoalKind.fast => l.goalFast((value / 60).ceil()),
+        GoalKind.noHeavy => l.goalNoHeavy,
+      };
 }
 
 /// A line of a Trek story: who says what.
@@ -229,6 +373,7 @@ class TrekStage {
     required this.outro,
     required this.loot,
     this.phaseLines = const [],
+    this.goals = const [],
   });
 
   final String id;
@@ -245,6 +390,9 @@ class TrekStage {
 
   /// The cosmetic won the first time the stage is cleared.
   final String loot;
+
+  /// The two goals that earn the second and third star.
+  final List<StageGoal> goals;
 
   bool get boss =>
       waves.any((wave) => wave.any((e) => e.species == Species.king));
@@ -266,6 +414,23 @@ class TrekStage {
     return null;
   }
 
+  /// The endless Canopy Tower, open once King Komo is beaten: floor after
+  /// floor of reptiles until Carlos goes down. Its waves are made up as
+  /// it goes (see `Battle.tower`).
+  static final tower = TrekStage(
+    id: 'tower',
+    emoji: '🗼',
+    location: ChallengeLocation.canopy,
+    title: (l) => l.towerTitle,
+    blurb: (l) => l.towerBlurb,
+    loot: '',
+    waves: const [],
+    intro: const [],
+    outro: const [],
+  );
+
+  bool get endless => id == 'tower';
+
   static final all = <TrekStage>[
     TrekStage(
       id: 'fern-trail',
@@ -278,6 +443,10 @@ class TrekStage {
         [EnemySpec.gecko()],
         [EnemySpec.gecko()],
         [EnemySpec.gecko(), EnemySpec.gecko()],
+      ],
+      goals: const [
+        StageGoal(GoalKind.health, 50),
+        StageGoal(GoalKind.combo, 3),
       ],
       intro: [
         (Character.coco, (l) => l.s1i1),
@@ -303,6 +472,10 @@ class TrekStage {
         [EnemySpec.skink(), EnemySpec.gecko()],
         [EnemySpec.skink(), EnemySpec.skink()],
       ],
+      goals: const [
+        StageGoal(GoalKind.blocks, 1),
+        StageGoal(GoalKind.combo, 4),
+      ],
       intro: [
         (Character.coco, (l) => l.s2i1),
         (Character.skitter, (l) => l.s2i2),
@@ -320,8 +493,12 @@ class TrekStage {
       loot: 'fur.jade',
       waves: const [
         [EnemySpec.iguana()],
-        [EnemySpec.iguana(), EnemySpec.gecko()],
-        [EnemySpec.iguana(), EnemySpec.skink()],
+        [EnemySpec.shieldIguana()],
+        [EnemySpec.iguana(), EnemySpec.medic(), EnemySpec.skink()],
+      ],
+      goals: const [
+        StageGoal(GoalKind.health, 40),
+        StageGoal(GoalKind.blocks, 2),
       ],
       intro: [
         (Character.coco, (l) => l.s3i1),
@@ -340,7 +517,14 @@ class TrekStage {
       waves: const [
         [EnemySpec.croc(ScaleColor.blue)],
         [EnemySpec.croc(ScaleColor.green), EnemySpec.croc(ScaleColor.yellow)],
-        [EnemySpec.croc(ScaleColor.blue), EnemySpec.croc(ScaleColor.green)],
+        [
+          EnemySpec.croc(ScaleColor.blue, diver: true),
+          EnemySpec.croc(ScaleColor.green),
+        ],
+      ],
+      goals: const [
+        StageGoal(GoalKind.noHeavy),
+        StageGoal(GoalKind.combo, 5),
       ],
       intro: [
         (Character.coco, (l) => l.s4i1),
@@ -359,8 +543,12 @@ class TrekStage {
       loot: 'eyes.chameleon',
       waves: const [
         [EnemySpec.chameleon()],
-        [EnemySpec.chameleon(), EnemySpec.iguana()],
-        [EnemySpec.chameleon(), EnemySpec.chameleon()],
+        [EnemySpec.chameleon(), EnemySpec.shieldIguana(ScaleColor.yellow)],
+        [EnemySpec.chameleon(vanisher: true), EnemySpec.chameleon()],
+      ],
+      goals: const [
+        StageGoal(GoalKind.fast, 300),
+        StageGoal(GoalKind.blocks, 2),
       ],
       intro: [
         (Character.coco, (l) => l.s5i1),
@@ -381,14 +569,18 @@ class TrekStage {
         [EnemySpec.snake(ScaleColor.yellow), EnemySpec.snake(ScaleColor.blue)],
         [
           EnemySpec.snake(ScaleColor.green),
-          EnemySpec.snake(ScaleColor.yellow),
+          EnemySpec.medic(ScaleColor.yellow),
           EnemySpec.snake(ScaleColor.blue),
         ],
         [
-          EnemySpec.chameleon(),
+          EnemySpec.chameleon(vanisher: true),
           EnemySpec.snake(ScaleColor.blue),
           EnemySpec.skink(),
         ],
+      ],
+      goals: const [
+        StageGoal(GoalKind.health, 30),
+        StageGoal(GoalKind.combo, 6),
       ],
       intro: [
         (Character.hiss, (l) => l.s6i1),
@@ -406,6 +598,10 @@ class TrekStage {
       loot: 'hat.lizardcrown',
       waves: const [
         [EnemySpec.king()],
+      ],
+      goals: const [
+        StageGoal(GoalKind.blocks, 3),
+        StageGoal(GoalKind.health, 25),
       ],
       intro: [
         (Character.komo, (l) => l.s7i1),
