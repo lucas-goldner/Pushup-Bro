@@ -2264,5 +2264,86 @@
     }
   },
   "gymBackToGym": "Back to the gym",
-  "gymChallengeChip": "Gym workout"
+  "gymChallengeChip": "Gym workout",
+  "adoptionSubtitle": "Little monkeys looking for an island home",
+  "adoptionMeetOthers": "Meet others",
+  "adoptionAdopt": "Adopt {name} · {price}",
+  "@adoptionAdopt": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "adoptionNeedMore": "{count} more bananas to adopt {name}",
+  "@adoptionNeedMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adoptionFull": "Your island is full",
+  "adoptionYourMonkeys": "Your monkeys",
+  "adoptionSpots": "{count} of {max} spots",
+  "@adoptionSpots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "adoptionFreeSpot": "Free spot",
+  "adoptionTrainWith": "Trains with {name}",
+  "@adoptionTrainWith": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adoptionDressUp": "Dress up",
+  "adoptionRename": "Rename",
+  "adoptionNameHint": "Name",
+  "adoptionSave": "Save",
+  "adoptionWelcome": "Welcome home, {name}!",
+  "@adoptionWelcome": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "adoptionWelcomeBody": "{name} lives on your island now and works out with {carlos} at home.",
+  "@adoptionWelcomeBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "carlos": {
+        "type": "String"
+      }
+    }
+  },
+  "adoptionYay": "Yay!",
+  "adoptionKomoSpot": "Keep a spot free for King Komo: he joins once you beat him in the Trek.",
+  "adoptionKomoLine": "Once the Trek's boss, now your training buddy.",
+  "adoptionCarlosLine": "The original pushup bro.",
+  "adoptionPersona0": "Naps in the sun, then does a hundred pushups.",
+  "adoptionPersona1": "Loves bananas more than anything.",
+  "adoptionPersona2": "Shy at first, then the loudest in the gym.",
+  "adoptionPersona3": "Always the first one up in the morning.",
+  "adoptionPersona4": "Dreams of climbing the tallest palm.",
+  "adoptionPersona5": "Counts every rep out loud.",
+  "adoptionPersona6": "Dances whenever music plays.",
+  "adoptionPersona7": "Never skips leg day."
 }

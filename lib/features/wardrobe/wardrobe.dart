@@ -15,6 +15,7 @@ import 'package:pushup_bro/core/model/monkey_look.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/island_sheet.dart';
 import 'package:pushup_bro/core/widgets/pill_button.dart';
+import 'package:pushup_bro/features/island/buildings/adoption/adoption.dart';
 import 'package:pushup_bro/features/island/widgets/banana_counter.dart';
 import 'package:pushup_bro/features/wardrobe/widgets/cosmetic_tile.dart';
 import 'package:pushup_bro/features/wardrobe/widgets/wardrobe_stage.dart';
@@ -24,10 +25,15 @@ import 'package:pushup_bro/generated/l10n.dart';
 /// and mats on a turntable, buy them with bananas and wear them.
 ///
 /// Owned things are worn as soon as they are tapped; anything else is
-/// tried on until it is bought or the wardrobe is left.
+/// tried on until it is bought or the wardrobe is left. With more monkeys
+/// on the island, a switch at the top picks who is being dressed, starting
+/// with the one at [monkey].
 class Wardrobe extends StatefulWidget {
-  const Wardrobe({super.key});
+  const Wardrobe({this.monkey = 0, super.key});
   static const routeName = '/wardrobe';
+
+  /// The index in `GameInventory.monkeys` of the monkey to dress first.
+  final int monkey;
 
   @override
   State<Wardrobe> createState() => _WardrobeState();
@@ -38,6 +44,12 @@ class _WardrobeState extends State<Wardrobe> {
 
   /// Being tried on, not owned yet.
   Cosmetic? _tryingOn;
+
+  /// The index of the monkey being dressed.
+  late int _dressing = widget.monkey;
+
+  int _dressingIn(GameInventory inventory) =>
+      _dressing.clamp(0, inventory.monkeys.length - 1);
 
   @override
   void initState() {
@@ -58,36 +70,39 @@ class _WardrobeState extends State<Wardrobe> {
               ...inventory.ownedCosmetics,
               if (bought != null) bought,
             ],
-            monkeys: [
-              inventory.monkeys.first.copyWith(look: look),
-              ...inventory.monkeys.skip(1),
-            ],
-          ),
+          ).dressMonkey(_dressingIn(inventory), look),
         );
   }
 
-  /// Plays as the monkey at [index]: the first one is the one shown
+  /// Dresses the monkey at [index] instead.
+  void _switchTo(int index) {
+    GameAudio.instance.play(Sfx.tap);
+    setState(() {
+      _tryingOn = null;
+      _dressing = index;
+    });
+  }
+
+  /// Plays as the monkey being dressed: the first one is the one shown
   /// everywhere.
-  void _switchTo(GameInventory inventory, int index) {
+  void _playAs(GameInventory inventory) {
+    final index = _dressingIn(inventory);
     if (index == 0) return;
-    setState(() => _tryingOn = null);
-    final picked = inventory.monkeys[index];
+    GameAudio.instance.play(Sfx.equip);
+    setState(() {
+      _tryingOn = null;
+      _dressing = 0;
+    });
     unawaited(
-      context.read<GameInventoryCubit>().updateInventory(
-            inventory.copyWith(
-              monkeys: [
-                picked,
-                for (final (i, monkey) in inventory.monkeys.indexed)
-                  if (i != index) monkey,
-              ],
-            ),
-          ),
+      context
+          .read<GameInventoryCubit>()
+          .updateInventory(inventory.playAs(index)),
     );
   }
 
   void _tap(GameInventory inventory, Cosmetic cosmetic) {
     GameAudio.instance.play(Sfx.equip);
-    final look = inventory.monkeys.first.look;
+    final look = inventory.monkeys[_dressingIn(inventory)].look;
     if (inventory.owns(cosmetic.id)) {
       setState(() => _tryingOn = null);
       unawaited(_save(inventory, look: look.wearing(cosmetic)));
@@ -100,7 +115,7 @@ class _WardrobeState extends State<Wardrobe> {
     GameAudio.instance.play(Sfx.purchase);
     await _save(
       inventory,
-      look: inventory.monkeys.first.look.wearing(cosmetic),
+      look: inventory.monkeys[_dressingIn(inventory)].look.wearing(cosmetic),
       spent: cosmetic.price,
       bought: cosmetic.id,
     );
@@ -112,7 +127,8 @@ class _WardrobeState extends State<Wardrobe> {
       BlocSelector<GameInventoryCubit, GameInventoryState, GameInventory>(
         selector: (state) => state.inventory,
         builder: (context, inventory) {
-          final worn = inventory.monkeys.first.look;
+          final dressing = _dressingIn(inventory);
+          final worn = inventory.monkeys[dressing].look;
           final tryingOn = _tryingOn;
           final shown = tryingOn == null ? worn : worn.wearing(tryingOn);
 
@@ -174,7 +190,9 @@ class _WardrobeState extends State<Wardrobe> {
                     top: MediaQuery.paddingOf(context).top + 66,
                     child: _CharacterSwitch(
                       inventory: inventory,
-                      onPick: (index) => _switchTo(inventory, index),
+                      dressing: dressing,
+                      onPick: _switchTo,
+                      onPlayAs: () => _playAs(inventory),
                     ),
                   ),
                 Align(
@@ -432,50 +450,77 @@ String _outfitsLabel(S l) => l.slotOutfits;
 String _matLabel(S l) => l.slotMat;
 String _patternLabel(S l) => l.slotPattern;
 
-/// Who to play as, once King Komo has joined.
+/// Who is being dressed, once more monkeys live on the island, and a
+/// button to play as them.
 class _CharacterSwitch extends StatelessWidget {
-  const _CharacterSwitch({required this.inventory, required this.onPick});
+  const _CharacterSwitch({
+    required this.inventory,
+    required this.dressing,
+    required this.onPick,
+    required this.onPlayAs,
+  });
 
   final GameInventory inventory;
+  final int dressing;
   final ValueChanged<int> onPick;
+  final VoidCallback onPlayAs;
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Text(
-            context.l10n.playAs,
-            style: context.textTheme.labelMedium?.copyWith(
-              color: context.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(width: 8),
-          for (final (i, monkey) in inventory.monkeys.indexed)
-            Padding(
-              padding: const EdgeInsets.only(right: 6),
-              child: Material(
-                color: i == 0
-                    ? context.colorScheme.primary
-                    : context.colorScheme.surface,
-                borderRadius: BorderRadius.circular(PBRadius.pill),
-                child: InkWell(
+  Widget build(BuildContext context) => SizedBox(
+        height: 36,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: [
+            for (final (i, monkey) in inventory.monkeys.indexed)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Material(
+                  color: i == dressing
+                      ? context.colorScheme.primary
+                      : context.colorScheme.surface,
                   borderRadius: BorderRadius.circular(PBRadius.pill),
-                  onTap: () => onPick(i),
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Text(
-                      '${monkey.look.species == MonkeyLook.lizard //
-                          ? '👑' : '🦍'} ${monkey.name}',
-                      style: context.textTheme.labelMedium?.copyWith(
-                        color: i == 0
-                            ? context.colorScheme.onPrimary
-                            : context.colorScheme.onSurface,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(PBRadius.pill),
+                    onTap: () => onPick(i),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Center(
+                        child: Text(
+                          // A star marks the one being played as.
+                          '${i == 0 ? '⭐' : monkey.look.species == //
+                              MonkeyLook.lizard ? '👑' : '🐵'} ${monkey.name}',
+                          style: context.textTheme.labelMedium?.copyWith(
+                            color: i == dressing
+                                ? context.colorScheme.onPrimary
+                                : context.colorScheme.onSurface,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+            if (dressing != 0)
+              Material(
+                color: context.tint(context.gameColors.banana),
+                borderRadius: BorderRadius.circular(PBRadius.pill),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(PBRadius.pill),
+                  onTap: onPlayAs,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Center(
+                      child: Text(
+                        '⭐ ${context.l10n.playAs}',
+                        style: context.textTheme.labelMedium?.copyWith(
+                          color: context.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       );
 }

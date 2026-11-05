@@ -12,7 +12,8 @@ import 'package:pushup_bro/features/pushup_tracking/cubit/pushup_state.dart';
 import 'package:pushup_bro/features/pushup_tracking/scene/gym_world.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
-/// The 3D gym: Carlos on his mat in front of a class of gym buddies.
+/// The 3D gym: Carlos on his mat in front of a class of gym buddies, the
+/// player's own [mates] first.
 ///
 /// Everyone idles until [tracking] turns on, then the whole class holds a
 /// plank and dips in step with every pushup [PushupCubit] counts.
@@ -20,11 +21,16 @@ class PushupStage extends StatefulWidget {
   const PushupStage({
     required this.tracking,
     required this.look,
+    this.mates = const [],
     super.key,
   });
 
   final bool tracking;
   final MonkeyLook look;
+
+  /// The adopted monkeys training with Carlos. The gym is laid out once,
+  /// so give the stage a new key when they change.
+  final List<MonkeyLook> mates;
 
   @override
   State<PushupStage> createState() => _PushupStageState();
@@ -50,7 +56,7 @@ class _PushupStageState extends State<PushupStage> {
   }
 
   void _populate(Scene scene) {
-    final gym = _gym = GymWorld();
+    final gym = _gym = GymWorld(mates: widget.mates);
     _syncGym();
     scene
       // The camera sees no further than the gym's back wall, under 17 m
