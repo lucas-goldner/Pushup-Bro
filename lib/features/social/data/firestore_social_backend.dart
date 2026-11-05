@@ -6,6 +6,7 @@ import 'package:pushup_bro/features/social/data/social_backend.dart';
 import 'package:pushup_bro/features/social/model/bro_profile.dart';
 import 'package:pushup_bro/features/social/model/cloud_backup.dart';
 import 'package:pushup_bro/features/social/model/day_score.dart';
+import 'package:pushup_bro/features/social/model/gift_drop.dart';
 import 'package:pushup_bro/features/social/model/inbox_item.dart';
 
 /// The [SocialBackend] on Firebase: anonymous auth that Pro members link to
@@ -146,6 +147,7 @@ class FirestoreSocialBackend implements SocialBackend {
       'inbox',
       'private',
       'devices',
+      'drops',
       // Only a linked account may touch its backup (and only it has one).
       if (linkedProviders.isNotEmpty) 'backup',
     ];
@@ -417,4 +419,33 @@ class FirestoreSocialBackend implements SocialBackend {
     }
     await batch.commit();
   }
+
+  @override
+  Future<bool> dropGift(String to, GiftDrop drop) async {
+    try {
+      await _user(to).collection('drops').doc(drop.id).set(drop.toJson());
+      return true;
+    } on FirebaseException catch (e) {
+      // Already one from this friend today: the rules refuse to overwrite.
+      if (e.code == 'permission-denied') return false;
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<List<GiftDrop>> drops(String uid) =>
+      _user(uid).collection('drops').snapshots().map(
+            (snap) => [
+              for (final doc in snap.docs)
+                GiftDrop.fromJson(doc.id, doc.data()),
+            ],
+          );
+
+  @override
+  Future<void> openDrop(String uid, String id) =>
+      _user(uid).collection('drops').doc(id).update({'opened': true});
+
+  @override
+  Future<void> removeDrop(String uid, String id) =>
+      _user(uid).collection('drops').doc(id).delete();
 }

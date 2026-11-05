@@ -14,6 +14,10 @@ import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/features/island/buildings/adoption/adoption.dart';
 import 'package:pushup_bro/features/island/buildings/adoption/island_friends.dart';
+import 'package:pushup_bro/features/island/buildings/airport/airport_plane.dart';
+import 'package:pushup_bro/features/island/buildings/airport/gift_drop_actions.dart';
+import 'package:pushup_bro/features/island/buildings/airport/gift_tag.dart';
+import 'package:pushup_bro/features/island/buildings/airport/island_drops.dart';
 import 'package:pushup_bro/features/island/buildings/decor/decor_editor.dart';
 import 'package:pushup_bro/features/island/buildings/decor/decor_piece.dart';
 import 'package:pushup_bro/features/island/buildings/decor/decor_placement.dart';
@@ -24,6 +28,8 @@ import 'package:pushup_bro/features/island/widgets/speech_bubble.dart';
 import 'package:pushup_bro/features/jungle/jungle.dart';
 import 'package:pushup_bro/features/pro/model/pro_feature.dart';
 import 'package:pushup_bro/features/pro/widgets/lock_pin.dart';
+import 'package:pushup_bro/features/social/cubit/account_cubit.dart';
+import 'package:pushup_bro/features/social/model/gift_drop.dart';
 import 'package:pushup_bro/generated/l10n.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
@@ -67,6 +73,7 @@ class IslandScene extends StatefulWidget {
     this.onBuildingTap,
     this.decorEditor,
     this.onDecorLongPress,
+    this.drops,
     super.key,
   });
 
@@ -78,6 +85,10 @@ class IslandScene extends StatefulWidget {
   /// Called with the decoration held down on the player's own island, to
   /// start moving it.
   final ValueChanged<int>? onDecorLongPress;
+
+  /// Gifts to show falling onto a friend's island (the visitor's own
+  /// drop). The player's own island shows the gifts waiting for them.
+  final List<GiftDrop>? drops;
 
   /// Called with the building tapped on the player's own island (the food
   /// truck is [ShopBuyables.none]).
@@ -161,10 +172,55 @@ class IslandSceneState extends State<IslandScene> {
   bool get _editing => widget.decorEditor?.active ?? false;
   bool _wasEditing = false;
 
+  /// Gifts from friends as crates, and the airport's plane.
+  IslandDrops? _crates;
+  AirportPlane? _plane;
+  OwnGiftDrops? _ownDrops;
+  List<GiftDrop> _waiting = const [];
+  bool _dropsSeen = false;
+
+  /// Where the senders' name tags sit over the crates.
+  final ValueNotifier<List<(GiftDrop, Offset)>> _dropTags = ValueNotifier([]);
+
   @override
   void initState() {
     super.initState();
     widget.decorEditor?.addListener(_showDecor);
+    if (widget.snapshot != null) {
+      _waiting = widget.drops ?? const [];
+      return;
+    }
+    // Nullable: an island without an account (a preview) has no gifts.
+    final account = context.read<AccountCubit?>();
+    if (account == null) return;
+    _ownDrops = OwnGiftDrops(account, (drops) {
+      _waiting = drops;
+      // Gifts already there on opening don't fall; new ones do.
+      _crates?.sync(drops, fall: _dropsSeen);
+      _dropsSeen = true;
+    })
+      ..start();
+  }
+
+  /// Opens a gift on the player's own island.
+  void _openDrop(GiftDrop drop) {
+    if (widget.snapshot != null) return;
+    _waiting = [..._waiting.where((other) => other.id != drop.id)];
+    _crates?.sync(_waiting);
+    unawaited(openGiftDrop(context, drop));
+  }
+
+  /// The crates land on the open lawn in front, a little towards the
+  /// airport when there is one, where neither palms nor buildings hide
+  /// them.
+  vm.Vector3 _dropAnchor(IslandWorld world) {
+    final airport = world.spotOf(ShopBuyables.airport);
+
+    return vm.Vector3(
+      (airport?.x ?? 0) * 0.15,
+      grassTop,
+      world.radius * 0.68,
+    );
   }
 
   @override
@@ -177,6 +233,10 @@ class IslandSceneState extends State<IslandScene> {
     // Night can fall (or end) while the island is open.
     final scene = _scene;
     if (widget.night != oldWidget.night && scene != null) _light(scene);
+    if (widget.snapshot != null && widget.drops != oldWidget.drops) {
+      _waiting = widget.drops ?? const [];
+      _crates?.sync(_waiting, fall: true);
+    }
   }
 
   @override
@@ -185,6 +245,8 @@ class IslandSceneState extends State<IslandScene> {
     _whiteout.dispose();
     _bubbleAnchor.dispose();
     _pins.dispose();
+    _ownDrops?.dispose();
+    _dropTags.dispose();
     super.dispose();
   }
 
@@ -232,6 +294,11 @@ class IslandSceneState extends State<IslandScene> {
     );
     final nearCarlos =
         carlos != null && (carlos - details.localPosition).distance < 56;
+    final drop = hit == null ? null : _crates?.dropOf(hit.node);
+    if (drop != null) {
+      _openDrop(drop);
+      return;
+    }
     if (widget.locked) {
       final place = nearCarlos || (hit != null && world.isCarlos(hit.node))
           ? ProLockPlace.carlos
@@ -279,6 +346,13 @@ class IslandSceneState extends State<IslandScene> {
     }
     _light(scene);
     scene.add(world.root);
+    final crates = _crates = IslandDrops()
+      ..onLanded = ((_) => GameAudio.instance.play(Sfx.pop))
+      ..sync(_waiting, fall: widget.snapshot != null);
+    final plane = _plane = AirportPlane();
+    scene
+      ..add(crates.root)
+      ..add(plane.root);
   }
 
   /// Sunlight by day; by night a dim, cool moon and a darker world, so the
@@ -351,6 +425,14 @@ class IslandSceneState extends State<IslandScene> {
         ? camera.worldToScreen(world.carlosHead, _viewSize)
         : null;
     _placePins(world, camera);
+    if (world != null) {
+      _crates?.update(deltaSeconds, anchor: _dropAnchor(world));
+      _plane?.update(
+        deltaSeconds,
+        airport: world.spotOf(ShopBuyables.airport),
+      );
+    }
+    _placeDropTags(camera);
     if (running) {
       // Swing round so the jungle is straight ahead.
       final nearest = (_yaw / (math.pi * 2)).roundToDouble() * math.pi * 2;
@@ -381,6 +463,19 @@ class IslandSceneState extends State<IslandScene> {
         if (camera.worldToScreen(spot, _viewSize) case final point?)
           place: point,
     };
+  }
+
+  void _placeDropTags(Camera? camera) {
+    final crates = _crates;
+    if (crates == null || camera == null || _waiting.isEmpty) {
+      if (_dropTags.value.isNotEmpty) _dropTags.value = [];
+      return;
+    }
+    _dropTags.value = [
+      for (final (drop, spot) in crates.tagSpots)
+        if (camera.worldToScreen(spot, _viewSize) case final point?)
+          (drop, point),
+    ];
   }
 
   Camera _camera(Duration elapsed) {
@@ -620,6 +715,29 @@ class IslandSceneState extends State<IslandScene> {
                                   ),
                                 ],
                               ),
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: ValueListenableBuilder<List<(GiftDrop, Offset)>>(
+                      valueListenable: _dropTags,
+                      builder: (context, tags, _) => Stack(
+                        children: [
+                          for (final (drop, point) in tags)
+                            Positioned(
+                              left: point.dx - 60,
+                              top: point.dy - 30,
+                              width: 120,
+                              child: Center(
+                                child: GiftTag(
+                                  drop: drop,
+                                  onTap: widget.snapshot == null
+                                      ? () => _openDrop(drop)
+                                      : null,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),

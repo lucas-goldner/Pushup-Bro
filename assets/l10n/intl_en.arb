@@ -2388,5 +2388,98 @@
   "decorHammock": "Hammock",
   "decorBananaStatue": "Banana Statue",
   "decorTikiBar": "Tiki Bar",
-  "decorGoldGorilla": "Golden Gorilla"
+  "decorGoldGorilla": "Golden Gorilla",
+  "airportDepartures": "Departures",
+  "airportSubtitle": "Fly to a bro's island and drop them a gift.",
+  "airportFlight": "Flight",
+  "airportDestination": "Destination",
+  "airportGate": "Gate",
+  "airportLevel": "Island lvl {level}",
+  "@airportLevel": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "airportBoarding": "Boarding",
+  "airportGiftSent": "Gift dropped",
+  "airportHint": "Tap a flight to visit. One gift per bro a day.",
+  "airportFlyingTo": "Flying to {name}'s island…",
+  "@airportFlyingTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "airportEmptyTitle": "No flights yet",
+  "airportEmptyText": "Add bros with their friend code and their islands show up here as flights.",
+  "airportAddBro": "Add a bro",
+  "visitDropGift": "Drop a gift",
+  "visitGiftDropped": "Gift dropped 🎁",
+  "dropSheetSubtitle": "Lands on {name}'s island · one per bro a day",
+  "@dropSheetSubtitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dropGiftSmall": "Banana crate",
+  "dropGiftBig": "Big parcel",
+  "dropGiftGolden": "Golden chest",
+  "dropGiftFlowers": "Flowers",
+  "dropGiftGives": "{count} bananas for them",
+  "@dropGiftGives": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dropYouHave": "You have {count}",
+  "@dropYouHave": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dropConfirm": "Drop it",
+  "dropNotEnough": "Not enough bananas",
+  "dropAlready": "You already dropped a gift for {name} today.",
+  "@dropAlready": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dropDone": "Dropped! {name} will find it on their island.",
+  "@dropDone": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dropOpenTitle": "A gift from {name}!",
+  "@dropOpenTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dropOpenBananas": "+{count} bananas",
+  "@dropOpenBananas": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dropOpenFlowers": "Flowers, just because 💐",
+  "dropOpenCollect": "Collect"
 }

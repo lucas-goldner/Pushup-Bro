@@ -177,6 +177,13 @@ class IslandWorld {
     return null;
   }
 
+  /// Where [building] stands on the ground, or null while it isn't built.
+  vm.Vector3? spotOf(ShopBuyables building) {
+    final node = _buildings[building];
+
+    return node != null && node.visible ? node.position : null;
+  }
+
   /// Above the food truck, where the shop's lock pin floats.
   vm.Vector3 get shopSpot =>
       _buildings[ShopBuyables.none]!.position + vm.Vector3(0, 1.6, 0);

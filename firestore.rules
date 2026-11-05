@@ -41,6 +41,14 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/users/$(owner)/blocked/$(other));
     }
 
+    // A gift dropped from the airport: one of the four, with its bananas.
+    function validGift(data) {
+      return (data.gift == 'small' && data.bananas == 10)
+        || (data.gift == 'big' && data.bananas == 25)
+        || (data.gift == 'golden' && data.bananas == 50)
+        || (data.gift == 'flowers' && data.bananas == 5);
+    }
+
 
     match /users/{uid} {
       // Public fields only: the bro name, code, look, streak, totals and
@@ -127,6 +135,31 @@ service cloud.firestore {
           && !hasBlocked(uid, request.auth.uid)
           && (request.resource.data.kind != 'nudge'
               || itemId.matches('nudge_' + request.auth.uid + '_[0-9]{4}-[0-9]{2}-[0-9]{2}'));
+      }
+
+      // Gifts a friend dropped on this island from the airport. The id is
+      // one per sender and day and nothing is ever overwritten, so each
+      // friend drops at most one a day, of at most 50 bananas, timed near
+      // now. The owner opens them (marking them opened, which keeps the
+      // id taken) and clears them.
+      match /drops/{dropId} {
+        allow read, delete: if isMe(uid);
+        allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['gift', 'bananas', 'fromUid', 'fromName', 'sentAt', 'opened'])
+          && request.resource.data.fromUid == request.auth.uid
+          && dropId.matches('drop_' + request.auth.uid + '_[0-9]{4}-[0-9]{2}-[0-9]{2}')
+          && validGift(request.resource.data)
+          && request.resource.data.fromName is string
+          && request.resource.data.fromName.size() <= 24
+          && request.resource.data.sentAt is int
+          && request.resource.data.sentAt > request.time.toMillis() - 129600000
+          && request.resource.data.sentAt < request.time.toMillis() + 129600000
+          && request.resource.data.opened == false
+          && areFriends(uid, request.auth.uid)
+          && !hasBlocked(uid, request.auth.uid);
+        allow update: if isMe(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['opened'])
+          && request.resource.data.opened == true;
       }
     }
 

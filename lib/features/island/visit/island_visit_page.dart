@@ -6,13 +6,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/night.dart';
+import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
+import 'package:pushup_bro/features/island/buildings/airport/drop_gift_sheet.dart';
 import 'package:pushup_bro/features/island/model/island_snapshot.dart';
 import 'package:pushup_bro/features/island/widgets/island_scene.dart';
 import 'package:pushup_bro/features/social/cubit/account_cubit.dart';
+import 'package:pushup_bro/features/social/domain/gift_drops.dart';
 import 'package:pushup_bro/features/social/domain/local_day.dart';
 import 'package:pushup_bro/features/social/domain/ranking.dart';
 import 'package:pushup_bro/features/social/model/bro_profile.dart';
+import 'package:pushup_bro/features/social/model/gift_drop.dart';
 import 'package:pushup_bro/features/social/model/inbox_item.dart';
 import 'package:pushup_bro/features/social/widgets/bro_avatar.dart';
 import 'package:pushup_bro/features/social/widgets/social_widgets.dart';
@@ -41,8 +45,9 @@ typedef _Visit = ({
 });
 
 /// A friend's real 3D island, read-only: their card on top, today's
-/// pushups, their place among the player's bros, and Wave or Send a
-/// banana.
+/// pushups, their place among the player's bros, Wave or Send a banana,
+/// and Drop a gift (once a day, however the player got here: from the
+/// airport or the bros list).
 class IslandVisitPage extends StatefulWidget {
   const IslandVisitPage({required this.uid, super.key});
   static const routeName = '/island/visit';
@@ -57,6 +62,43 @@ class _IslandVisitPageState extends State<IslandVisitPage> {
   late final Future<_Visit?> _visit = _load();
   bool _waved = false;
   bool _bananaSent = false;
+
+  /// The gift the player dropped on this visit, falling onto the island.
+  List<GiftDrop> _dropped = const [];
+  bool _droppedToday = false;
+  bool _droppedNow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_checkDropped());
+  }
+
+  Future<void> _checkDropped() async {
+    final today = await droppedToday(
+      SharedPreferencesProvider(),
+      now: DateTime.now(),
+    );
+    if (mounted && today.contains(widget.uid)) {
+      setState(() => _droppedToday = true);
+    }
+  }
+
+  Future<void> _dropGift(String name) async {
+    final drop = await showDropGiftSheet(
+      context,
+      friend: widget.uid,
+      name: name,
+    );
+    if (!mounted) return;
+    unawaited(_checkDropped());
+    if (drop == null) return;
+    setState(() {
+      _dropped = [drop];
+      _droppedToday = true;
+      _droppedNow = true;
+    });
+  }
 
   /// A friend's island at the visitor's time of day, like their own.
   final bool _night = isNight(DateTime.now());
@@ -145,6 +187,7 @@ class _IslandVisitPageState extends State<IslandVisitPage> {
                   child: IslandScene(
                     night: _night,
                     snapshot: IslandSnapshot.fromJson(visit.profile.island),
+                    drops: _dropped,
                     greetings: [
                       l.visitGreet1,
                       l.visitGreet2,
@@ -165,6 +208,11 @@ class _IslandVisitPageState extends State<IslandVisitPage> {
                           onBack: () => Navigator.of(context).pop(),
                         ),
                         const Spacer(),
+                        if (_droppedNow)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: PBSpace.md),
+                            child: SocialChip(l.dropDone(name), emoji: '🪂'),
+                          ),
                         Wrap(
                           alignment: WrapAlignment.center,
                           spacing: PBSpace.sm,
@@ -205,6 +253,17 @@ class _IslandVisitPageState extends State<IslandVisitPage> {
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: PBSpace.md),
+                        _ActionButton(
+                          label: _droppedToday
+                              ? l.visitGiftDropped
+                              : '🪂 ${l.visitDropGift}',
+                          color: context.gameColors.jungle,
+                          ink: context.gameColors.onGame,
+                          onTap: _droppedToday
+                              ? null
+                              : () => unawaited(_dropGift(name)),
                         ),
                       ],
                     ),
