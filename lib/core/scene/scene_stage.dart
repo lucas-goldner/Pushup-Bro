@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_scene/scene.dart';
+import 'package:pushup_bro/core/scene/scene_stats.dart';
 
 /// How many full-size frames the scene draws before [SceneStage] calls
 /// `onReady`, so the first frames (which can still be paced or held by the
@@ -60,8 +61,21 @@ class _SceneStageState extends State<SceneStage> {
         if (!mounted) return;
         widget.populate(_scene);
         setState(() => _ready = true);
+        if (kSceneStats) _printStatsLater();
       }),
     );
+  }
+
+  /// Prints the scene's statistics a few times once it has settled (see
+  /// [kSceneStats]).
+  void _printStatsLater() {
+    for (final seconds in [6, 15]) {
+      Timer(Duration(seconds: seconds), () {
+        if (!mounted) return;
+        final route = ModalRoute.of(context)?.settings.name ?? '?';
+        printSceneStats('$route@${seconds}s', _scene);
+      });
+    }
   }
 
   /// The scene view only ticks once it reveals the scene. A tick isn't a

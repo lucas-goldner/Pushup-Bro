@@ -30,6 +30,21 @@ const _shin = 0.16;
 const _shoulderWidth = 0.22;
 const _hipWidth = 0.12;
 
+/// A box (in the gorilla's space) its body never leaves, whatever the pose:
+/// lying on a bench, arms up in a dance or stretched out in a pushup.
+final _bodyBounds = vm.Aabb3.minMax(
+  vm.Vector3(-1, -0.4, -1.3),
+  vm.Vector3(1, 1.8, 1.3),
+);
+
+/// A box around a head (or the tail) in its own space, for culling.
+final _partBounds = vm.Aabb3.minMax(vm.Vector3.all(-1), vm.Vector3.all(1));
+
+/// A limb: a capsule tessellated for its size (it's thin, so a finer one
+/// would only add triangles smaller than a pixel).
+CapsuleGeometry _limb(double radius, double height) =>
+    capsule(radius, height, radialSegments: 24, capRings: 6);
+
 /// What the gorilla is doing; poses blend smoothly between these.
 ///
 /// The gym exercises ([deadlift], [benchPress], [curls], [gobletSquat])
@@ -74,12 +89,12 @@ class GorillaRig {
     final face = _faceMaterial = matte(faceColor, roughness: 0.6);
 
     _torso = meshNode(
-      reshaped(SphereGeometry(radius: 0.27), vm.Vector3(1, 1.15, 0.92)),
+      reshaped(sphere(0.27), vm.Vector3(1, 1.15, 0.92)),
       fur,
     )..add(
         // Light belly patch on the torso's front (its local +Z).
         meshNode(
-          reshaped(SphereGeometry(radius: 0.19), vm.Vector3(0.95, 1.05, 0.5)),
+          reshaped(sphere(0.19), vm.Vector3(0.95, 1.05, 0.5)),
           face,
           position: vm.Vector3(0, -0.02, 0.18),
         ),
@@ -87,19 +102,27 @@ class GorillaRig {
 
     for (final _ in [0, 1]) {
       _upperArms.add(
-        meshNode(CapsuleGeometry(radius: 0.075, height: _upperArm), fur),
+        meshNode(_limb(0.075, _upperArm), fur),
       );
       _forearms.add(
-        meshNode(CapsuleGeometry(radius: 0.075, height: _forearm), fur),
+        meshNode(_limb(0.075, _forearm), fur),
       );
-      _hands.add(meshNode(SphereGeometry(radius: 0.085), face));
+      _hands.add(
+        meshNode(
+          sphere(0.085, segments: 20, rings: 12),
+          face,
+        ),
+      );
       _thighs.add(
-        meshNode(CapsuleGeometry(radius: 0.085, height: _thigh), fur),
+        meshNode(_limb(0.085, _thigh), fur),
       );
-      _shins.add(meshNode(CapsuleGeometry(radius: 0.085, height: _shin), fur));
+      _shins.add(meshNode(_limb(0.085, _shin), fur));
       _feet.add(
         meshNode(
-          reshaped(SphereGeometry(radius: 0.09), vm.Vector3(1, 0.7, 1.35)),
+          reshaped(
+            sphere(0.09, segments: 24, rings: 14),
+            vm.Vector3(1, 0.7, 1.35),
+          ),
           face,
         ),
       );
@@ -169,9 +192,9 @@ class GorillaRig {
     }
     final slots = {_hatSlot, _eyewearSlot, _outfitSlot, ..._forearmSlots};
     final groups = [_gorillaHead, _lizardHead, _tail];
-    skinMeshes(root, skip: {...slots, ...groups});
+    skinMeshes(root, skip: {...slots, ...groups}, bounds: _bodyBounds);
     for (final group in groups) {
-      skinMeshes(group, skip: slots);
+      skinMeshes(group, skip: slots, bounds: _partBounds);
     }
 
     if (look != null) this.look = look;
@@ -243,6 +266,8 @@ class GorillaRig {
   bool _dressed = false;
   late final PhysicallyBasedMaterial _furMaterial;
   late final PhysicallyBasedMaterial _faceMaterial;
+  final PhysicallyBasedMaterial _dark = matte(_eye, roughness: 0.4);
+  final PhysicallyBasedMaterial _blushMaterial = matte(_blush, roughness: 0.7);
   final Node _hatSlot = Node(name: 'hat');
   final Node _eyewearSlot = Node(name: 'eyewear');
   final Node _outfitSlot = Node(name: 'outfit');
@@ -286,18 +311,18 @@ class GorillaRig {
   }) {
     final eye = matte(_eye, roughness: 0.08);
     final sparkle = UnlitMaterial()..baseColorFactor = linearColor(_sparkle);
-    final dark = matte(_eye, roughness: 0.4);
+    final dark = _dark;
 
     return (
       open: [
         for (final side in [-1.0, 1.0]) ...[
           meshNode(
-            SphereGeometry(radius: radius, segments: 24),
+            sphere(radius, segments: 24),
             eye,
             position: openAt(side),
           ),
           meshNode(
-            SphereGeometry(radius: radius * 0.33, segments: 12, rings: 8),
+            sphere(radius * 0.33, segments: 12, rings: 8),
             sparkle,
             position: openAt(side) +
                 vm.Vector3(radius * 0.35, radius * 0.43, radius * 0.83),
@@ -325,28 +350,31 @@ class GorillaRig {
   }
 
   List<Node> _buildHead(Material fur, Material face) {
-    final dark = matte(_eye, roughness: 0.4);
+    final dark = _dark;
 
     return [
       meshNode(
-        SphereGeometry(radius: _headRadius, segments: 40, rings: 24),
+        sphere(_headRadius, segments: 40, rings: 24),
         fur,
       ),
       // A heart-shaped face: two brow lobes over a wide muzzle.
       for (final side in [-1.0, 1.0])
         meshNode(
-          SphereGeometry(radius: 0.15),
+          sphere(0.15, segments: 28, rings: 14),
           face,
           position: vm.Vector3(0.085 * side, 0.035, 0.25),
         ),
       meshNode(
-        reshaped(SphereGeometry(radius: 0.16), vm.Vector3(1.25, 0.85, 0.9)),
+        reshaped(sphere(0.16), vm.Vector3(1.25, 0.85, 0.9)),
         face,
         position: vm.Vector3(0, -0.11, 0.25),
       ),
       // Button nose and a little smile.
       meshNode(
-        reshaped(SphereGeometry(radius: 0.04), vm.Vector3(1.4, 0.8, 0.8)),
+        reshaped(
+          sphere(0.04, segments: 20, rings: 12),
+          vm.Vector3(1.4, 0.8, 0.8),
+        ),
         dark,
         position: vm.Vector3(0, -0.06, 0.385),
       ),
@@ -365,8 +393,11 @@ class GorillaRig {
       ),
       for (final side in [-1.0, 1.0])
         meshNode(
-          reshaped(SphereGeometry(radius: 0.05), vm.Vector3(1.3, 0.75, 0.5)),
-          matte(_blush, roughness: 0.7),
+          reshaped(
+            sphere(0.05, segments: 20, rings: 12),
+            vm.Vector3(1.3, 0.75, 0.5),
+          ),
+          _blushMaterial,
           position: vm.Vector3(0.175 * side, -0.07, 0.31),
           rotation: vm.Quaternion.fromTwoVectors(
             vm.Vector3(0, 0, 1),
@@ -376,24 +407,24 @@ class GorillaRig {
       // Round ears with light insides.
       for (final side in [-1.0, 1.0]) ...[
         meshNode(
-          SphereGeometry(radius: 0.085),
+          sphere(0.085, segments: 24, rings: 14),
           fur,
           position: vm.Vector3(0.34 * side, 0.03, -0.02),
         ),
         meshNode(
-          SphereGeometry(radius: 0.052),
+          sphere(0.052, segments: 20, rings: 12),
           face,
           position: vm.Vector3(0.37 * side, 0.03, 0.02),
         ),
       ],
       // A small tuft of hair.
       meshNode(
-        SphereGeometry(radius: 0.075),
+        sphere(0.075, segments: 24, rings: 14),
         fur,
         position: vm.Vector3(0, 0.34, 0.04),
       ),
       meshNode(
-        SphereGeometry(radius: 0.05),
+        sphere(0.05, segments: 20, rings: 12),
         fur,
         position: vm.Vector3(0.07, 0.36, 0),
       ),
@@ -404,13 +435,13 @@ class GorillaRig {
   /// top and a little crest. Coloured by the fur (scales) and face (belly)
   /// materials like the gorilla's.
   List<Node> _buildLizardHead(Material scales, Material belly) {
-    final dark = matte(_eye, roughness: 0.4);
+    final dark = _dark;
     final crest = matte(const Color(0xFFF5A623), roughness: 0.6);
 
     return [
       meshNode(
         reshaped(
-          SphereGeometry(radius: _headRadius, segments: 40, rings: 24),
+          sphere(_headRadius, segments: 40, rings: 24),
           vm.Vector3(1, 0.86, 1),
         ),
         scales,
@@ -418,7 +449,7 @@ class GorillaRig {
       // The snout, with a pale jaw underneath.
       meshNode(
         reshaped(
-          SphereGeometry(radius: 0.24, rings: 18),
+          sphere(0.24, rings: 18),
           vm.Vector3(1.05, 0.62, 1.15),
         ),
         scales,
@@ -426,7 +457,7 @@ class GorillaRig {
       ),
       meshNode(
         reshaped(
-          SphereGeometry(radius: 0.22, segments: 28),
+          sphere(0.22, segments: 28),
           vm.Vector3(1, 0.42, 1.08),
         ),
         belly,
@@ -435,19 +466,22 @@ class GorillaRig {
       for (final side in [-1.0, 1.0]) ...[
         // Bumps the big eyes sit in.
         meshNode(
-          SphereGeometry(radius: 0.105),
+          sphere(0.105, segments: 24, rings: 14),
           scales,
           position: vm.Vector3(0.15 * side, 0.12, 0.24),
         ),
         // Nostrils.
         meshNode(
-          SphereGeometry(radius: 0.018, segments: 10, rings: 8),
+          sphere(0.018, segments: 10, rings: 8),
           dark,
           position: vm.Vector3(0.055 * side, 0.03, 0.495),
         ),
         meshNode(
-          reshaped(SphereGeometry(radius: 0.05), vm.Vector3(1.3, 0.7, 0.5)),
-          matte(_blush, roughness: 0.7),
+          reshaped(
+            sphere(0.05, segments: 20, rings: 12),
+            vm.Vector3(1.3, 0.7, 0.5),
+          ),
+          _blushMaterial,
           position: vm.Vector3(0.21 * side, -0.07, 0.31),
           rotation: vm.Quaternion.fromTwoVectors(
             vm.Vector3(0, 0, 1),
@@ -504,7 +538,7 @@ class GorillaRig {
       final t = i / (segments - 1);
       tail.add(
         meshNode(
-          SphereGeometry(radius: 0.13 * (1 - t * 0.75), segments: 20),
+          sphere(0.13 * (1 - t * 0.75), segments: 20),
           scales,
           position: vm.Vector3(
             math.sin(t * 2.2) * 0.12,

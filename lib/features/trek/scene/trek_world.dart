@@ -188,13 +188,13 @@ class TrekWorld {
     final shot = Node(name: 'shot')
       ..add(
         meshNode(
-          IcosphereGeometry(radius: 0.12),
+          icosphere(0.12),
           UnlitMaterial()..baseColorFactor = linearColor(color),
         ),
       )
       ..add(
         meshNode(
-          IcosphereGeometry(radius: 0.2),
+          icosphere(0.2),
           UnlitMaterial()
             ..baseColorFactor = linearColor(
               Color.lerp(color, const Color(0xFFFFFFFF), 0.6)!,

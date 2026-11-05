@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_scene/scene.dart';
+import 'package:pushup_bro/core/scene/scene_stats.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 /// Floats per vertex in the skinned layout: position 3, normal 3, two tex
@@ -16,7 +17,16 @@ const _floatsPerVertex = 26;
 /// nothing rather than with `visible`; hiding [group] hides all of it.
 /// Subtrees in [skip] are left as they are (costume slots, parts toggled
 /// on their own).
-void skinMeshes(Node group, {Set<Node> skip = const {}}) {
+///
+/// [bounds] is a box in [group]'s space that the parts never leave, in any
+/// pose. With it the meshes are culled like any other: left out of the
+/// view and of the shadow cascades they can't reach. Without it they're
+/// drawn everywhere, since the engine can't tell where skinned vertices go.
+void skinMeshes(
+  Node group, {
+  Set<Node> skip = const {},
+  vm.Aabb3? bounds,
+}) {
   final parts = <Material, List<(MeshPrimitive, Node)>>{};
 
   void visit(Node node) {
@@ -51,11 +61,20 @@ void skinMeshes(Node group, {Set<Node> skip = const {}}) {
       ..joints.addAll(bones)
       ..inverseBindMatrices
           .addAll([for (final _ in bones) vm.Matrix4.identity()]);
+    final geometry = _build(indexed);
+    if (bounds != null) {
+      final center = bounds.center;
+      geometry.setLocalBounds(
+        bounds,
+        vm.Sphere.centerRadius(center, (bounds.max - center).length),
+      );
+    }
     group.add(
-      Node(name: 'skinned', mesh: Mesh(_build(indexed), material))
+      Node(name: 'skinned', mesh: Mesh(geometry, material))
         ..skin = skin
-        // Its vertices sit wherever the bones are, not around this node.
-        ..frustumCulled = false,
+        // Its vertices sit wherever the bones are, not around this node:
+        // without bounds to cull it by, it's always drawn.
+        ..frustumCulled = bounds != null,
     );
   }
 }
@@ -109,7 +128,10 @@ SkinnedGeometry _build(List<(MeshPrimitive, int)> parts) {
     throw StateError('Too many vertices to skin in one mesh: $vertexCount');
   }
 
-  return SkinnedGeometry()
+  final geometry = SkinnedGeometry();
+  if (kSceneStats) skinnedTriangles[geometry] = indices.length ~/ 3;
+
+  return geometry
     ..uploadVertexData(
       Float32List.fromList(vertices),
       vertexCount,
