@@ -14,6 +14,9 @@ import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
 import 'package:pushup_bro/features/island/buildings/adoption/adoption.dart';
 import 'package:pushup_bro/features/island/buildings/adoption/island_friends.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_editor.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_piece.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_placement.dart';
 import 'package:pushup_bro/features/island/model/island_snapshot.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/scene/island_world.dart';
@@ -62,8 +65,19 @@ class IslandScene extends StatefulWidget {
     this.intro,
     this.night = false,
     this.onBuildingTap,
+    this.decorEditor,
+    this.onDecorLongPress,
     super.key,
   });
+
+  /// While it's [DecorEditor.active], the island shows its pieces instead:
+  /// taps pick a decoration, dragging one moves it over the ground, and
+  /// dragging anywhere else still turns the island.
+  final DecorEditor? decorEditor;
+
+  /// Called with the decoration held down on the player's own island, to
+  /// start moving it.
+  final ValueChanged<int>? onDecorLongPress;
 
   /// Called with the building tapped on the player's own island (the food
   /// truck is [ShopBuyables.none]).
@@ -133,9 +147,33 @@ class IslandSceneState extends State<IslandScene> {
   /// Where the lock pins sit on screen while the island is locked.
   final ValueNotifier<Map<ProLockPlace, Offset>> _pins = ValueNotifier({});
 
+  /// The player's decorations as saved, shown while not editing.
+  List<DecorPiece> _decor = const [];
+
+  /// The decoration being dragged, and where on it the finger took hold.
+  int? _dragging;
+  vm.Vector2 _grab = vm.Vector2.zero();
+
+  /// 1 while editing: the camera stops drifting, so pieces stay under the
+  /// finger.
+  double _still = 0;
+
+  bool get _editing => widget.decorEditor?.active ?? false;
+  bool _wasEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.decorEditor?.addListener(_showDecor);
+  }
+
   @override
   void didUpdateWidget(IslandScene oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.decorEditor != widget.decorEditor) {
+      oldWidget.decorEditor?.removeListener(_showDecor);
+      widget.decorEditor?.addListener(_showDecor);
+    }
     // Night can fall (or end) while the island is open.
     final scene = _scene;
     if (widget.night != oldWidget.night && scene != null) _light(scene);
@@ -143,6 +181,7 @@ class IslandSceneState extends State<IslandScene> {
 
   @override
   void dispose() {
+    widget.decorEditor?.removeListener(_showDecor);
     _whiteout.dispose();
     _bubbleAnchor.dispose();
     _pins.dispose();
@@ -180,6 +219,10 @@ class IslandSceneState extends State<IslandScene> {
     final camera = _lastCamera;
     if (world == null || camera == null || _viewSize.isEmpty) return;
     if (world.running) return;
+    if (_editing) {
+      widget.decorEditor?.select(_decorAt(details.localPosition));
+      return;
+    }
     final ray = camera.screenPointToRay(details.localPosition, _viewSize);
     final hit = _scene?.raycast(ray);
     // Carlos is small from up here, so anywhere near him counts too.
@@ -231,6 +274,8 @@ class IslandSceneState extends State<IslandScene> {
         ..showOwned(snapshot.bought)
         ..gorilla.look = snapshot.look;
       friends.looks = snapshot.friends;
+      _decor = snapshot.decor;
+      _showDecor();
     }
     _light(scene);
     scene.add(world.root);
@@ -278,6 +323,8 @@ class IslandSceneState extends State<IslandScene> {
     _world
       ?..showOwned(inventory.boughtItems)
       ..gorilla.look = inventory.monkeys.first.look;
+    _decor = inventory.decor;
+    _showDecor();
   }
 
   void _tick(double deltaSeconds) {
@@ -315,6 +362,7 @@ class IslandSceneState extends State<IslandScene> {
       _yawVelocity = springTo(_yawVelocity, 0, deltaSeconds, 3);
     }
     _focus = springTo(_focus, running ? 1 : 0, deltaSeconds, 2);
+    _still = springTo(_still, _editing ? 1 : 0, deltaSeconds, 3);
     world?.update(deltaSeconds, eye: camera?.position);
     if (world != null) _friends?.update(deltaSeconds, radius: world.radius);
   }
@@ -337,7 +385,7 @@ class IslandSceneState extends State<IslandScene> {
 
   Camera _camera(Duration elapsed) {
     final t = elapsed.inMicroseconds / 1e6;
-    final angle = _yaw + math.sin(t * 0.12) * 0.1 * (1 - _focus);
+    final angle = _yaw + math.sin(t * 0.12) * 0.1 * (1 - _focus) * (1 - _still);
     // Far back: a portrait phone sees little horizontally. The camera backs
     // off slower than the island grows, so a bigger island fills more of the
     // screen. Following Carlos, it closes in on the jungle gate.
@@ -400,6 +448,107 @@ class IslandSceneState extends State<IslandScene> {
     );
   }
 
+  /// Shows the pieces being edited, or else the saved ones as they fit on
+  /// the island now.
+  void _showDecor() {
+    final world = _world;
+    if (world == null) return;
+    final editor = widget.decorEditor;
+    if (editor != null && editor.active) {
+      world.decor.show(
+        editor.pieces,
+        selected: editor.selected,
+        blocked: editor.blocked,
+      );
+    } else {
+      world.decor.show(DecorPlacement(world.plan).settle(_decor));
+    }
+    // Rebuilt when edit mode starts or ends, so the gestures follow it.
+    final editing = editor?.active ?? false;
+    if (editing != _wasEditing && mounted) {
+      setState(() => _wasEditing = editing);
+    }
+  }
+
+  /// Where the finger at [point] meets the island's ground, or null above
+  /// the horizon.
+  vm.Vector2? _groundAt(Offset point) {
+    final camera = _lastCamera;
+    if (camera == null || _viewSize.isEmpty) return null;
+    final ray = camera.screenPointToRay(point, _viewSize);
+    if (ray.direction.y > -1e-4) return null;
+    final t = (grassTop - ray.origin.y) / ray.direction.y;
+    final hit = ray.origin + ray.direction * t;
+
+    return vm.Vector2(hit.x, hit.z);
+  }
+
+  /// The decoration under [point]: the one the finger touches, or else one
+  /// standing close to where it meets the ground (small ones are hard to
+  /// hit from up here).
+  int? _decorAt(Offset point) {
+    final world = _world;
+    final camera = _lastCamera;
+    if (world == null || camera == null || _viewSize.isEmpty) return null;
+    final hit = _scene?.raycast(camera.screenPointToRay(point, _viewSize));
+    final touched = hit == null ? null : world.decor.pieceOf(hit.node);
+    if (touched != null) return touched;
+    final ground = _groundAt(point);
+    if (ground == null) return null;
+    final editor = widget.decorEditor;
+    final pieces = editor != null && editor.active
+        ? editor.pieces
+        : DecorPlacement(world.plan).settle(_decor);
+    int? nearest;
+    var best = double.infinity;
+    for (final (i, piece) in pieces.indexed) {
+      if (!piece.placed) continue;
+      final distance = ground.distanceTo(vm.Vector2(piece.x, piece.z));
+      if (distance < piece.item.radius + 0.25 && distance < best) {
+        best = distance;
+        nearest = i;
+      }
+    }
+
+    return nearest;
+  }
+
+  void _editDragStart(DragStartDetails details) {
+    final editor = widget.decorEditor;
+    if (editor == null) return;
+    final index = _decorAt(details.localPosition);
+    final ground = _groundAt(details.localPosition);
+    if (index == null || ground == null) {
+      _dragging = null;
+      return;
+    }
+    editor.select(index);
+    _dragging = index;
+    final piece = editor.pieces[index];
+    _grab = ground - vm.Vector2(piece.x, piece.z);
+  }
+
+  void _editDragUpdate(DragUpdateDetails details) {
+    if (_dragging == null) {
+      _yaw -= details.delta.dx * 0.008;
+      _yawVelocity = 0;
+      return;
+    }
+    final ground = _groundAt(details.localPosition);
+    if (ground == null) return;
+    final at = ground - _grab;
+    widget.decorEditor?.dragTo(at.x, at.y);
+  }
+
+  void _editDragEnd(DragEndDetails details) {
+    if (_dragging == null) {
+      _yawVelocity = -details.velocity.pixelsPerSecond.dx * 0.004;
+      return;
+    }
+    _dragging = null;
+    widget.decorEditor?.endDrag();
+  }
+
   @override
   Widget build(BuildContext context) =>
       BlocListener<GameInventoryCubit, GameInventoryState>(
@@ -415,17 +564,32 @@ class IslandSceneState extends State<IslandScene> {
           builder: (context, constraints) {
             _viewSize = constraints.biggest;
 
+            final editing = _editing;
+
             return GestureDetector(
               onTapUp: _onTapUp,
-              onHorizontalDragUpdate: (details) {
-                if (_world?.running ?? false) return;
-                _yaw -= details.delta.dx * 0.008;
-                _yawVelocity = 0;
-              },
-              onHorizontalDragEnd: (details) {
-                if (_world?.running ?? false) return;
-                _yawVelocity = -(details.primaryVelocity ?? 0) * 0.004;
-              },
+              onLongPressStart: widget.onDecorLongPress == null || editing
+                  ? null
+                  : (details) {
+                      final index = _decorAt(details.localPosition);
+                      if (index != null) widget.onDecorLongPress?.call(index);
+                    },
+              onPanStart: editing ? _editDragStart : null,
+              onPanUpdate: editing ? _editDragUpdate : null,
+              onPanEnd: editing ? _editDragEnd : null,
+              onHorizontalDragUpdate: editing
+                  ? null
+                  : (details) {
+                      if (_world?.running ?? false) return;
+                      _yaw -= details.delta.dx * 0.008;
+                      _yawVelocity = 0;
+                    },
+              onHorizontalDragEnd: editing
+                  ? null
+                  : (details) {
+                      if (_world?.running ?? false) return;
+                      _yawVelocity = -(details.primaryVelocity ?? 0) * 0.004;
+                    },
               child: Stack(
                 children: [
                   Positioned.fill(

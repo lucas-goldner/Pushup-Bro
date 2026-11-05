@@ -6,6 +6,7 @@ import 'package:pushup_bro/core/scene/gorilla_rig.dart';
 import 'package:pushup_bro/core/scene/nature_kit.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/static_batch.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_layer.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/scene/island_night.dart';
 import 'package:pushup_bro/features/island/scene/jungle_patch.dart';
@@ -92,12 +93,16 @@ class IslandWorld {
     }
     _buildings[ShopBuyables.none]!.visible = true;
     root.add(gorilla.root..scale = vm.Vector3.all(0.9));
+    root.add(decor.root);
     _layout();
   }
 
   final Node root = Node(name: 'island');
   final GorillaRig gorilla = GorillaRig();
   final JunglePatch jungle = JunglePatch();
+
+  /// The decorations the player put on the island.
+  final DecorLayer decor = DecorLayer(ground: grassTop);
   late final Map<ShopBuyables, Node> _buildings;
   final List<_Prop> _scenery = [];
   final PhysicallyBasedMaterial _sandMaterial = matte(_sand, roughness: 0.95);
@@ -149,6 +154,9 @@ class IslandWorld {
   vm.Vector3 get carlosHead =>
       gorilla.root.position + vm.Vector3(0, 1.05 * gorilla.root.scale.y, 0);
 
+  /// How the island is laid out with its buildings, for the decorations.
+  IslandPlan get plan => IslandPlan(_order.length - 1);
+
   /// Whether [node] is part of Carlos.
   bool isCarlos(Node node) => _within(node, gorilla.root);
 
@@ -188,6 +196,7 @@ class IslandWorld {
       root.add(dressing.root);
     }
     _nightDressing?.root.visible = value;
+    decor.night = value;
     _layout();
   }
 
@@ -265,6 +274,7 @@ class IslandWorld {
     gorilla.update(deltaSeconds);
     jungle.update(deltaSeconds);
     if (_night) _nightDressing?.update(deltaSeconds, reach: extent, eye: eye);
+    decor.update(deltaSeconds, eye: eye);
 
     _foamRing.scale = vm.Vector3.all(
       extent / 5.5 * (1 + 0.012 * math.sin(_time * 1.3)),
@@ -721,4 +731,51 @@ class IslandWorld {
         matte(color, roughness: 0.7),
         position: position,
       );
+}
+
+/// Where things stand on an island with [buildings] buildings besides the
+/// food truck, once it has grown to its size: for placing decorations
+/// without the scene (in the shop, or on a friend's island).
+class IslandPlan {
+  IslandPlan(this.buildings) : radius = _baseRadius + _growth * buildings;
+
+  /// The plan for an island with the buildings in [bought].
+  factory IslandPlan.of(Iterable<ShopBuyables> bought) => IslandPlan(
+        bought
+            .where(ShopBuyables.buildingsShopBuyables.contains)
+            .toSet()
+            .length,
+      );
+
+  final int buildings;
+
+  /// The grass radius.
+  final double radius;
+
+  /// How far (m) the grass reaches from the centre towards [angle] (from
+  /// +X towards +Z): the same wobbly outline the grass is drawn with.
+  double grassEdge(double angle) =>
+      radius *
+      (1 + 0.06 * math.sin(2 * angle + 1) + 0.04 * math.sin(4 * angle));
+
+  /// Where the buildings stand on the ground (x, z), the food truck first.
+  List<vm.Vector2> get buildingSpots => [
+        for (var i = 0; i <= buildings; i++)
+          vm.Vector2(
+            math.sin(_slots[i % _slots.length]) * radius * 0.6,
+            math.cos(_slots[i % _slots.length]) * radius * 0.6,
+          ),
+      ];
+
+  /// The jungle's centre on the ground, and how far its trees reach.
+  vm.Vector2 get jungle => vm.Vector2(0, -(radius - 1.75));
+  double get jungleRadius => 2.1;
+
+  /// Just in front of the jungle gate, where Carlos runs in.
+  vm.Vector2 get jungleGate =>
+      jungle + vm.Vector2(0, jungleRadius * 0.92 + 0.4);
+
+  /// The middle of Carlos's laps, and how far out he walks.
+  vm.Vector2 get carlosLap => vm.Vector2(0, radius * 0.22);
+  double get carlosLapRadius => radius * 0.17;
 }

@@ -4,13 +4,18 @@ import 'package:carbon_icons/carbon_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/audio/music_places.dart';
 import 'package:pushup_bro/core/audio/music_scope.dart';
 import 'package:pushup_bro/core/cubit/game_inventory_cubit.dart';
+import 'package:pushup_bro/core/cubit/game_inventory_state.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/night.dart';
 import 'package:pushup_bro/core/widgets/fold_safe.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_edit_bar.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_editor.dart';
+import 'package:pushup_bro/features/island/buildings/decor/decor_inventory.dart';
 import 'package:pushup_bro/features/island/buildings/open_building.dart';
 import 'package:pushup_bro/features/island/intro/island_intro.dart';
 import 'package:pushup_bro/features/island/model/daily_bananas.dart';
@@ -53,6 +58,10 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
   bool _isNewDayVisible = false;
   bool _journeying = false;
   final _sceneKey = GlobalKey<IslandSceneState>();
+
+  /// Moving decorations around, started from the island or the shop.
+  final DecorEditor _decorEditor = DecorEditor();
+  StreamSubscription<int?>? _decorRequests;
 
   /// The first visit: the intro film plays, then the camera zooms out from
   /// Carlos to the island, then the welcome card asks to help him.
@@ -151,10 +160,41 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
       _introZoom.value = 0;
     }
     unawaited(_offerDailyBananas());
+    _decorRequests = decorEditRequests.stream
+        .listen((select) => unawaited(_editDecor(select)));
+  }
+
+  /// Opens the island's edit mode with the decoration at [select] picked.
+  Future<void> _editDecor(int? select) async {
+    final cubit = context.read<GameInventoryCubit>();
+    // Never edit (and later save) the blank inventory shown while loading.
+    if (cubit.state is! GameInventoryLoaded) await cubit.fetchInventory();
+    if (!mounted) return;
+    final inventory = cubit.state.inventory;
+    final placement = inventory.decorPlacement;
+    _decorEditor.start(
+      placement.settle(inventory.decor),
+      placement,
+      select: select,
+    );
+    setState(() => _menuVisible = false);
+  }
+
+  Future<void> _saveDecor() async {
+    final cubit = context.read<GameInventoryCubit>();
+    final pieces = _decorEditor.pieces;
+    GameAudio.instance.play(Sfx.equip);
+    if (cubit.state is! GameInventoryLoaded) await cubit.fetchInventory();
+    // Saved before edit mode ends, so the island never shows the old spots.
+    await cubit.updateInventory(cubit.state.inventory.copyWith(decor: pieces));
+    _decorEditor.stop();
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    unawaited(_decorRequests?.cancel());
+    _decorEditor.dispose();
     _introZoom.dispose();
     _introWhite.dispose();
     super.dispose();
@@ -171,7 +211,8 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
       !_menuVisible &&
       !_isNewDayVisible &&
       !_questVisible &&
-      !_journeying;
+      !_journeying &&
+      !_decorEditor.active;
 
   @override
   Widget build(BuildContext context) {
@@ -234,6 +275,11 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
                   ),
                   onJourneyChanged: (journeying) =>
                       setState(() => _journeying = journeying),
+                  decorEditor: _decorEditor,
+                  onDecorLongPress: (index) => _guarded(
+                    ProLockPlace.shop,
+                    () => unawaited(_editDecor(index)),
+                  ),
                 ),
               ),
             if (locked ? !_journeying : _hudVisible) ...[
@@ -296,6 +342,27 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
                   ),
                 ),
               ),
+              // Moving the decorations, under the share button.
+              BlocSelector<GameInventoryCubit, GameInventoryState, bool>(
+                selector: (state) => state.inventory.decor.isNotEmpty,
+                builder: (context, hasDecor) => !hasDecor
+                    ? const SizedBox.shrink()
+                    : SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 116),
+                          child: Semantics(
+                            label: context.l10n.decorEditIsland,
+                            child: MenuCircleButton(
+                              icon: CarbonIcons.paint_brush,
+                              onTap: () => _guarded(
+                                ProLockPlace.shop,
+                                () => unawaited(_editDecor(null)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+              ),
               // Friends' waves and bananas, under the top row.
               const SafeArea(
                 child: Padding(
@@ -311,6 +378,13 @@ class _IslandState extends State<Island> with TickerProviderStateMixin {
             if (locked)
               const SizedBox.shrink()
             else ...[
+              if (_decorEditor.active)
+                Positioned.fill(
+                  child: DecorEditBar(
+                    editor: _decorEditor,
+                    onDone: () => unawaited(_saveDecor()),
+                  ),
+                ),
               GameMenu(
                 closeMenu: closeMenu,
                 menuVisible: _menuVisible && !_firstTimeVisiting,
