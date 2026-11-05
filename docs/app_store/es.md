@@ -2,59 +2,59 @@
 
 ## Novedades (2.0)
 
-¡La selva está abierta!
+¡Pushup Bro 2.0 es nuestra mayor actualización hasta ahora!
 
-- Ruta Selvática: abre camino por siete etapas de la selva contra reptiles
-  descarados, todo a base de flexiones. Los lagartos verdes caen con
-  flexiones constantes, los azules aguantando abajo y los amarillos con
-  repeticiones rápidas. Sube de nivel, gana equipo exclusivo de lagarto y
-  enfréntate al Rey Komo.
-- Retos diarios: una pequeña historia y un reto de flexiones nuevo cada día,
-  en el volcán, la playa a la luz de la luna, el templo y más.
-- Detección con cámara: ¿sin AirPods? Apoya el móvil y la cámara cuenta tus
-  flexiones, con un esqueleto en vivo y consejos de postura.
-- Armario: viste a tu gorila con sombreros, gafas, ropa, colores de pelaje y
-  diseños de esterilla.
-- Nuevos sonidos, un mundo 3D más fluido y traducciones al alemán, español,
-  japonés y portugués.
+- Bros: añade amigos con un código o QR, compite con ellos en la clasificación del día, envía saludos, plátanos y empujoncitos, y visita sus islas.
+- Un nuevo comienzo: un plan personal al abrir la app por primera vez y una pequeña película de cómo Carlos perdió a su tribu en una tormenta.
+- Jungle Trek: siete etapas de batallas de flexiones contra reptiles, hasta el Rey Komo.
+- Misiones diarias: una nueva historia y un reto de flexiones cada día.
+- Cámara: ¿sin AirPods? La cámara de tu móvil cuenta tus flexiones.
+- Estadísticas: rachas, mejores marcas, tu actividad y tu ritmo en una sola página.
+- Comparte vídeos de tus entrenamientos, misiones y combates.
+- Un armario, widgets para la pantalla de inicio y de bloqueo, iconos de la app y recordatorios.
+- Pushup Bro Pro: prueba todo gratis durante 3 días.
+- Hecha para el iPhone Duo, y ahora en alemán, español, japonés y portugués.
 
 ## Texto promocional (máx. 170 caracteres)
 
-Haz flexiones y vence al Rey Lagarto. Ruta Selvática, retos diarios y un
-armario lleno de sombreros, ahora con cámara si no tienes AirPods.
+Haz flexiones, vence al Rey Lagarto y compite con tus bros en la clasificación del día. Jungle Trek, misiones diarias, estadísticas y una isla entera por reconstruir.
 
 ## Descripción
 
-Pushup Bro convierte las flexiones en una aventura con Carlos, un bebé gorila
-que perdió a sus amigos en una tormenta.
+Pushup Bro convierte las flexiones en una aventura con Carlos, un bebé gorila al que una tormenta separó de su tribu y arrastró hasta tu isla.
 
-Cada flexión cuenta, con los sensores de movimiento de tus AirPods o la
-cámara de tu móvil. Gana plátanos, reconstruye la isla de Carlos, vístelo y
-entrena con sus colegas del gimnasio.
+Cada flexión cuenta, con los sensores de movimiento de tus AirPods o con la cámara de tu móvil. Gana plátanos, reconstruye la isla de Carlos, vístelo y entrena con sus compañeros de gimnasio.
 
-RUTA SELVÁTICA
-Lucha por siete etapas contra reptiles que quieren la isla para ellos. El
-color de cada enemigo te dice qué flexión le hace más daño: constante,
-sostenida abajo o rápida. Descansa entre oleadas, mejora tu Fuerza,
-Vitalidad, Agarre y Agilidad, y gana equipo exclusivo de lagarto. Vence al
-Rey Komo y se unirá a tu equipo.
+BROS
+Añade amigos con un código o un código QR y compite con ellos en la clasificación del día. Envía saludos, plátanos y empujoncitos, recibe un aviso cuando tus bros entrenen y visita sus islas.
 
-RETOS DIARIOS
-Una historia corta y un reto de flexiones nuevo cada día, en el volcán, la
-playa a la luz de la luna, el templo del plátano dorado y entre las nubes.
+JUNGLE TREK
+Abre camino por siete etapas de la selva contra reptiles que quieren la isla para ellos. El color de cada enemigo te dice qué flexión le hace más daño: constante, aguantada abajo o rápida. Sube tu Fuerza, Vitalidad, Agarre y Agilidad, y gana equipo exclusivo de lagarto. Vence al Rey Komo y se unirá a tu equipo.
 
-COMO PREFIERAS
+MISIONES DIARIAS
+Una historia corta y un nuevo reto de flexiones cada día, en el volcán, la playa a la luz de la luna, el templo del plátano dorado y entre las nubes.
+
+A TU MANERA
 - AirPods: el movimiento de tu cabeza cuenta cada flexión.
-- Cámara: apoya el móvil a tu lado y verás un esqueleto en vivo sobre ti,
-  coloreado según cada flexión, con consejos si se te cae la cadera. El vídeo
-  nunca sale de tu móvil.
+- Cámara: apoya el móvil a tu lado y verás un esqueleto en directo sobre ti, con consejos si bajas la cadera. El vídeo nunca sale de tu móvil.
+
+TUS ESTADÍSTICAS
+Rachas, mejores marcas, tu ritmo más rápido, tu actividad por semana, mes y año, y cuándo te gusta entrenar.
 
 ADEMÁS
-- Un armario lleno de sombreros, gafas, ropa, colores de pelaje y diseños de
-  esterilla
-- Estadísticas y rachas
+- Un armario lleno de sombreros, gafas, trajes, colores de pelaje y estampados de esterilla
+- Comparte vídeos de tus mejores series, misiones y combates
+- Widgets para la pantalla de inicio y de bloqueo, iconos de la app y recordatorios diarios
+- Hecha para el iPhone Duo
 - Español, inglés, alemán, japonés y portugués
+
+PUSHUP BRO PRO
+Contar flexiones, tus estadísticas y tus bros son gratis. Pro desbloquea el Jungle Trek, las misiones diarias, tu isla, el armario, el entrenador con cámara, los widgets y los iconos de la app. Prueba todo gratis durante 3 días, sin datos de pago.
+Pro está disponible de forma semanal, anual o como compra única de por vida. Las suscripciones se renuevan automáticamente salvo que se cancelen al menos 24 horas antes del final del periodo, y se gestionan en los ajustes de tu cuenta del App Store.
+
+Términos: https://lucas-goldner.com/tos
+Privacidad: https://lucas-goldner.com/privacy
 
 ## Palabras clave (máx. 100 caracteres)
 
-flexiones,ejercicio,fitness,airpods,gorila,rpg,juego,reto diario,cámara,entrenamiento,fuerza
+flexiones,ejercicio,fitness,airpods,gorila,rpg,amigos,clasificación,reto,cámara,racha,entrenar

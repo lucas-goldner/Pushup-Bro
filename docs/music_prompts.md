@@ -102,3 +102,227 @@ Tips:
 
 Then trim it to the first 5 to 8 seconds, or send the whole take and I'll cut
 it.
+
+---
+
+# More tracks (2.0 and the island roadmap)
+
+Same palette and rules as above: **instrumental**, no vocals or chops, warm
+and cute, tropical percussion, marimba, kalimba and soft bells. Loops have
+no intro and no fade out; the ones marked **(plays once)** are short cues
+that may start and end.
+
+Right now the game plays one track per place (the eight above). The tracks
+below are for places that don't have their own music yet: the island intro
+film, the Trek's seven stages, the daily quest locations and the island at
+night (#70). Once the MP3s are in `assets/audio/music/` with these names,
+each one gets wired to its place, and a missing one falls back to the
+general track (`story`, `battle`, `challenge` or `island`).
+
+## Island intro film
+
+### 9. `intro_village.mp3`: banana night in the village
+
+**Title:** Banana Night
+
+**Style:**
+> joyful tribal campfire party, 112 bpm, bouncy log drums and bongos,
+> marimba melody, kalimba, hand claps, playful whistle-like flute, warm
+> sunset jungle celebration, monkeys dancing round a fire, cute and silly,
+> cartoon game soundtrack, instrumental, seamless loop, no intro, no fade out
+
+### 10. `intro_storm.mp3`: the storm and the tornado
+
+**Title:** Here Comes the Twister
+
+**Style:**
+> dramatic but cartoony storm music, 128 bpm, rolling timpani and taiko,
+> swirling pizzicato strings, rising woodwind runs, low brass stabs,
+> howling wind synth, tense and exciting, a little comedic, like a
+> family animated film chase, no horror, instrumental, seamless loop, no
+> intro, no fade out
+
+### 11. `intro_beach.mp3`: waking up on the beach
+
+**Title:** Washed Up
+
+**Style:**
+> gentle hopeful morning on a tropical beach, 80 bpm, soft kalimba and
+> harp melody, light ukulele, distant steel drum, soft ocean-wave pads,
+> a little lonely at first then warm and determined, tender storybook
+> moment, instrumental, seamless loop, no intro, no fade out
+
+### 12. `intro_title.mp3`: "Long ago, deep in the jungle…" (plays once)
+
+**Title:** Long Ago
+
+**Style:**
+> short storybook opening cue, 70 bpm, soft music-box celesta and harp
+> arpeggio, warm low strings swell, gentle wind chime, once-upon-a-time
+> feeling, 8 to 12 seconds, ends on a soft open chord, instrumental
+
+## Island
+
+### 13. `island.mp3` (alternative take): the island by day
+
+Only if the first take gets repetitive.
+
+**Title:** Rebuild the Island
+
+**Style:**
+> cozy upbeat island builder theme, 100 bpm, steel drums and marimba
+> trading the melody, ukulele chops, soft shaker and cajon groove, warm
+> plucked bass, sunny optimistic tropical village, light and endlessly
+> loopable, cute game soundtrack, instrumental, seamless loop, no intro,
+> no fade out
+
+### 14. `island_night.mp3`: the island at night (2.1, day and night)
+
+**Title:** Fireflies over Monkey Island
+
+**Style:**
+> sleepy tropical night lullaby, 72 bpm, soft kalimba and vibraphone,
+> gentle nylon guitar, quiet crickets and waves ambience, warm pads,
+> fireflies and lanterns, calm and dreamy, cozy game soundtrack,
+> instrumental, seamless loop, no intro, no fade out
+
+## Daily quests, one per place
+
+The quest's challenge still uses `challenge.mp3`. These play during the
+story before and after it, at each quest's location.
+
+### 15. `quest_volcano.mp3`: the volcano
+
+**Title:** Hot Hot Hiccups
+
+**Style:**
+> playful volcano adventure, 100 bpm, deep log drums and bubbling
+> marimba, low tuba bass, steam-whistle flute, warm and a bit cheeky,
+> rumbling but friendly, cartoon adventure game music, instrumental,
+> seamless loop, no intro, no fade out
+
+### 16. `quest_moon_beach.mp3`: the moonlit beach
+
+**Title:** Moonlit Wishes
+
+**Style:**
+> dreamy night beach theme, 84 bpm, celesta and kalimba melody, soft
+> steel drum, slow shaker, shimmering pads, gentle waves, magical and
+> calm, starry sky, cute game soundtrack, instrumental, seamless loop, no
+> intro, no fade out
+
+### 17. `quest_temple.mp3`: the temple of the golden banana
+
+**Title:** Temple of the Golden Banana
+
+**Style:**
+> mysterious ancient jungle temple, 92 bpm, wooden marimba and pan
+> flute, tabla-like hand drums, plucked koto-like strings, soft gong,
+> curious treasure-hunt mood, friendly not scary, adventure game
+> soundtrack, instrumental, seamless loop, no intro, no fade out
+
+### 18. `quest_sky_island.mp3`: the island in the clouds
+
+**Title:** Above the Clouds
+
+**Style:**
+> light airy floating island theme, 96 bpm, bright glockenspiel and
+> harp, ukulele, soft whistled-flute melody, breezy pads, light bells,
+> carefree and soaring, whimsical game soundtrack, instrumental,
+> seamless loop, no intro, no fade out
+
+## Jungle Trek: one theme per stage
+
+These replace `battle.mp3` on their stage. All of them are fights, so they
+keep a strong steady beat for pushups (125 to 140 bpm) and change only the
+colour of the place. King Komo keeps `boss.mp3`.
+
+### 19. `trek_fern_trail.mp3`: stage 1, Fern Trail
+
+**Title:** First Steps on the Fern Trail
+
+**Style:**
+> bright jungle adventure battle, 125 bpm, bouncy marimba riff, bongos
+> and congas, plucky ukulele, cheerful brass hits, sunny and
+> encouraging, first level of a cute rpg, energetic for workouts,
+> instrumental, seamless loop, no intro, no fade out
+
+### 20. `trek_canopy.mp3`: stage 2, Canopy Bridge
+
+**Title:** Rope Bridge Rumble
+
+**Style:**
+> high treetop battle theme, 130 bpm, swinging xylophone runs, tribal
+> drums, twangy plucked strings, birdsong-like flute trills, airy and
+> daring, a bit of vertigo, cute rpg battle music, instrumental,
+> seamless loop, no intro, no fade out
+
+### 21. `trek_swamp.mp3`: stage 3, Misty Swamp
+
+**Title:** Bog Brawl
+
+**Style:**
+> murky swamp battle, 126 bpm, squelchy bass clarinet and tuba groove,
+> muted marimba, frog-croak-like percussion, low hand drums, foggy and
+> sneaky but funny, cartoon rpg battle music, instrumental, seamless
+> loop, no intro, no fade out
+
+### 22. `trek_lake.mp3`: stage 4, Lake Snapjaw
+
+**Title:** Raft Wars
+
+**Style:**
+> rolling lake battle on a raft, 130 bpm, steel drums and marimba,
+> splashy cymbals, swaying 6/8 feel, bold brass melody, pirate-ish but
+> cute, waves and adventure, cartoon rpg battle music, instrumental,
+> seamless loop, no intro, no fade out
+
+### 23. `trek_temple.mp3`: stage 5, Temple of Scales
+
+**Title:** Scales and Stones
+
+**Style:**
+> ancient temple battle, 132 bpm, heavy taiko and stone-like wood
+> blocks, marimba ostinato, pan flute melody, low choir-like synth pads
+> (no words), gong accents, mysterious and powerful, rpg battle music,
+> instrumental, seamless loop, no intro, no fade out
+
+### 24. `trek_gorge.mp3`: stage 6, Serpent Gorge
+
+**Title:** Rattle in the Gorge
+
+**Style:**
+> hot desert canyon battle, 136 bpm, driving frame drums and shakers
+> like rattles, twangy guitar and marimba riff, snake-charmer flute
+> melody, brass stabs, dusty and tense but cute, rpg battle music,
+> instrumental, seamless loop, no intro, no fade out
+
+### 25. `trek_map.mp3`: the Trek map between stages
+
+**Title:** Onward, Carlos
+
+**Style:**
+> hopeful adventure map theme, 92 bpm, marching snare and soft timpani,
+> french horn and flute melody, marimba, plucked strings, brave and
+> curious, journey ahead, storybook rpg overworld music, instrumental,
+> seamless loop, no intro, no fade out
+
+## Short cues (play once)
+
+### 26. `level_up.mp3`: Carlos levels up in the Trek
+
+**Title:** Stronger!
+
+**Style:**
+> short level up fanfare, 130 bpm, rising marimba and glockenspiel run,
+> brass hit, cymbal swell, bright and proud, 3 to 5 seconds,
+> instrumental
+
+### 27. `defeat.mp3`: losing a stage or quest
+
+**Title:** Try Again, Bro
+
+**Style:**
+> short gentle comedic defeat cue, slow descending tuba and marimba
+> notes, soft "womp" brass, kind and encouraging rather than sad, 3 to
+> 5 seconds, instrumental
