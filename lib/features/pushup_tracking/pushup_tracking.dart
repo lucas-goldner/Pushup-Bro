@@ -14,7 +14,7 @@ import 'package:pushup_bro/core/model/tracking_mode.dart';
 import 'package:pushup_bro/core/style/pb_tokens.dart';
 import 'package:pushup_bro/core/widgets/fold_safe.dart';
 import 'package:pushup_bro/core/widgets/music_toggle_button.dart';
-import 'package:pushup_bro/features/island/model/adoptable_monkey.dart';
+import 'package:pushup_bro/features/island/buildings/adoption/adoption.dart';
 import 'package:pushup_bro/features/pro/widgets/free_days_home_chip.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_tracker.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_window.dart';
@@ -95,13 +95,19 @@ class _PushupTrackingState extends State<PushupTracking> {
               ),
             ),
             Positioned.fill(
-              child: BlocSelector<GameInventoryCubit, GameInventoryState,
-                  AdoptableMonkey>(
-                selector: (state) => state.inventory.monkeys.first,
-                builder: (context, monkey) => PushupStage(
-                  tracking: started,
-                  look: monkey.look,
-                ),
+              child: BlocBuilder<GameInventoryCubit, GameInventoryState>(
+                // Saving passes through an empty inventory for a moment;
+                // skipping it keeps the gym from being laid out again.
+                buildWhen: (_, current) => current is! GameInventoryFetching,
+                builder: (context, state) {
+                  final mates = state.inventory.gymMates;
+                  return PushupStage(
+                    key: ValueKey(Object.hashAll(mates)),
+                    tracking: started,
+                    look: state.inventory.monkeys.first.look,
+                    mates: mates,
+                  );
+                },
               ),
             ),
             // On a half-open iPhone Duo, in one half, off the fold; never

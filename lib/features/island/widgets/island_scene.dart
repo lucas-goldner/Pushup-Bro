@@ -12,6 +12,8 @@ import 'package:pushup_bro/core/extensions/build_context_ext.dart';
 import 'package:pushup_bro/core/model/game_inventory.dart';
 import 'package:pushup_bro/core/scene/scene_kit.dart';
 import 'package:pushup_bro/core/scene/scene_stage.dart';
+import 'package:pushup_bro/features/island/buildings/adoption/adoption.dart';
+import 'package:pushup_bro/features/island/buildings/adoption/island_friends.dart';
 import 'package:pushup_bro/features/island/model/island_snapshot.dart';
 import 'package:pushup_bro/features/island/model/shop_buyables.dart';
 import 'package:pushup_bro/features/island/scene/island_world.dart';
@@ -102,6 +104,7 @@ class IslandScene extends StatefulWidget {
 class IslandSceneState extends State<IslandScene> {
   /// Built in [_populate]: geometry needs the engine's static resources.
   IslandWorld? _world;
+  IslandFriends? _friends;
   double _yaw = 0;
   double _yawVelocity = 0;
 
@@ -216,13 +219,18 @@ class IslandSceneState extends State<IslandScene> {
   void _populate(Scene scene) {
     _scene = scene;
     final world = _world = IslandWorld();
+    final friends = _friends = IslandFriends();
+    world.root.add(friends.root);
     final snapshot = widget.snapshot;
     if (snapshot == null) {
-      _syncInventory(context.read<GameInventoryCubit>().state.inventory);
+      final inventory = context.read<GameInventoryCubit>().state.inventory;
+      _syncInventory(inventory);
+      friends.looks = inventory.islandFriends;
     } else {
       world
         ..showOwned(snapshot.bought)
         ..gorilla.look = snapshot.look;
+      friends.looks = snapshot.friends;
     }
     _light(scene);
     scene.add(world.root);
@@ -308,6 +316,7 @@ class IslandSceneState extends State<IslandScene> {
     }
     _focus = springTo(_focus, running ? 1 : 0, deltaSeconds, 2);
     world?.update(deltaSeconds, eye: camera?.position);
+    if (world != null) _friends?.update(deltaSeconds, radius: world.radius);
   }
 
   void _placePins(IslandWorld? world, Camera? camera) {
@@ -395,7 +404,13 @@ class IslandSceneState extends State<IslandScene> {
   Widget build(BuildContext context) =>
       BlocListener<GameInventoryCubit, GameInventoryState>(
         listenWhen: (_, __) => widget.snapshot == null,
-        listener: (context, state) => _syncInventory(state.inventory),
+        listener: (context, state) {
+          _syncInventory(state.inventory);
+          // Saving passes through an empty inventory for a moment.
+          if (state is! GameInventoryFetching) {
+            _friends?.looks = state.inventory.islandFriends;
+          }
+        },
         child: LayoutBuilder(
           builder: (context, constraints) {
             _viewSize = constraints.biggest;
