@@ -2481,5 +2481,9 @@
     }
   },
   "dropOpenFlowers": "Flowers, just because 💐",
-  "dropOpenCollect": "Collect"
+  "dropOpenCollect": "Collect",
+  "cameraGuideHint": "Get into the outline: hands under your shoulders",
+  "cameraGuideDone": "Perfect, I've got you!",
+  "cameraTooClose": "Move the phone a bit further away",
+  "cameraNotCounting": "Tap start: I'm not counting yet"
 }

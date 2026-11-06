@@ -200,7 +200,7 @@ class CameraBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = context.l10n;
     final hint = message ??
-        (!reading.visible
+        (!reading.visible && !reading.occluded
             ? l.cameraStepBack
             : switch (reading.form) {
                 PushupForm.sagging => l.cameraHipsUp,
@@ -276,4 +276,73 @@ double coverLineScale(Size image, Size window) {
   );
 
   return 1 / scale;
+}
+
+/// The first-time pushup outline (see [PoseGuide]) drawn over the camera
+/// picture, painted at the upright picture's size. [fit] (0 to 1) is how long
+/// the player has matched it so far: it fills with green as they hold.
+class PoseGuidePainter extends CustomPainter {
+  PoseGuidePainter({required this.fit, required this.colors, this.pulse = 0});
+
+  final double fit;
+  final double pulse;
+  final RepPalette colors;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Offset at(Offset f) => Offset(f.dx * size.width, f.dy * size.height);
+    final w = size.width;
+    final color = Color.lerp(colors.rest, colors.normal, fit)!;
+    // One layer, so overlapping limbs read as one silhouette.
+    canvas.saveLayer(
+      Offset.zero & size,
+      Paint()..color = color.withValues(alpha: 0.32 + 0.12 * pulse + 0.2 * fit),
+    );
+    final solid = Paint()..color = const Color(0xFFFFFFFF);
+    Paint limb(double width) => Paint()
+      ..color = const Color(0xFFFFFFFF)
+      ..strokeWidth = width * w
+      ..strokeCap = StrokeCap.round;
+    canvas
+      // Legs, far away between the arms.
+      ..drawLine(at(PoseGuide.leftHip), at(PoseGuide.leftFoot), limb(0.05))
+      ..drawLine(at(PoseGuide.rightHip), at(PoseGuide.rightFoot), limb(0.05))
+      // The body, narrowing away from the camera.
+      ..drawPath(
+        Path()
+          ..moveTo(at(PoseGuide.leftShoulder).dx, at(PoseGuide.leftShoulder).dy)
+          ..lineTo(
+            at(PoseGuide.rightShoulder).dx,
+            at(PoseGuide.rightShoulder).dy,
+          )
+          ..lineTo(at(PoseGuide.rightHip).dx, at(PoseGuide.rightHip).dy)
+          ..lineTo(at(PoseGuide.leftHip).dx, at(PoseGuide.leftHip).dy)
+          ..close(),
+        solid,
+      )
+      ..drawLine(
+        at(PoseGuide.leftShoulder),
+        at(PoseGuide.rightShoulder),
+        limb(0.09),
+      )
+      // Straight arms down to the hands.
+      ..drawLine(
+        at(PoseGuide.leftShoulder),
+        at(PoseGuide.leftHand),
+        limb(0.07),
+      )
+      ..drawLine(
+        at(PoseGuide.rightShoulder),
+        at(PoseGuide.rightHand),
+        limb(0.07),
+      )
+      ..drawCircle(at(PoseGuide.leftHand), 0.05 * w, solid)
+      ..drawCircle(at(PoseGuide.rightHand), 0.05 * w, solid)
+      ..drawCircle(at(PoseGuide.head), PoseGuide.headRadius * w, solid)
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(PoseGuidePainter oldDelegate) =>
+      oldDelegate.fit != fit || oldDelegate.pulse != pulse;
 }

@@ -1328,5 +1328,9 @@
   "dropOpenTitle": "¡Un regalo de {name}!",
   "dropOpenBananas": "+{count} plátanos",
   "dropOpenFlowers": "Flores, porque sí 💐",
-  "dropOpenCollect": "Recoger"
+  "dropOpenCollect": "Recoger",
+  "cameraGuideHint": "Colócate dentro de la silueta: manos bajo los hombros",
+  "cameraGuideDone": "¡Perfecto, ya te veo!",
+  "cameraTooClose": "Aleja un poco el móvil",
+  "cameraNotCounting": "Toca empezar: aún no estoy contando"
 }

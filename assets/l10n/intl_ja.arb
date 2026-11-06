@@ -1328,5 +1328,9 @@
   "dropOpenTitle": "{name}からのプレゼント！",
   "dropOpenBananas": "バナナ+{count}",
   "dropOpenFlowers": "なんとなく花束を 💐",
-  "dropOpenCollect": "受け取る"
+  "dropOpenCollect": "受け取る",
+  "cameraGuideHint": "シルエットに合わせよう：手は肩の真下に",
+  "cameraGuideDone": "バッチリ、見えてるよ！",
+  "cameraTooClose": "スマホを少し離して置いて",
+  "cameraNotCounting": "スタートを押してね：まだ数えてないよ"
 }
