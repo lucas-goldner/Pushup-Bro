@@ -559,9 +559,8 @@ class _TrekStagePageState extends State<TrekStagePage> with OneMove {
     final progress = gained.clear(_stage.id, _battle.stars);
     // He needs a free spot on the island; if it was full he joins at the
     // next boss win once there's room.
-    final adopt = _stage.boss &&
-        inventory.komoToCome &&
-        inventory.hasRoomForMonkey;
+    final adopt =
+        _stage.boss && inventory.komoToCome && inventory.hasRoomForMonkey;
     final bananas =
         ((_battle.reps + (first ? 50 : 10)) * _battle.difficulty.rewards)
             .round();

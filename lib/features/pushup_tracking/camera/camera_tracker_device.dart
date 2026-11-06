@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pushup_bro/core/audio/game_audio.dart';
 import 'package:pushup_bro/core/cubit/shared_preferences_cubit.dart';
 import 'package:pushup_bro/core/extensions/build_context_ext.dart';
+import 'package:pushup_bro/core/model/shared_preferences_key.dart';
 import 'package:pushup_bro/core/model/tracking_mode.dart';
+import 'package:pushup_bro/core/provider/shared_preferences_provider.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/camera_overlay.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/pushup_pose.dart';
 
@@ -60,11 +64,35 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
   /// Only the skeleton is drawn, no picture of the player (the setting).
   bool _skeletonOnly = false;
 
+  /// The share of the picture the player fills, from the latest mask.
+  double? _coverage;
+
+  /// The pushup outline shows until the player has matched it once, held
+  /// for [_guideHold]; then it says so and never shows again.
+  bool _guidePending = false;
+  Duration? _fitSince;
+  Duration? _guideDoneAt;
+  static const _guideHold = Duration(milliseconds: 800);
+  static const _guideCheer = Duration(milliseconds: 1500);
+
+  /// When a pushup was done before counting started, to say so.
+  Duration? _idleRepAt;
+
+  /// The shoulders fill most of the picture: too close to the phone.
+  bool _tooClose = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     unawaited(_start());
+    unawaited(
+      SharedPreferencesProvider()
+          .getSharedPrefBool(SharedPreferencesKey.cameraGuideDone)
+          .then((done) {
+        if (mounted && done != true) setState(() => _guidePending = true);
+      }),
+    );
   }
 
   @override
@@ -153,9 +181,11 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
         (turned ? image.width : image.height).toDouble(),
       );
       final plane = image.planes.first;
-      // The cut-out every other frame is plenty and halves the work; with
-      // only the skeleton showing there's no cut-out at all.
-      final wantsMask = (_frame++).isEven && !_skeletonOnly;
+      // The cut-out every other frame is plenty and halves the work. It's
+      // fetched even when only the skeleton shows: how much of the picture
+      // the player fills tells the bottom of a pushup when the head hides
+      // the rest of the body.
+      final wantsMask = (_frame++).isEven;
       final reply = await _vision.invokeMapMethod<String, Object?>(
         'process',
         {
@@ -180,16 +210,19 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
           (point[2]! as num).toDouble(),
         );
       }
-      final reading = _tracker.update(pose, _clock.elapsed);
+      final mask = reply['mask'];
+      if (mask is Uint8List) _coverage = maskCoverage(mask);
+      final reading =
+          _tracker.update(pose, _clock.elapsed, coverage: _coverage);
       if (widget.active) {
         if (reading.wentDown) widget.onDown();
         if (reading.cameUp) widget.onUp();
       }
       _feedback.update(reading, _clock.elapsed);
+      _check(reading, pose, upright);
 
-      final mask = reply['mask'];
       ui.Image? next;
-      if (mask is Uint8List && mounted) {
+      if (mask is Uint8List && mounted && !_skeletonOnly) {
         next = await _maskImage(
           mask,
           reply['maskWidth']! as int,
@@ -218,6 +251,53 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
     } finally {
       _busy = false;
     }
+  }
+
+  /// The first-time outline, a pushup done before counting started, and
+  /// whether the player is too close.
+  void _check(
+    PushupReading reading,
+    Map<Joint, PosePoint> pose,
+    Size upright,
+  ) {
+    final now = _clock.elapsed;
+    _tooClose = reading.visible && tooClose(pose, upright);
+    if (!widget.active && reading.cameUp) _idleRepAt = now;
+    if (!_guidePending) return;
+    if (!PoseGuide.fits(pose, upright)) {
+      _fitSince = null;
+      return;
+    }
+    final since = _fitSince ??= now;
+    if (now - since < _guideHold) return;
+    _guidePending = false;
+    _guideDoneAt = now;
+    GameAudio.instance.play(Sfx.unlock);
+    unawaited(
+      SharedPreferencesProvider().writeBoolToSharedPrefs(
+        SharedPreferencesKey.cameraGuideDone,
+        value: true,
+      ),
+    );
+  }
+
+  /// What to tell the player under the picture, if anything beyond the
+  /// usual (step back, hips): the outline, counting not started yet, or
+  /// too close to the phone.
+  String? _message(BuildContext context, Duration time) {
+    final l = context.l10n;
+    final doneAt = _guideDoneAt;
+    if (doneAt != null && time - doneAt < _guideCheer) return l.cameraGuideDone;
+    if (_guidePending) return l.cameraGuideHint;
+    final idle = _idleRepAt;
+    if (!widget.active &&
+        idle != null &&
+        time - idle < const Duration(seconds: 4)) {
+      return l.cameraNotCounting;
+    }
+    if (_tooClose) return l.cameraTooClose;
+
+    return null;
   }
 
   /// Vision's person mask (one byte per pixel, upright) as an image whose
@@ -290,9 +370,20 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
       (cubit) => cubit.state.cameraView == CameraView.skeleton,
     );
 
+    final doneAt = _guideDoneAt;
+    final cheering = doneAt != null && time - doneAt < _guideCheer;
+    final guide = _guidePending || cheering;
+    final fit = cheering
+        ? 1.0
+        : _fitSince == null
+            ? 0.0
+            : ((time - _fitSince!).inMilliseconds / _guideHold.inMilliseconds)
+                .clamp(0.0, 1.0);
+
     return CameraBubble(
-      color: _feedback.color(time, colors),
+      color: cheering ? colors.normal : _feedback.color(time, colors),
       reading: _feedback.reading,
+      message: _message(context, time),
       child: LayoutBuilder(
         builder: (context, constraints) => FittedBox(
           fit: BoxFit.cover,
@@ -312,6 +403,23 @@ class _CameraTrackerViewState extends State<CameraTrackerView>
                     blendMode: BlendMode.dstIn,
                     shaderCallback: _maskShader,
                     child: preview,
+                  ),
+                if (guide)
+                  AnimatedOpacity(
+                    // It fades away once matched.
+                    opacity: cheering
+                        ? 1 -
+                            (time - doneAt).inMilliseconds /
+                                _guideCheer.inMilliseconds
+                        : 1,
+                    duration: Duration.zero,
+                    child: CustomPaint(
+                      painter: PoseGuidePainter(
+                        fit: fit,
+                        colors: colors,
+                        pulse: (math.sin(time.inMilliseconds / 260) + 1) / 2,
+                      ),
+                    ),
                   ),
                 CustomPaint(
                   painter: SkeletonPainter(

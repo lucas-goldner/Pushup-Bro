@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'dart:ui' show Offset;
+import 'dart:ui' show Offset, Size;
 
 /// The body points the pushup tracker looks at (the ones Apple's Vision
 /// body pose finds that matter for a pushup).
@@ -59,6 +59,7 @@ class PushupReading {
     required this.form,
     this.wentDown = false,
     this.cameUp = false,
+    this.occluded = false,
   });
 
   static const none = PushupReading(
@@ -82,6 +83,11 @@ class PushupReading {
   /// back up).
   final bool wentDown;
   final bool cameUp;
+
+  /// The body is out of sight because it's at the bottom of a pushup, close
+  /// to the camera (the head hides the shoulders and arms), not because
+  /// the player left: no need to tell them to step back.
+  final bool occluded;
 }
 
 /// Counts pushups from pose landmarks, frame by frame.
@@ -101,11 +107,18 @@ class PushupReading {
 /// seen. The depth is smoothed, and a pushup only counts with hysteresis
 /// (deep enough to go down, high enough to come back up) and a minimum time
 /// at the bottom, so jitter never counts twice.
+///
+/// Close to the phone the body vanishes at the bottom: the head comes down
+/// over the shoulders and arms and the camera sees little but hair. So when
+/// the body is lost on the way down (already part way, or with the player
+/// suddenly filling more of the picture, from Vision's person mask) and
+/// shows up again at the top soon after, that was the bottom of a pushup.
 class PushupPoseTracker {
   PushupPoseTracker({
     this.downAt = 0.62,
     this.upAt = 0.32,
     this.minDown = const Duration(milliseconds: 220),
+    this.lostAtBottom = const Duration(milliseconds: 3000),
   });
 
   /// Depth past which the body counts as down, and under which it counts
@@ -115,6 +128,17 @@ class PushupPoseTracker {
 
   /// The shortest time at the bottom that counts as a pushup.
   final Duration minDown;
+
+  /// The longest the body may stay out of sight at the bottom of a pushup;
+  /// gone longer than that, the player has left rather than gone down.
+  final Duration lostAtBottom;
+
+  /// Depth from which losing the body counts as reaching the bottom.
+  static const _lostFrom = 0.25;
+
+  /// How much more of the picture the player fills, compared with the top
+  /// of a pushup, when the head comes right up to the camera.
+  static const _crowding = 1.3;
 
   /// Likelihood under which a point is ignored.
   static const minLikelihood = 0.5;
@@ -126,6 +150,16 @@ class PushupPoseTracker {
   double? _high;
   double _frontLow = _frontBottom;
   double _frontHigh = _frontTop;
+
+  /// When the body was last in view, and how deep it was then.
+  Duration? _lastSeen;
+  double _lastDepth = 0;
+
+  /// The share of the picture the player fills at the top of a pushup.
+  double? _topCoverage;
+
+  /// The bottom was inferred from losing the body, not seen.
+  bool _hidden = false;
 
   /// Shoulders above the hands, in shoulder widths, at the bottom and the
   /// top of a typical pushup seen from the front (from a phone on the
@@ -142,9 +176,19 @@ class PushupPoseTracker {
     _high = null;
     _frontLow = _frontBottom;
     _frontHigh = _frontTop;
+    _lastSeen = null;
+    _lastDepth = 0;
+    _topCoverage = null;
+    _hidden = false;
   }
 
-  PushupReading update(Map<Joint, PosePoint> pose, Duration time) {
+  /// The latest frame's [pose] at [time]. [coverage] is the share of the
+  /// picture Vision's person mask covers (0 to 1), when there's one.
+  PushupReading update(
+    Map<Joint, PosePoint> pose,
+    Duration time, {
+    double? coverage,
+  }) {
     PosePoint? seen(Joint joint) {
       final point = pose[joint];
       return point != null && point.likelihood >= minLikelihood ? point : null;
@@ -155,15 +199,17 @@ class PushupPoseTracker {
     final raw = front != null
         ? (elbows == null ? front : front * 0.8 + elbows * 0.2)
         : elbows ?? _shoulderDepth(seen);
-    if (raw == null) {
-      return PushupReading(
-        visible: false,
-        down: _down,
-        depth: _depth ?? 0,
-        form: PushupForm.unknown,
-      );
+    if (raw == null) return _lost(time, coverage);
+    // Back from out of sight: take the new depth as it is, so coming up
+    // shows at once.
+    final depth =
+        _depth = _depth == null || _hidden ? raw : _depth! * 0.55 + raw * 0.45;
+    _lastSeen = time;
+    _lastDepth = depth;
+    if (coverage != null && depth < upAt) {
+      final top = _topCoverage;
+      _topCoverage = top == null ? coverage : top * 0.9 + coverage * 0.1;
     }
-    final depth = _depth = _depth == null ? raw : _depth! * 0.55 + raw * 0.45;
 
     var wentDown = false;
     var cameUp = false;
@@ -175,6 +221,7 @@ class PushupPoseTracker {
       final since = _downSince;
       if (since == null || time - since >= minDown) {
         _down = false;
+        _hidden = false;
         cameUp = true;
       }
     }
@@ -187,6 +234,41 @@ class PushupPoseTracker {
       form: front == null ? _form(seen) : PushupForm.unknown,
       wentDown: wentDown,
       cameUp: cameUp,
+    );
+  }
+
+  /// The body is out of view. Lost on the way down, or with the player
+  /// suddenly filling more of the picture, and only just now: that's the
+  /// bottom of a pushup, where the head hides the rest. Gone for too long,
+  /// it was the player leaving after all.
+  PushupReading _lost(Duration time, double? coverage) {
+    final lastSeen = _lastSeen;
+    final recent = lastSeen != null && time - lastSeen <= lostAtBottom;
+    final top = _topCoverage;
+    final crowded = coverage != null &&
+        top != null &&
+        top > 0 &&
+        coverage >= top * _crowding;
+    var wentDown = false;
+    if (!_down && recent && (_lastDepth >= _lostFrom || crowded)) {
+      _down = true;
+      _hidden = true;
+      _downSince = time;
+      wentDown = true;
+    } else if (_down && _hidden && !recent) {
+      // Never came back up: not a pushup. The next one starts afresh.
+      _down = false;
+      _hidden = false;
+      _depth = null;
+    }
+
+    return PushupReading(
+      visible: false,
+      down: _down,
+      depth: _down ? 1 : _depth ?? 0,
+      form: PushupForm.unknown,
+      wentDown: wentDown,
+      occluded: _down && _hidden,
     );
   }
 
@@ -301,4 +383,100 @@ double angleAt(PosePoint a, PosePoint b, PosePoint c) {
   final cos = (ab.dx * cb.dx + ab.dy * cb.dy) / (ab.distance * cb.distance);
 
   return math.acos(cos.clamp(-1.0, 1.0)) * 180 / math.pi;
+}
+
+/// The share of the picture a person [mask] (one byte per pixel, 255 for
+/// surely the person) covers, from every 7th pixel: plenty for a share.
+double maskCoverage(List<int> mask) {
+  if (mask.isEmpty) return 0;
+  var sum = 0;
+  var count = 0;
+  for (var i = 0; i < mask.length; i += 7) {
+    sum += mask[i];
+    count++;
+  }
+
+  return sum / (count * 255);
+}
+
+/// The outline a first-timer fits their body into, in the upright picture
+/// as fractions of its width and height: the front view of the top of a
+/// pushup from a phone on the floor, head at the top, arms straight down
+/// to the hands, and the body running away from the camera between them.
+abstract final class PoseGuide {
+  // Sized for the distance where tracking holds up at the bottom of a
+  // pushup: the shoulders take about a quarter of the picture's width.
+  static const head = Offset(0.5, 0.4);
+  static const headRadius = 0.075;
+  static const leftShoulder = Offset(0.37, 0.52);
+  static const rightShoulder = Offset(0.63, 0.52);
+  static const leftHand = Offset(0.3, 0.8);
+  static const rightHand = Offset(0.7, 0.8);
+  static const leftHip = Offset(0.45, 0.65);
+  static const rightHip = Offset(0.55, 0.65);
+  static const leftFoot = Offset(0.47, 0.78);
+  static const rightFoot = Offset(0.53, 0.78);
+
+  /// How far a joint may be from its place in the outline, in fractions of
+  /// the picture: generous, bodies and phones differ.
+  static const _slack = 0.12;
+
+  /// Whether [pose] (in pixels of an upright picture [image] big) fits the
+  /// outline: both shoulders and hands near theirs, the nose near the head
+  /// when it's seen, and the shoulders neither tiny (too far) nor filling
+  /// the picture (too close, where the head hides the body at the bottom).
+  static bool fits(Map<Joint, PosePoint> pose, Size image) {
+    if (image.isEmpty) return false;
+    Offset? at(Joint joint) {
+      final point = pose[joint];
+      if (point == null || point.likelihood < PushupPoseTracker.minLikelihood) {
+        return null;
+      }
+
+      return Offset(point.x / image.width, point.y / image.height);
+    }
+
+    bool near(Joint joint, Offset target) {
+      final point = at(joint);
+
+      return point != null && (point - target).distance <= _slack;
+    }
+
+    final left = at(Joint.leftShoulder);
+    final right = at(Joint.rightShoulder);
+    if (left == null || right == null) return false;
+    final width = (left.dx - right.dx).abs();
+    if (width < 0.14 || width > 0.38) return false;
+    final nose = at(Joint.nose);
+    // The picture is mirrored like a selfie: either side may be "left".
+    final shouldersFit = (near(Joint.leftShoulder, leftShoulder) &&
+            near(Joint.rightShoulder, rightShoulder)) ||
+        (near(Joint.leftShoulder, rightShoulder) &&
+            near(Joint.rightShoulder, leftShoulder));
+    final handsFit = (near(Joint.leftWrist, leftHand) &&
+            near(Joint.rightWrist, rightHand)) ||
+        (near(Joint.leftWrist, rightHand) && near(Joint.rightWrist, leftHand));
+
+    return shouldersFit &&
+        handsFit &&
+        (nose == null || (nose - head).distance <= _slack * 1.4);
+  }
+}
+
+/// Whether the player is so close that their shoulders fill most of the
+/// picture's width: at the bottom of a pushup the head will hide the rest.
+bool tooClose(Map<Joint, PosePoint> pose, Size image) {
+  final left = pose[Joint.leftShoulder];
+  final right = pose[Joint.rightShoulder];
+  if (image.isEmpty ||
+      left == null ||
+      right == null ||
+      left.likelihood < PushupPoseTracker.minLikelihood ||
+      right.likelihood < PushupPoseTracker.minLikelihood) {
+    return false;
+  }
+
+  // Where the head starts hiding the body at the bottom (from the
+  // players' videos): the shoulders take over 40% of the width at the top.
+  return (left.x - right.x).abs() / image.width > 0.4;
 }

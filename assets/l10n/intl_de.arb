@@ -1328,5 +1328,9 @@
   "dropOpenTitle": "Ein Geschenk von {name}!",
   "dropOpenBananas": "+{count} Bananen",
   "dropOpenFlowers": "Blumen, einfach so 💐",
-  "dropOpenCollect": "Einsammeln"
+  "dropOpenCollect": "Einsammeln",
+  "cameraGuideHint": "Pass dich in die Umrisse ein: Hände unter den Schultern",
+  "cameraGuideDone": "Perfekt, ich sehe dich!",
+  "cameraTooClose": "Stell das Handy etwas weiter weg",
+  "cameraNotCounting": "Tipp auf Start: Ich zähle noch nicht"
 }

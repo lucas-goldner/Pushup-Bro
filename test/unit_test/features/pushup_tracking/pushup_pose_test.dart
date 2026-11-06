@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'dart:ui' show Size;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pushup_bro/features/pushup_tracking/camera/pushup_pose.dart';
 
@@ -224,6 +226,147 @@ void main() {
       expect(form(0), PushupForm.good);
       expect(form(60), PushupForm.sagging);
       expect(form(-60), PushupForm.piking);
+    });
+  });
+
+  group('PushupPoseTracker when the head hides the body', () {
+    /// Front-view pushups where the body vanishes below depth [hideFrom]
+    /// (close to the phone, the head covers the shoulders and arms), with
+    /// the player filling [crowd] times more of the picture while hidden.
+    int hiddenReps(
+      PushupPoseTracker tracker,
+      int count, {
+      double hideFrom = 0.45,
+      double crowd = 1,
+      int frames = 40,
+    }) {
+      var reps = 0;
+      var frame = 0;
+      for (var r = 0; r < count; r++) {
+        for (var f = 0; f < frames; f++) {
+          final t = (1 - math.cos(2 * math.pi * f / frames)) / 2;
+          final hidden = t > hideFrom;
+          final reading = tracker.update(
+            hidden ? const {} : frontPose(t),
+            Duration(milliseconds: 33 * frame++),
+            coverage: hidden ? 0.3 * crowd : 0.3,
+          );
+          if (reading.cameUp) reps++;
+        }
+      }
+
+      return reps;
+    }
+
+    test('counts pushups whose bottom is out of sight', () {
+      expect(hiddenReps(PushupPoseTracker(), 5), 5);
+    });
+
+    test('says the body is only hidden, not gone, at the bottom', () {
+      final tracker = PushupPoseTracker();
+      for (var f = 0; f < 20; f++) {
+        final t = f / 20 * 0.5;
+        tracker.update(frontPose(t), Duration(milliseconds: 33 * f));
+      }
+      final reading = tracker.update(const {}, const Duration(seconds: 1));
+      expect(reading.occluded, isTrue);
+      expect(reading.down, isTrue);
+    });
+
+    test('counts when lost early but the player fills the picture', () {
+      // Lost almost at once, but the mask shows the head right at the
+      // camera.
+      expect(hiddenReps(PushupPoseTracker(), 4, hideFrom: 0.1, crowd: 1.8), 4);
+      // Lost almost at once with nothing else to go on: not counted.
+      expect(hiddenReps(PushupPoseTracker(), 4, hideFrom: 0.1), 0);
+    });
+
+    test('a player who leaves mid-pushup does not count', () {
+      final tracker = PushupPoseTracker();
+      var frame = 0;
+      var reps = 0;
+      for (var f = 0; f < 15; f++) {
+        tracker.update(
+          frontPose(f / 15 * 0.5),
+          Duration(milliseconds: 33 * frame++),
+        );
+      }
+      // Gone for five seconds, then back at the top.
+      for (var f = 0; f < 150; f++) {
+        tracker.update(const {}, Duration(milliseconds: 33 * frame++));
+      }
+      for (var f = 0; f < 15; f++) {
+        final reading =
+            tracker.update(frontPose(0), Duration(milliseconds: 33 * frame++));
+        if (reading.cameUp) reps++;
+      }
+      expect(reps, 0);
+      // Pushups after that still count.
+      expect(countFrontReps(tracker, 2), 2);
+    });
+
+    test('a flicker at the top is not a pushup', () {
+      final tracker = PushupPoseTracker();
+      var reps = 0;
+      for (var f = 0; f < 60; f++) {
+        final reading = tracker.update(
+          f.isEven ? frontPose(0.05) : const {},
+          Duration(milliseconds: 33 * f),
+        );
+        if (reading.cameUp) reps++;
+      }
+      expect(reps, 0);
+    });
+  });
+
+  group('PoseGuide', () {
+    const image = Size(480, 640);
+    Map<Joint, PosePoint> at(Map<Joint, (double, double)> points) => {
+          for (final MapEntry(:key, :value) in points.entries)
+            key:
+                PosePoint(value.$1 * image.width, value.$2 * image.height, 0.9),
+        };
+
+    final inPlace = at({
+      Joint.nose: (0.5, 0.43),
+      Joint.leftShoulder: (0.38, 0.53),
+      Joint.rightShoulder: (0.62, 0.51),
+      Joint.leftWrist: (0.32, 0.79),
+      Joint.rightWrist: (0.69, 0.82),
+    });
+
+    test('fits a body in the outline, mirrored too', () {
+      expect(PoseGuide.fits(inPlace, image), isTrue);
+      final mirrored = {
+        for (final MapEntry(:key, :value) in inPlace.entries)
+          key: PosePoint(image.width - value.x, value.y, value.likelihood),
+      };
+      expect(PoseGuide.fits(mirrored, image), isTrue);
+    });
+
+    test('needs the shoulders and hands', () {
+      expect(
+        PoseGuide.fits({...inPlace}..remove(Joint.leftWrist), image),
+        isFalse,
+      );
+    });
+
+    test('is too close when the shoulders fill the picture', () {
+      final close = at({
+        Joint.leftShoulder: (0.25, 0.5),
+        Joint.rightShoulder: (0.75, 0.5),
+        Joint.leftWrist: (0.05, 0.95),
+        Joint.rightWrist: (0.95, 0.95),
+      });
+      expect(PoseGuide.fits(close, image), isFalse);
+      expect(tooClose(close, image), isTrue);
+      expect(tooClose(inPlace, image), isFalse);
+    });
+
+    test('mask coverage is the share the person fills', () {
+      expect(maskCoverage(List.filled(700, 255)), closeTo(1, 1e-9));
+      expect(maskCoverage(List.filled(700, 0)), 0);
+      expect(maskCoverage(const []), 0);
     });
   });
 }

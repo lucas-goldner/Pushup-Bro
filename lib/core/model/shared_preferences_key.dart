@@ -24,5 +24,8 @@ enum SharedPreferencesKey {
   soundsOn,
   cameraView,
   airpodsSensitivity,
-  airportDropsSent;
+  airportDropsSent,
+
+  /// The camera's pushup outline was matched once; it isn't shown again.
+  cameraGuideDone;
 }
